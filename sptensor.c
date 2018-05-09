@@ -1,0 +1,274 @@
+#include <stdlib.h>
+#include <string.h>
+#include <sptensor.h>
+
+
+
+/* static helper prototypes */
+static void sptensor_grow(sptensor *tns);
+static void sptensor_index_sort(sptensor *tns, int left, int right);
+static int  sptensor_index_partition(sptensor *tns, int left, int right);
+static void sptensor_insert(sptensor *tns, const sp_index_t *idx, double val);
+
+
+/*
+ * Allocate a sparse tensor.  Sparse tensors are allocated using
+ * malloc, and have a default capacity of 1024 non-zero items.
+ * 
+ * Parameters: nmodes - The number of modes
+ *             dim    - The dimension of the tensor
+ *
+ * Return: A pointer to the newly created tensor.
+ */ 
+sptensor*
+sptensor_alloc(int nmodes, const sp_index_t *dim)
+{
+    sptensor *tns;
+
+    /* allocate the tensor struct and initialize fields */
+    tns = (sptensor*) malloc(sizeof(sptensor));
+    tns->nmodes = nmodes;
+    tns->nnz = 0;
+    tns->capacity = SPTENSOR_DEFAULT_CAPACITY;
+
+    /* allocate and populate the tensor dimension */
+    tns->dim = (int*) malloc(sizeof(int) * tns->nmodes);
+    memcpy(tns->dim, dim, sizeof(sp_index_t) * tns->nmodes);
+
+    /* allocate space for the nonzeroes and indexes */
+    tns->ar = (double*) malloc(sizeof(double) * tns->capacity);
+    tns->idx = (int*) malloc(sizeof(sp_index_t) * tns->capacity * tns->nmodes);
+}
+
+
+/*
+ * Free the memory allocated for a sparse tensor.
+ */
+void
+sptensor_free(sptensor *tns)
+{
+    free(tns->ar);
+    free(tns->idx);
+    free(tns->dim);
+    free(tns);
+}
+
+
+/*
+ * Get a value from a sparse tensor.
+ *
+ * Parameters: tns - The sparse tensor to retrieve from
+ *             idx - The index of the item to retrieve
+ */
+double
+sptensor_get(sptensor *tns, const sp_index_t *idx)
+{
+    int i;
+
+    /* get the index to the item */
+    i = sptensor_find_index(tns, idx);
+
+    /* return the appropriate value */
+    if(i < 0) {
+	return 0;
+    }
+    return tns->ar[i];
+}
+
+
+/* 
+ * Set a value in the sparse tensor.
+ * 
+ * Parameters: tns - The sparse tensor to write to
+ *             idx - The index of the item to retrieve
+ *             val - The value to write to the tensor
+ */
+void
+sptensor_set(sptensor *tns, const sp_index_t *idx, double val)
+{
+    int i;
+
+    /* get the index to the item */
+    i = sptensor_find_index(tns, idx);
+
+    /* if it is zero, we either ignore it or remove it! */
+    if(val == 0.0) {
+	if(i<0) return;  /* nothing to do! */
+
+	/* we need to remove an item */
+	tns->nnz--;
+	memmove(tns->ar+i, tns->ar+i+1, (tns->nnz - i)*sizeof(double));
+	memmove(SPI(tns,i), SPI(tns,i+1), (tns->nnz - i)*sizeof(sp_index_t)*tns->nmodes);
+	
+    }
+
+    /* set or insert as needed */
+    if(i < 0) {
+	sptensor_insert(tns, idx, val);
+    } else {
+	tns->ar[i] = val;
+    }
+}
+    
+
+
+/* 
+ * Compare two indexes for a given tensor.  Comparison is 
+ * performed from left to right.  Pretty much exactly as 
+ * strcmp, except with ints.
+ * 
+ * Parameter: tns - The sparse (used to determine nmodes)
+ *            a   - The left hand index being compared
+ *            b   - The right hand index being compared
+ *  
+ * Return:  < 0 if a < b
+ *            0 if a == b
+ *          > 0 if a > b
+ */
+int
+sptensor_indexcmp(sptensor *tns, const sp_index_t *a, const sp_index_t *b)
+{
+    int i;
+
+    /* look for < or > comparisons */
+    for(int i=0; i < tns->nmodes; i++) {
+	if(a[i] < b[i]) {
+	    return -1;
+	}
+
+	if(a[i] > b[i]) {
+	    return 1;
+	}
+    }
+
+    return 0; /* must be equal! */
+}
+
+
+/*
+ * Find the index into ar of the tensor struct.
+ * 
+ * Parameter: tns - The sparse tensor to search
+ *            idx - The index to find
+ *
+ * Return: The index into ar of element idx.  If the index is
+ *         not of a non-zero value, return -1.
+ */
+int
+sptensor_find_index(sptensor *tns, const sp_index_t *idx)
+{
+    int left = 0;
+    int right = tns->nnz - 1;
+    int mid;
+    int cmp;
+
+    /* do a binary search on the list of indexes */
+    while(left <= right) {
+	mid = (right+left) / 2;
+	cmp = sptensor_indexcmp(tns, idx, SPI(tns, mid));
+	if(cmp == 0) {
+	    return mid;
+	} else if(cmp < 0) {
+	    right = mid-1;
+	} else {
+	    left = mid+1;
+	}
+    }
+
+    return -1;
+}
+
+
+/* static helper functions */
+static void
+sptensor_grow(sptensor *tns)
+{
+    double *ar;
+    sp_index_t *idx;
+    
+    /* multiply the capacity and make the new arrays */
+    tns->capacity *= 2;
+    ar = (double*) malloc(tns->capacity * sizeof(double));
+    idx = (int*) malloc(tns->capacity*sizeof(sp_index_t)*tns->nmodes);
+
+    /* copy over the arrays */
+    memcpy(ar, tns->ar, tns->nnz*sizeof(double));
+    memcpy(idx, tns->idx, tns->nnz*sizeof(sp_index_t)*tns->nmodes);
+
+    /* replace the old arrays */
+    free(tns->ar);
+    free(tns->idx);
+    tns->ar = ar;
+    tns->idx = idx;
+}
+
+
+static void
+sptensor_index_sort(sptensor *tns, int left, int right)
+{
+    int p;
+    
+    /* quicksort! */
+    if(left < right) {
+	p = sptensor_index_partition(tns, left, right);
+	sptensor_index_sort(tns, left, p);
+	sptensor_index_sort(tns, p+1, right);
+    }
+}
+
+
+static int
+sptensor_index_partition(sptensor *tns, int left, int right)
+{
+    int i, j;
+    int pivot;
+    sp_index_t *swp = (int*) malloc(sizeof(sp_index_t) * tns->nmodes);
+    int arswp;
+    
+    /* use the midpoint pivot */
+    pivot = (left+right)/2;
+    i = left - 1;
+    j = right + 1;
+
+    /* here we go! */
+    for(;;) {
+	do {
+	    i++;
+	} while(sptensor_indexcmp(tns, SPI(tns,i), SPI(tns,pivot)) < 0);
+
+	do {
+	    j--;
+	} while(sptensor_indexcmp(tns, SPI(tns,j), SPI(tns,pivot)) > 0);
+
+	if(i >= j) {
+	    free(swp);
+	    return j;
+	}
+
+	/* swap */
+	memcpy(swp, SPI(tns,i), sizeof(sp_index_t) * tns->nmodes);
+	memcpy(SPI(tns,i), SPI(tns,j), sizeof(sp_index_t) * tns->nmodes);
+	memcpy(SPI(tns,j), swp, sizeof(sp_index_t) * tns->nmodes);
+	arswp = tns->ar[i];
+	tns->ar[i] = tns->ar[j];
+	tns->ar[j] = arswp;
+    }
+}
+
+
+static void
+sptensor_insert(sptensor *tns, const sp_index_t *idx, double val)
+{
+    /* grow, if needed */
+    if(tns->nnz == tns->capacity) {
+	sptensor_grow(tns);
+    }
+
+    /* put the value and index in the list */
+    memcpy(SPI(tns, tns->nnz), idx, sizeof(sp_index_t)*tns->nmodes);
+    tns->ar[tns->nnz] = val;
+    tns->nnz++;
+
+    /* cleanup! */
+    sptensor_index_sort(tns, 0, tns->nnz-1);
+}
