@@ -1,6 +1,6 @@
 #include <stdlib.h>
 #include <string.h>
-
+#include <vector.h>
 
 /*
  * Allocate a vector.
