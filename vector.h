@@ -29,7 +29,7 @@ typedef struct vector {
 } vector;
 
 #define VPTR(v, i) ((v)->ar + (i) * (v)->element_size)
-
+#define VVAL(type, v, i) *((type*)(v)+(i))
 
 /*
  * Allocate a vector.
