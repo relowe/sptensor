@@ -85,7 +85,7 @@ void vector_grow(vector *v)
  * Paremters: v    - The vector to append to
  *            item - The item to copy into the vector
  */
-void vector_push_back(vector *v, void *item)
+void vector_push_back(vector *v, const void *item)
 {
     /* grow if needed */
     if(v->size == v->capacity) {
@@ -106,7 +106,7 @@ void vector_push_back(vector *v, void *item)
  *             i    - The index of the position to be inserted
  *             item - The item to copy into the vector
  */
-void vector_insert(vector *v, unsigned int i, void *item)
+void vector_insert(vector *v, unsigned int i, const void *item)
 {
     /* grow if needed */
     if(v->size == v->capacity) {
