@@ -31,7 +31,8 @@
  * 
  * Returns: The newly allocated vector
  */
-vector *vector_alloc(size_t element_size, int capacity) 
+vector *
+vector_alloc(size_t element_size, int capacity) 
 {
     vector *result;
 
@@ -50,7 +51,8 @@ vector *vector_alloc(size_t element_size, int capacity)
  * 
  * Parameters: v - The vector to free
  */
-void vector_free(vector *v)
+void
+vector_free(vector *v)
 {
     free(v->ar);
     free(v);
@@ -62,7 +64,8 @@ void vector_free(vector *v)
  * 
  * Parameters: v - The vector to grow
  */
-void vector_grow(vector *v)
+void
+vector_grow(vector *v)
 {
     void *ar;
 
@@ -85,7 +88,8 @@ void vector_grow(vector *v)
  * Paremters: v    - The vector to append to
  *            item - The item to copy into the vector
  */
-void vector_push_back(vector *v, const void *item)
+void
+vector_push_back(vector *v, const void *item)
 {
     /* grow if needed */
     if(v->size == v->capacity) {
@@ -106,7 +110,8 @@ void vector_push_back(vector *v, const void *item)
  *             i    - The index of the position to be inserted
  *             item - The item to copy into the vector
  */
-void vector_insert(vector *v, unsigned int i, const void *item)
+void
+vector_insert(vector *v, unsigned int i, const void *item)
 {
     /* grow if needed */
     if(v->size == v->capacity) {
@@ -130,7 +135,8 @@ void vector_insert(vector *v, unsigned int i, const void *item)
  * Parameters: v - The vector to be modified
  *             i - The index of the item to be removed
  */
-void vector_remove(vector *v, unsigned int i)
+void
+vector_remove(vector *v, unsigned int i)
 {
     /* shift everything back one position */
     memcpy(VPTR(v, i), VPTR(v, i+1), (v->size - i - 1) * v->element_size);
@@ -145,7 +151,8 @@ void vector_remove(vector *v, unsigned int i)
  *             i - The index of the first item
  *             j - The index of the second item
  */
-void vector_swap(vector *v, unsigned int i, unsigned int j)
+void
+vector_swap(vector *v, unsigned int i, unsigned int j)
 {
     unsigned char *p1, *p2;  /* the two values to swap */
     int count;
