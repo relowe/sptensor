@@ -136,3 +136,30 @@ void vector_remove(vector *v, unsigned int i)
     memcpy(VPTR(v, i), VPTR(v, i+1), (v->size - i - 1) * v->element_size);
     v->size--;
 }
+
+
+
+/*
+ * Swap two elements in a vector.
+ * Parameters: v - The vector to be modified
+ *             i - The index of the first item
+ *             j - The index of the second item
+ */
+void vector_swap(vector *v, unsigned int i, unsigned int j)
+{
+    unsigned char *p1, *p2;  /* the two values to swap */
+    int count;
+
+    /* get the values to swap */
+    p1 = VPTR(v, i);
+    p2 = VPTR(v, j);
+
+    /* do iterative xor swap */
+    /* We are told this is ugly, but it's ok, we're pros! */
+    /*   Ok, it's hideous but saves a malloc! */
+    for(int count=0; count < v->element_size; count++, p1++, p2++) {
+	*p1 = *p1 ^ *p2;
+	*p2 = *p1 ^ *p2; 
+	*p1 = *p1 ^ *p2;
+    }
+}
