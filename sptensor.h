@@ -18,20 +18,19 @@
  */
 #ifndef SPTENSOR_H
 #define SPTENSOR_H
+#include <vector.h>
 
 #define SPTENSOR_DEFAULT_CAPACITY 128
-#define SPI(tns, i) (tns->idx + i * tns->nmodes)
+
 
 typedef unsigned int sp_index_t;
 
 typedef struct sptensor
 {
-    double *ar;      /* the tensor values */
-    sp_index_t *idx; /* the index list (maintained in sorted order) */
+    vector *ar;      /* the tensor values */
+    vector *idx;     /* the index list (maintained in sorted order) */
     sp_index_t *dim; /* The dimension of each tensor mode */
     int nmodes;      /* The number of tensor modes */
-    int nnz;         /* The number of non-negative values */
-    int capacity;    /* Total capacity of the tensor */
 } sptensor;
 
 
