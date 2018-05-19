@@ -87,4 +87,12 @@ void vector_insert(vector *v, unsigned int i, const void *item);
 void vector_remove(vector *v, unsigned int i);
 
 
+/*
+ * Swap two elements in a vector.
+ * Parameters: v - The vector to be modified
+ *             i - The index of the first item
+ *             j - The index of the second item
+ */
+void vector_swap(vector *v, unsigned int i, unsigned int j);
+
 #endif
