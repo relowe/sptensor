@@ -24,7 +24,6 @@
 
 
 /* static helper prototypes */
-static void sptensor_grow(sptensor *tns);
 static void sptensor_index_sort(sptensor *tns, int left, int right);
 static int  sptensor_index_partition(sptensor *tns, int left, int right);
 static void sptensor_insert(sptensor *tns, const sp_index_t *idx, double val);
@@ -47,16 +46,16 @@ sptensor_alloc(int nmodes, const sp_index_t *dim)
     /* allocate the tensor struct and initialize fields */
     tns = (sptensor*) malloc(sizeof(sptensor));
     tns->nmodes = nmodes;
-    tns->nnz = 0;
-    tns->capacity = SPTENSOR_DEFAULT_CAPACITY;
 
     /* allocate and populate the tensor dimension */
-    tns->dim = (int*) malloc(sizeof(int) * tns->nmodes);
+    tns->dim = (int*) malloc(sizeof(sp_index_t) * tns->nmodes);
     memcpy(tns->dim, dim, sizeof(sp_index_t) * tns->nmodes);
 
     /* allocate space for the nonzeroes and indexes */
-    tns->ar = (double*) malloc(sizeof(double) * tns->capacity);
-    tns->idx = (int*) malloc(sizeof(sp_index_t) * tns->capacity * tns->nmodes);
+    tns->ar = vector_alloc(sizeof(double),
+			   SPTENSOR_DEFAULT_CAPACITY);
+    tns->idx = vector_alloc(sizeof(sp_index_t)*tns->nmodes,
+			    SPTENSOR_DEFAULT_CAPACITY);
 }
 
 
@@ -66,8 +65,8 @@ sptensor_alloc(int nmodes, const sp_index_t *dim)
 void
 sptensor_free(sptensor *tns)
 {
-    free(tns->ar);
-    free(tns->idx);
+    vector_free(tns->ar);
+    vector_free(tns->idx);
     free(tns->dim);
     free(tns);
 }
@@ -91,7 +90,7 @@ sptensor_get(sptensor *tns, const sp_index_t *idx)
     if(i < 0) {
 	return 0;
     }
-    return tns->ar[i];
+    return VVAL(double, tns->ar, i);
 }
 
 
@@ -115,17 +114,17 @@ sptensor_set(sptensor *tns, const sp_index_t *idx, double val)
 	if(i<0) return;  /* nothing to do! */
 
 	/* we need to remove an item */
-	tns->nnz--;
-	memmove(tns->ar+i, tns->ar+i+1, (tns->nnz - i)*sizeof(double));
-	memmove(SPI(tns,i), SPI(tns,i+1), (tns->nnz - i)*sizeof(sp_index_t)*tns->nmodes);
-	
+	vector_remove(tns->ar, i);
+	vector_remove(tns->idx, i);
+
+	return;
     }
 
     /* set or insert as needed */
     if(i < 0) {
 	sptensor_insert(tns, idx, val);
     } else {
-	tns->ar[i] = val;
+	VVAL(double, tns->ar, i) = val;
     }
 }
     
@@ -177,14 +176,14 @@ int
 sptensor_find_index(sptensor *tns, const sp_index_t *idx)
 {
     int left = 0;
-    int right = tns->nnz - 1;
+    int right = tns->ar->size - 1;
     int mid;
     int cmp;
 
     /* do a binary search on the list of indexes */
     while(left <= right) {
 	mid = (right+left) / 2;
-	cmp = sptensor_indexcmp(tns, idx, SPI(tns, mid));
+	cmp = sptensor_indexcmp(tns, idx, VPTR(tns->idx, mid));
 	if(cmp == 0) {
 	    return mid;
 	} else if(cmp < 0) {
@@ -195,30 +194,6 @@ sptensor_find_index(sptensor *tns, const sp_index_t *idx)
     }
 
     return -1;
-}
-
-
-/* static helper functions */
-static void
-sptensor_grow(sptensor *tns)
-{
-    double *ar;
-    sp_index_t *idx;
-    
-    /* multiply the capacity and make the new arrays */
-    tns->capacity *= 2;
-    ar = (double*) malloc(tns->capacity * sizeof(double));
-    idx = (int*) malloc(tns->capacity*sizeof(sp_index_t)*tns->nmodes);
-
-    /* copy over the arrays */
-    memcpy(ar, tns->ar, tns->nnz*sizeof(double));
-    memcpy(idx, tns->idx, tns->nnz*sizeof(sp_index_t)*tns->nmodes);
-
-    /* replace the old arrays */
-    free(tns->ar);
-    free(tns->idx);
-    tns->ar = ar;
-    tns->idx = idx;
 }
 
 
@@ -241,8 +216,6 @@ sptensor_index_partition(sptensor *tns, int left, int right)
 {
     int i, j;
     int pivot;
-    sp_index_t *swp = (int*) malloc(sizeof(sp_index_t) * tns->nmodes);
-    int arswp;
     
     /* use the midpoint pivot */
     pivot = (left+right)/2;
@@ -253,24 +226,19 @@ sptensor_index_partition(sptensor *tns, int left, int right)
     for(;;) {
 	do {
 	    i++;
-	} while(sptensor_indexcmp(tns, SPI(tns,i), SPI(tns,pivot)) < 0);
+	} while(sptensor_indexcmp(tns, VPTR(tns->idx,i), VPTR(tns->idx,pivot)) < 0);
 
 	do {
 	    j--;
-	} while(sptensor_indexcmp(tns, SPI(tns,j), SPI(tns,pivot)) > 0);
+	} while(sptensor_indexcmp(tns, VPTR(tns->idx,j), VPTR(tns->idx,pivot)) > 0);
 
 	if(i >= j) {
-	    free(swp);
 	    return j;
 	}
 
 	/* swap */
-	memcpy(swp, SPI(tns,i), sizeof(sp_index_t) * tns->nmodes);
-	memcpy(SPI(tns,i), SPI(tns,j), sizeof(sp_index_t) * tns->nmodes);
-	memcpy(SPI(tns,j), swp, sizeof(sp_index_t) * tns->nmodes);
-	arswp = tns->ar[i];
-	tns->ar[i] = tns->ar[j];
-	tns->ar[j] = arswp;
+	vector_swap(tns->idx, i, j);
+	vector_swap(tns->ar, i, j);
     }
 }
 
@@ -278,16 +246,10 @@ sptensor_index_partition(sptensor *tns, int left, int right)
 static void
 sptensor_insert(sptensor *tns, const sp_index_t *idx, double val)
 {
-    /* grow, if needed */
-    if(tns->nnz == tns->capacity) {
-	sptensor_grow(tns);
-    }
-
     /* put the value and index in the list */
-    memcpy(SPI(tns, tns->nnz), idx, sizeof(sp_index_t)*tns->nmodes);
-    tns->ar[tns->nnz] = val;
-    tns->nnz++;
+    vector_push_back(tns->idx, idx);
+    vector_push_back(tns->ar, &val);
 
     /* cleanup! */
-    sptensor_index_sort(tns, 0, tns->nnz-1);
+    sptensor_index_sort(tns, 0, tns->ar->size-1);
 }
