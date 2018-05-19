@@ -103,10 +103,10 @@ sptensor_write(FILE *file, sptensor *tns)
     fprintf(file, "\n");
 
     /* print the non-zero values */
-    for(i = 0; i < tns->nnz; i++) {
+    for(i = 0; i < tns->ar->size; i++) {
 	for(j = 0; j < tns->nmodes; j++) {
-	    fprintf(file, "%u ", *(SPI(tns, i) + j));
+	    fprintf(file, "%u ", *((unsigned int*)(VPTR(tns->idx, i))+j));
 	}
-	fprintf(file, "%f\n", tns->ar[i]);
+	fprintf(file, "%g\n", VVAL(double, tns->ar,i));
     }
 }
