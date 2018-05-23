@@ -27,10 +27,10 @@ typedef unsigned int sp_index_t;
 
 typedef struct sptensor
 {
-    vector *ar;      /* the tensor values */
-    vector *idx;     /* the index list (maintained in sorted order) */
-    sp_index_t *dim; /* The dimension of each tensor mode */
-    int nmodes;      /* The number of tensor modes */
+    vector *ar;          /* the tensor values */
+    vector *idx;         /* the index list (maintained in sorted order) */
+    sp_index_t *dim;     /* The dimension of each tensor mode */
+    unsigned int nmodes; /* The number of tensor modes */
 } sptensor;
 
 
