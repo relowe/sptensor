@@ -55,6 +55,8 @@ tensor_view_clprint(tensor_view *v)
 	/* print the value */
 	printf("%g\n", TVGET(v,idx));
     }
+
+    free(idx);
 }
 
 
@@ -214,6 +216,6 @@ sptensor_view_alloc(sptensor *tns)
     v->set = sptensor_view_set;
     v->to = sptensor_view_idxcpy;
     v->from = sptensor_view_idxcpy;
-
+    v->tvfree = sptensor_view_free;
     return v;
 }
