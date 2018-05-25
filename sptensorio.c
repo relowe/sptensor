@@ -98,7 +98,7 @@ sptensor_write(FILE *file, sptensor *tns)
     /* print the preamble */
     fprintf(file, "%u", tns->nmodes);
     for(i = 0; i < tns->nmodes; i++) {
-	fprintf(file, " %u", tns->dim[i]);
+	fprintf(file, "\t%u", tns->dim[i]);
     }
     fprintf(file, "\n");
 
