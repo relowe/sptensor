@@ -26,7 +26,7 @@ struct tensor_view;
 typedef struct tensor_view tensor_view;
 
 /* function pointer types */
-typedef int (*nnz_func)(tensor_view *);
+typedef unsigned int (*nnz_func)(tensor_view *);
 typedef void (*index_func)(tensor_view*, unsigned int i, sp_index_t *);
 typedef double (*get_func)(tensor_view*, sp_index_t*);
 typedef void (*set_func)(tensor_view*, sp_index_t*, double);
@@ -85,7 +85,7 @@ tensor_view *sptensor_view_alloc(sptensor *tns);
 tensor_view *unfold_tensor(tensor_view* v, sp_index_t n);
 
 /* An identity tensor (with 1's along its superdiagonal) */
-tensor_view *identity_tensor(sp_index_t *dim);
+tensor_view *identity_tensor(int nmodes, sp_index_t *dim);
 
 /* A slice of a tensor 
  *   v    - The view to slice
