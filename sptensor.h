@@ -76,7 +76,7 @@ void sptensor_set(sptensor *tns, const sp_index_t *idx, double val);
  * performed from left to right.  Pretty much exactly as 
  * strcmp, except with ints.
  * 
- * Parameter: tns - The sparse (used to determine nmodes)
+ * Parameter: nmodes - The number of modes
  *            a   - The left hand index being compared
  *            b   - The right hand index being compared
  *  
@@ -84,7 +84,7 @@ void sptensor_set(sptensor *tns, const sp_index_t *idx, double val);
  *            0 if a == b
  *          > 0 if a > b
  */
-int sptensor_indexcmp(sptensor *tns, const sp_index_t *a, const sp_index_t *b);
+int sptensor_indexcmp(unsigned int nmodes, const sp_index_t *a, const sp_index_t *b);
 
 
 
