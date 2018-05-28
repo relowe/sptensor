@@ -39,6 +39,7 @@ struct tensor_view {
     unsigned int nmodes;   /* The mumber of modes in the view */
     nnz_func nnz;          /* Get the number of nonzero entries */
     index_func get_idx;    /* Get the ith index */
+    geti_func geti;        /* Get the ith non-negative value */
     get_func get;          /* Get the value at index */
     set_func set;          /* Set the value at index */
     index_trans_func to;   /* translate an index to the base tns index */
@@ -58,6 +59,7 @@ typedef struct tensor_slice_spec {
 /* Macro wrappers for function pointers */
 #define TVNNZ(v) (*((tensor_view*)(v))->nnz)((tensor_view*)(v))
 #define TVIDX(v,i, idx) (*((tensor_view*)(v))->get_idx)((tensor_view*)(v), (i), (idx))
+#define TVI(v,i, idx) (*((tensor_view*)(v))->geti)((tensor_view*)(v), (i))
 #define TVGET(v,i) (*((tensor_view*)(v))->get)((tensor_view*)(v), (i))
 #define TVSET(v,i,value) (*((tensor_view*)(v))->set)((tensor_view*)(v),(i),(value))
 #define TVTO(v,in,out) (*((tensor_view*)(v))->to)((tensor_view*)(v), (in), (out))
