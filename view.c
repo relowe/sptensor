@@ -284,6 +284,7 @@ base_view_alloc()
     /* basic allocation with base pointers to functions */
     v = malloc(sizeof(tensor_view));
     v->tns = NULL;
+    v->data = NULL;
     v->dim = NULL;
     v->nmodes = 0;
     v->nnz = base_view_nnz;
@@ -481,7 +482,6 @@ struct unfold_view
 {
     int n;             /* Dimension we unfold along */
     sp_index_t *jk;    /* jk coeffecients for unfolding */
-    tensor_view *v;    /* the actual tensor view */
     sp_index_t dim[2]; /* This is always 2 mode! */
 };
 
@@ -489,12 +489,45 @@ struct unfold_view
 static void
 unfold_to(tensor_view *v, sp_index_t *in, sp_index_t *out)
 {
+    struct unfold_view *uv = (struct unfold_view*)v->data;
+    int i;
+    int j;
+    int k=((tensor_view*)v->tns)->nmodes-2;
+
+    j=in[1];
+    for(i=((tensor_view*)v->tns)->nmodes-1; i>=0; i--) {
+	if(i == uv->n) {
+	    /* handle the folded mode */
+	    out[i] = in[0];
+	} else {
+	    /* handle the rest */
+	    out[i] = j/uv->jk[k];
+	    j = j% uv->jk[i];
+	    k--;
+	}
+    }
 }
 
 
 static void
 unfold_from(tensor_view *v, sp_index_t *in, sp_index_t *out)
 {
+    struct unfold_view *uv = (struct unfold_view*)v->tns;
+    int i;
+    int k=0;
+
+    /* get the i part */
+    out[0] = in[uv->n];
+
+    /* get the j part */
+    out[1] = 1;
+    for(int i=0; i<((tensor_view*)v->tns)->nmodes; i++) {
+	/* skip the folded dimension */
+	if(i == uv->n) {
+	    continue;
+	}
+	out[1] += (in[i] - 1) * uv->jk[k++];
+    }
 }
 
 
@@ -521,9 +554,9 @@ unfold_tensor(tensor_view *v, sp_index_t n)
     /* allocate and populate the tensor view */
     uv = malloc(sizeof(struct unfold_view));
     uv->n = n;
-    uv->v = v;
     tv = base_view_alloc();
-    tv->tns = uv;
+    tv->tns = v;
+    tv->data = uv;
     tv->nmodes = 2;
     tv->dim = uv->dim;
     tv->to = unfold_to;
