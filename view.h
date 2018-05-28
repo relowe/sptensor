@@ -28,6 +28,7 @@ typedef struct tensor_view tensor_view;
 /* function pointer types */
 typedef unsigned int (*nnz_func)(tensor_view *);
 typedef void (*index_func)(tensor_view*, unsigned int i, sp_index_t *);
+typedef double (*geti_func)(tensor_view*, unsigned int i);
 typedef double (*get_func)(tensor_view*, sp_index_t*);
 typedef void (*set_func)(tensor_view*, sp_index_t*, double);
 typedef void (*index_trans_func)(tensor_view*, sp_index_t*, sp_index_t*);
@@ -59,7 +60,7 @@ typedef struct tensor_slice_spec {
 /* Macro wrappers for function pointers */
 #define TVNNZ(v) (*((tensor_view*)(v))->nnz)((tensor_view*)(v))
 #define TVIDX(v,i, idx) (*((tensor_view*)(v))->get_idx)((tensor_view*)(v), (i), (idx))
-#define TVI(v,i, idx) (*((tensor_view*)(v))->geti)((tensor_view*)(v), (i))
+#define TVGETI(v,i) (*((tensor_view*)(v))->geti)((tensor_view*)(v), (i))
 #define TVGET(v,i) (*((tensor_view*)(v))->get)((tensor_view*)(v), (i))
 #define TVSET(v,i,value) (*((tensor_view*)(v))->set)((tensor_view*)(v),(i),(value))
 #define TVTO(v,in,out) (*((tensor_view*)(v))->to)((tensor_view*)(v), (in), (out))
