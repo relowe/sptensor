@@ -68,8 +68,11 @@ typedef struct tensor_slice_spec {
 /********************************
  * generic tensor view functions 
  ********************************/
-void tensor_view_clprint(tensor_view *v); /* coordinate list print */
-void tensor_view_print(tensor_view *v);   /* pretty print */
+/* coordinate list print */
+void tensor_view_clprint(tensor_view *v);
+
+/* pretty print */
+void tensor_view_print(tensor_view *v, unsigned int precision);   
 
 /* create an sptensor copy of a tensor view */
 sptensor *tensor_view_sptensor(tensor_view *v);
