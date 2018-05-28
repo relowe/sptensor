@@ -36,6 +36,7 @@ typedef void (*tensor_view_free_func)(tensor_view*);
 
 struct tensor_view {
     void *tns;             /* The underlying object */
+    void *data;            /* Data to help the view */
     sp_index_t *dim;       /* The dimneison of view */
     unsigned int nmodes;   /* The mumber of modes in the view */
     nnz_func nnz;          /* Get the number of nonzero entries */
