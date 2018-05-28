@@ -78,8 +78,9 @@ int
 main(int argc, char **argv)
 {
     sptensor *sp;
-    tensor_view *v, *vi;
+    tensor_view *v, *vi, *vuf;
     sp_index_t *idx;
+    int i;
     FILE *file;
 
     /* read the tensor */
@@ -97,11 +98,23 @@ main(int argc, char **argv)
     v = sptensor_view_alloc(sp);
     tensor_view_clprint(v);
     printf("\n\n");
+    printf("Pretty Print\n");
+    tensor_view_print(v, 2);
+    printf("\n\n");
 
+    /* do some unfolding */
+    for(i=0; i<v->nmodes; i++) {
+	printf("Unfold along mode %d\n", i);
+	vuf = unfold_tensor(v, i);
+	tensor_view_print(vuf, 2);
+	TVFREE(vuf);
+	printf("\n\n");
+    }
+    
     /* identity tensor */
     vi = identity_tensor(v->nmodes, v->dim);
     printf("identity tensor\n");
-    tensor_view_clprint(vi);
+    tensor_view_print(vi, 0);
     TVFREE(vi);
     printf("\n\n");
     
@@ -114,15 +127,4 @@ main(int argc, char **argv)
     /* deallocate it all */
     TVFREE(v);
     sptensor_free(sp);
-
-    /* test pretty printing */
-    idx=malloc(sizeof(sp_index_t) * 2);
-    idx[0]=4;
-    idx[1]=4;
-    v = identity_tensor(2, idx);
-    tensor_view_print(v, 0);
-
-    /* free display test */
-    free(idx);
-    free(v);
 }
