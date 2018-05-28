@@ -118,7 +118,7 @@ tensor_view_print(tensor_view *v, unsigned int precision)
      */
     while(!done) {
 	/* print the value */
-	printf("\t%*.*lf", width, precision,TVGET(v, idx));
+	printf("  %*.*lf", width, precision,TVGET(v, idx));
 
 	/* detect if we are done */
 	if(sptensor_indexcmp(v->nmodes, idx, v->dim) == 0) {
