@@ -1,5 +1,6 @@
 CFLAGS=-I. -g
 ALL=sptensortest
+LDFLAGS=-lm
 
 all: $(ALL)
 sptensor.o: sptensor.h sptensor.c
