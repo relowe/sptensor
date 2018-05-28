@@ -78,7 +78,8 @@ int
 main(int argc, char **argv)
 {
     sptensor *sp;
-    tensor_view *v;
+    tensor_view *v, *vi;
+    sp_index_t *idx;
     FILE *file;
 
     /* read the tensor */
@@ -97,6 +98,13 @@ main(int argc, char **argv)
     tensor_view_clprint(v);
     printf("\n\n");
 
+    /* identity tensor */
+    vi = identity_tensor(v->nmodes, v->dim);
+    printf("identity tensor\n");
+    tensor_view_clprint(vi);
+    TVFREE(vi);
+    printf("\n\n");
+    
     /* benchmark */
     printf("%d random gets take: %g seconds\n", (int)RANDOM_TRIALS, randomGetTime(v, RANDOM_TRIALS));
     printf("%d random sets take: %g seconds\n", (int)RANDOM_TRIALS, randomSetTime(v, RANDOM_TRIALS));
@@ -106,4 +114,15 @@ main(int argc, char **argv)
     /* deallocate it all */
     TVFREE(v);
     sptensor_free(sp);
+
+    /* test pretty printing */
+    idx=malloc(sizeof(sp_index_t) * 2);
+    idx[0]=4;
+    idx[1]=4;
+    v = identity_tensor(2, idx);
+    tensor_view_print(v, 0);
+
+    /* free display test */
+    free(idx);
+    free(v);
 }
