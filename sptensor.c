@@ -135,7 +135,7 @@ sptensor_set(sptensor *tns, const sp_index_t *idx, double val)
  * performed from left to right.  Pretty much exactly as 
  * strcmp, except with ints.
  * 
- * Parameter: tns - The sparse (used to determine nmodes)
+ * Parameter: nmodes - The number of modes
  *            a   - The left hand index being compared
  *            b   - The right hand index being compared
  *  
@@ -144,12 +144,12 @@ sptensor_set(sptensor *tns, const sp_index_t *idx, double val)
  *          > 0 if a > b
  */
 int
-sptensor_indexcmp(sptensor *tns, const sp_index_t *a, const sp_index_t *b)
+sptensor_indexcmp(unsigned int nmodes, const sp_index_t *a, const sp_index_t *b)
 {
     int i;
 
     /* look for < or > comparisons */
-    for(int i=0; i < tns->nmodes; i++) {
+    for(int i=0; i < nmodes; i++) {
 	if(a[i] < b[i]) {
 	    return -1;
 	}
@@ -183,7 +183,7 @@ sptensor_find_index(sptensor *tns, const sp_index_t *idx)
     /* do a binary search on the list of indexes */
     while(left <= right) {
 	mid = (right+left) / 2;
-	cmp = sptensor_indexcmp(tns, idx, VPTR(tns->idx, mid));
+	cmp = sptensor_indexcmp(tns->nmodes, idx, VPTR(tns->idx, mid));
 	if(cmp == 0) {
 	    return mid;
 	} else if(cmp < 0) {
@@ -226,11 +226,11 @@ sptensor_index_partition(sptensor *tns, int left, int right)
     for(;;) {
 	do {
 	    i++;
-	} while(sptensor_indexcmp(tns, VPTR(tns->idx,i), VPTR(tns->idx,pivot)) < 0);
+	} while(sptensor_indexcmp(tns->nmodes, VPTR(tns->idx,i), VPTR(tns->idx,pivot)) < 0);
 
 	do {
 	    j--;
-	} while(sptensor_indexcmp(tns, VPTR(tns->idx,j), VPTR(tns->idx,pivot)) > 0);
+	} while(sptensor_indexcmp(tns->nmodes, VPTR(tns->idx,j), VPTR(tns->idx,pivot)) > 0);
 
 	if(i >= j) {
 	    return j;
