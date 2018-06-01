@@ -536,7 +536,7 @@ unfold_free(tensor_view *v)
 {
     struct unfold_view *uv;
     
-    uv = (struct unfold_view *) v->tns;
+    uv = (struct unfold_view *) v->data;
     free(uv->jk);
     free(uv);
     free(v);
