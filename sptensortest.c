@@ -1,21 +1,21 @@
 /*
-    sptensortest: This program tests the sptensor functions.
-    Copyright (C) 2018  Robert Lowe <pngwen@acm.org>
+  sptensortest: This program tests the sptensor functions.
+  Copyright (C) 2018  Robert Lowe <pngwen@acm.org>
 
-    This program is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 3 of the License, or
-    (at your option) any later version.
+  This program is free software: you can redistribute it and/or modify
+  it under the terms of the GNU General Public License as published by
+  the Free Software Foundation, either version 3 of the License, or
+  (at your option) any later version.
 
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
+  This program is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  GNU General Public License for more details.
 
-    You should have received a copy of the GNU General Public License
-    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+  You should have received a copy of the GNU General Public License
+  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
- */
+*/
 
 #include <stdio.h>
 #include <sptensor.h>
@@ -36,13 +36,13 @@ randomGetTime(tensor_view *v, int n)
 
     t = clock();
     for(i=0; i<n; i++) {
-	/* generate the index */
-	for(j=0; j<v->nmodes; j++) {
-	    idx[j] = rand() % v->dim[j] + 1;
-	}
+        /* generate the index */
+        for(j=0; j<v->nmodes; j++) {
+            idx[j] = rand() % v->dim[j] + 1;
+        }
 
-	/* access */
-	value = TVGET(v, idx);
+        /* access */
+        value = TVGET(v, idx);
     }
     t = clock()-t; /* get clock duration */
     return ((double)t)/CLOCKS_PER_SEC;
@@ -60,14 +60,14 @@ randomSetTime(tensor_view *v, int n)
 
     t = clock();
     for(i=0; i<n; i++) {
-	/* generate the index and value */
-	for(j=0; j<v->nmodes; j++) {
-	    idx[j] = rand() % v->dim[j] + 1;
-	}
-	value=(double)(rand()%1000)/(rand()%10+1);
+        /* generate the index and value */
+        for(j=0; j<v->nmodes; j++) {
+            idx[j] = rand() % v->dim[j] + 1;
+        }
+        value=(double)(rand()%1000)/(rand()%10+1);
 
-	/* write */
-	TVSET(v, idx, value);
+        /* write */
+        TVSET(v, idx, value);
     }
     t = clock()-t; /* get clock duration */
     return ((double)t)/CLOCKS_PER_SEC;
@@ -104,11 +104,11 @@ main(int argc, char **argv)
 
     /* do some unfolding */
     for(i=0; i<v->nmodes; i++) {
-	printf("Unfold along mode %d\n", i);
-	vuf = unfold_tensor(v, i);
-	tensor_view_print(vuf, 2);
-	TVFREE(vuf);
-	printf("\n\n");
+        printf("Unfold along mode %d\n", i);
+        vuf = unfold_tensor(v, i);
+        tensor_view_print(vuf, 2);
+        TVFREE(vuf);
+        printf("\n\n");
     }
     
     /* identity tensor */
