@@ -108,6 +108,6 @@ void tensor_slice_spec_free(tensor_slice_spec *spec);
  *   v    - The view to slice
  *   spec - The slice spec
  */
-tensor_view *tensor_slice(tensor_view *v, tensor_slice_spec spec);
+tensor_view *tensor_slice(tensor_view *v, tensor_slice_spec *spec);
 
 #endif
