@@ -50,9 +50,9 @@ struct tensor_view {
 };
 
 typedef struct tensor_slice_spec {
-    unsigned int fixed;  /* 0 if free 1 if fixed (and therefore excluded from dim) */
-    sp_index_t *begin;   /* beginning value for this slice spec*/
-    sp_index_t *end;     /* ending value for this slice spec */
+    sp_index_t *fixed; /* 0 if free 1 if fixed (and therefore excluded from dim) */
+    sp_index_t *begin; /* beginning value for this slice spec*/
+    sp_index_t *end;   /* ending value for this slice spec */
     /* NOTE: Begin and end are inclusive.  Every index in the spec is:
              begin <= idx <= end 
     */
@@ -93,6 +93,16 @@ tensor_view *unfold_tensor(tensor_view* v, sp_index_t n);
 
 /* An identity tensor (with 1's along its superdiagonal) */
 tensor_view *identity_tensor(int nmodes, sp_index_t *dim);
+
+/*
+ * Allocate a tensor slice spec for the given view.
+ */
+tensor_slice_spec *tensor_slice_spec_alloc(tensor_view *v);
+
+/*
+ * Free a tensor slice spec
+ */
+void tensor_slice_spec_free(tensor_slice_spec *spec);
 
 /* A slice of a tensor 
  *   v    - The view to slice
