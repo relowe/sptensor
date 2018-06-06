@@ -58,7 +58,7 @@ typedef struct tensor_slice_spec {
     */
 } tensor_slice_spec;
 
-/* Macro wrappers for function pointers */
+/* Macro wrappers for function pointers and others */
 #define TVNNZ(v) (*((tensor_view*)(v))->nnz)((tensor_view*)(v))
 #define TVIDX(v,i, idx) (*((tensor_view*)(v))->get_idx)((tensor_view*)(v), (i), (idx))
 #define TVGETI(v,i) (*((tensor_view*)(v))->geti)((tensor_view*)(v), (i))
@@ -68,6 +68,7 @@ typedef struct tensor_slice_spec {
 #define TVFROM(v,in,out) (*((tensor_view*)(v))->from)((tensor_view*)(v),(in),(out))
 #define TVFREE(v) (*((tensor_view*)(v))->tvfree)(((tensor_view*)v))
 #define TVIDX_ALLOC(v) malloc(sizeof(sp_index_t) * ((tensor_view*)(v))->nmodes)
+#define TVNMODES(v) (((tensor_view*)(v))->nmodes)
 
 /********************************
  * generic tensor view functions 
