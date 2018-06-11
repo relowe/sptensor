@@ -50,7 +50,9 @@ struct tensor_view {
 };
 
 typedef struct tensor_slice_spec {
-    sp_index_t *fixed; /* 0 if free 1 if fixed (and therefore excluded from dim) */
+    sp_index_t *fixed; /* 0 if free fixed index if this is a fixed 
+                          dimension (and therefore not part of the 
+			  tensor view dimension */
     sp_index_t *begin; /* beginning value for this slice spec*/
     sp_index_t *end;   /* ending value for this slice spec */
     /* NOTE: Begin and end are inclusive.  Every index in the spec is:
