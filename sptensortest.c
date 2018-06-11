@@ -125,7 +125,6 @@ main(int argc, char **argv)
     printf("column slice\n");
     for(i=1; i<vi->nmodes; i++) {
         slice->fixed[i]=1;
-        slice->begin[i]=1;
     }
     vslice = tensor_slice(vi, slice);
     tensor_view_print(vslice, 0);
@@ -141,7 +140,6 @@ main(int argc, char **argv)
     slice->end[1] = 2;
     for(i=2; i<vi->nmodes; i++) {
         slice->fixed[i]=1;
-        slice->begin[i]=1;
     }
     vslice=tensor_slice(vi, slice);
     tensor_view_print(vslice, 0);
@@ -149,13 +147,12 @@ main(int argc, char **argv)
     free(slice);
     TVFREE(vslice);
     printf("\n\n");
-    printf("Upper left fiber\n");
+    printf("Center fiber\n");
     slice = tensor_slice_spec_alloc(vi);
     slice->begin[vi->nmodes-1] = 1;
     slice->end[vi->nmodes-1] = vi->dim[vi->nmodes-1];
     for(i=0; i<vi->nmodes-1; i++) {
-        slice->fixed[i]=1;
-        slice->begin[i]=1;
+        slice->fixed[i]=vi->dim[i]/2;
     }
     vslice = tensor_slice(vi, slice);
     tensor_view_print(vslice, 0);
