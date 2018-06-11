@@ -584,3 +584,229 @@ unfold_tensor(tensor_view *v, sp_index_t n)
 
     return tv;
 }
+
+
+
+/***************************************
+ * Unfoleded Tensor View
+ ***************************************/
+
+/*
+ * Allocate a tensor slice spec for the given view.
+ */
+tensor_slice_spec *
+tensor_slice_spec_alloc(tensor_view *v)
+{
+    tensor_slice_spec *spec;
+    int i;
+    
+    /* allocate the main part of the spec */
+    spec = malloc(sizeof(tensor_slice_spec));
+
+    /* allocate all the details in the spec */
+    spec->fixed = malloc(sizeof(sp_index_t)*v->nmodes);
+    spec->begin = malloc(sizeof(sp_index_t)*v->nmodes);
+    spec->end = malloc(sizeof(sp_index_t)*v->nmodes);
+
+    /* The default spec is for the entire tensor */
+    for(i=0; i<v->nmodes; i++) {
+        spec->fixed[i] = 0;
+        spec->begin[i] = 1;
+        spec->end[i] = v->dim[i];
+    }
+    
+    return spec;
+}
+
+
+/*
+ * Free a tensor slice spec
+ */
+void
+tensor_slice_spec_free(tensor_slice_spec *spec)
+{
+    /* free all the details */
+    free(spec->fixed);
+    free(spec->begin);
+    free(spec->end);
+
+    /* free the spec itself */
+    free(spec);
+}
+
+
+static unsigned short int
+tensor_slice_index_within(tensor_view *v, sp_index_t *idx)
+{
+    tensor_slice_spec *spec = (tensor_slice_spec*) v->data;
+    int i;
+
+    for(i=0; i<TVNMODES(v->tns); i++) {
+        if(spec->fixed[i] && idx[i] != spec->begin[i]) {
+            return 0;
+        } else if(idx[i] < spec->begin[i] || idx[i] > spec->end[i]) {
+            return 0;
+        }
+    }
+
+    return 1;
+}
+
+
+static unsigned int
+tensor_slice_nnz(tensor_view *v)
+{
+    tensor_slice_spec *spec = (tensor_slice_spec*) v->data;
+    unsigned int count = 0;
+    unsigned int n, i;
+    sp_index_t *idx;
+
+    /* initailize some things */
+    n = TVNNZ(v->tns);
+    idx = malloc(sizeof(sp_index_t) * TVNMODES(v->tns));
+
+    /* count all the nz indexes that are within the bounds of this slice. */
+    for(i=0; i<n; i++) {
+        TVIDX(v->tns, i, idx);
+        if(tensor_slice_index_within(v, idx)) {
+            count++;
+        }
+    }
+
+    /* return the number of nnz items */
+    free(idx);
+    return count;
+}
+
+
+static void
+tensor_slice_idx(tensor_view *v, unsigned int i, sp_index_t *idx)
+{
+    sp_index_t *fidx;
+    unsigned int n, j;
+
+    /* some initializers */
+    fidx = malloc(sizeof(sp_index_t) * TVNMODES(v->tns));
+    n = TVNNZ(v->tns);
+
+    /* find the ith nnz index within the slice */
+    for(j=0; j<n; j++) {
+        TVIDX(v->tns, j, idx);
+        if(tensor_slice_index_within(v, idx)) {
+            if(i==0) {
+                TVFROM(v, fidx, idx);
+                break;
+            } else {
+                i--;
+            }
+        }
+    }
+
+    /* cleanup */
+    free(fidx);
+}
+
+
+static void
+tensor_slice_to(tensor_view *v, sp_index_t *in, sp_index_t *out)
+{
+    tensor_slice_spec *spec = (tensor_slice_spec*) v->data;
+    int i;
+    int n;
+
+    /* initialize */
+    n = TVNMODES(v->tns);
+
+    /* convert each mode of the output */
+    for(i=0; i<n; i++) {
+        if(spec->fixed[i]) {
+            out[i] = spec->begin[i];
+        } else {
+            out[i] = *(in++) - 1 + spec->begin[i];
+        }
+    }
+}
+
+
+static void
+tensor_slice_from(tensor_view *v, sp_index_t *in, sp_index_t *out)
+{
+    tensor_slice_spec *spec = (tensor_slice_spec*) v->data;
+    int i;
+    int n;
+
+    /* initialize */
+    n = TVNMODES(v->tns);
+
+    /* go through each of the input modes */
+    for(i=0; i<n; i++) {
+        /* skip the fixed indexes */
+        if(spec->fixed[i]) {
+            continue;
+        }
+
+        /* convert the non-fixed indexes */
+        *(out++) = in[i] - spec->begin[i] + 1;
+    }
+}
+
+
+static void
+tensor_slice_free(tensor_view *v)
+{
+    tensor_slice_spec_free((tensor_slice_spec*)v->data);
+    free(v->dim);
+}
+
+
+/* A slice of a tensor 
+ *   v    - The view to slice
+ *   spec - The slice spec
+ */
+tensor_view *
+tensor_slice(tensor_view *v, tensor_slice_spec *spec)
+{
+    tensor_view *sv;
+    tensor_slice_spec *tvspec;
+    int i, j;
+
+    /* set up the basics */
+    sv = base_view_alloc();
+    sv->tns = v;
+
+    /* copy the spec */
+    tvspec = tensor_slice_spec_alloc(v);
+    sv->data = tvspec;
+    memcpy(tvspec->fixed, spec->fixed, sizeof(sp_index_t)*v->nmodes);
+    memcpy(tvspec->begin, spec->begin, sizeof(sp_index_t)*v->nmodes);
+    memcpy(tvspec->end, spec->end, sizeof(sp_index_t)*v->nmodes);
+
+    /* count the number of modes */
+    sv->nmodes = v->nmodes;
+    for(i=0; i<v->nmodes; i++) {
+        if(tvspec->fixed[i]) {
+            sv->nmodes--;
+        }
+    }
+
+    /* compute the dimensions */
+    sv->dim = malloc(sizeof(sp_index_t)*sv->nmodes);
+    j = 0;
+    for(i=0; i<v->nmodes; i++) {
+        /* skip fixed dimensions */
+        if(tvspec->fixed[i]) {
+            continue;
+        }
+
+        /* compute the others */
+        sv->dim[j++] = tvspec->end[i] - tvspec->begin[i] + 1;
+    }
+
+    /* wire up the functions */
+    sv->nnz = tensor_slice_nnz;
+    sv->to = tensor_slice_to;
+    sv->from = tensor_slice_from;
+    sv->tvfree = tensor_slice_free;
+
+    return sv;
+}
