@@ -642,7 +642,7 @@ tensor_slice_index_within(tensor_view *v, sp_index_t *idx)
     int i;
 
     for(i=0; i<TVNMODES(v->tns); i++) {
-        if(spec->fixed[i] && idx[i] != spec->begin[i]) {
+        if(spec->fixed[i] && idx[i] != spec->fixed[i]) {
             return 0;
         } else if(idx[i] < spec->begin[i] || idx[i] > spec->end[i]) {
             return 0;
@@ -720,7 +720,7 @@ tensor_slice_to(tensor_view *v, sp_index_t *in, sp_index_t *out)
     /* convert each mode of the output */
     for(i=0; i<n; i++) {
         if(spec->fixed[i]) {
-            out[i] = spec->begin[i];
+            out[i] = spec->fixed[i];
         } else {
             out[i] = *(in++) - 1 + spec->begin[i];
         }
@@ -786,7 +786,7 @@ tensor_slice(tensor_view *v, tensor_slice_spec *spec)
     for(i=0; i<v->nmodes; i++) {
         if(tvspec->fixed[i]) {
             sv->nmodes--;
-        }
+        
     }
 
     /* compute the dimensions */
