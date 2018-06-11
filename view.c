@@ -786,7 +786,7 @@ tensor_slice(tensor_view *v, tensor_slice_spec *spec)
     for(i=0; i<v->nmodes; i++) {
         if(tvspec->fixed[i]) {
             sv->nmodes--;
-        
+	}
     }
 
     /* compute the dimensions */
