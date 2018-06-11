@@ -79,6 +79,9 @@ main(int argc, char **argv)
 {
     sptensor *sp;
     tensor_view *v, *vi, *vuf;
+    tensor_view *vslice;
+    tensor_slice_spec *slice;
+    
     sp_index_t *idx;
     int i;
     FILE *file;
@@ -115,8 +118,50 @@ main(int argc, char **argv)
     vi = identity_tensor(v->nmodes, v->dim);
     printf("identity tensor\n");
     tensor_view_print(vi, 0);
-    TVFREE(vi);
     printf("\n\n");
+
+    /* tensor slice */
+    slice = tensor_slice_spec_alloc(vi);
+    printf("column slice\n");
+    for(i=1; i<vi->nmodes; i++) {
+        slice->fixed[i]=1;
+        slice->begin[i]=1;
+    }
+    vslice = tensor_slice(vi, slice);
+    tensor_view_print(vslice, 0);
+    tensor_view_clprint(vslice);
+    free(slice);
+    TVFREE(vslice);
+    printf("\n\n");
+    printf("front upper slice\n");
+    slice = tensor_slice_spec_alloc(vi);
+    slice->begin[0] = 1;
+    slice->end[0] = 2;
+    slice->begin[1] = 1;
+    slice->end[1] = 2;
+    for(i=2; i<vi->nmodes; i++) {
+        slice->fixed[i]=1;
+        slice->begin[i]=1;
+    }
+    vslice=tensor_slice(vi, slice);
+    tensor_view_print(vslice, 0);
+    tensor_view_clprint(vslice);
+    free(slice);
+    TVFREE(vslice);
+    printf("\n\n");
+    printf("Upper left fiber\n");
+    slice = tensor_slice_spec_alloc(vi);
+    slice->begin[vi->nmodes-1] = 1;
+    slice->end[vi->nmodes-1] = vi->dim[vi->nmodes-1];
+    for(i=0; i<vi->nmodes-1; i++) {
+        slice->fixed[i]=1;
+        slice->begin[i]=1;
+    }
+    vslice = tensor_slice(vi, slice);
+    tensor_view_print(vslice, 0);
+    tensor_view_clprint(vslice);
+    free(slice);
+    TVFREE(vslice);
     
     /* benchmark */
     printf("%d random gets take: %g seconds\n", (int)RANDOM_TRIALS, randomGetTime(v, RANDOM_TRIALS));
@@ -126,5 +171,6 @@ main(int argc, char **argv)
     
     /* deallocate it all */
     TVFREE(v);
+    TVFREE(vi);
     sptensor_free(sp);
 }
