@@ -21,6 +21,7 @@
 #include <sptensor.h>
 #include <sptensorio.h>
 #include <view.h>
+#include <multiply.h>
 #include <stdlib.h>
 #include <time.h>
 #define RANDOM_TRIALS 1e6
@@ -78,7 +79,7 @@ int
 main(int argc, char **argv)
 {
     sptensor *sp;
-    tensor_view *v, *vi, *vuf, *vt;
+    tensor_view *v, *vi, *vuf, *vt, *vm;
     tensor_view *vslice;
     tensor_slice_spec *slice;
     
@@ -166,6 +167,14 @@ main(int argc, char **argv)
     vt = tensor_transpose(vi, 0, 1);
     tensor_view_print(vt, 0);
     TVFREE(vt);
+    printf("\n\n");
+
+    /* test matrix product */
+    printf("Matrix Product\n");
+    vm = matrix_product(v, v);
+    tensor_view_print(vm, 0);
+    sptensor_free(vm->tns);
+    TVFREE(vm);
     printf("\n\n");
     
     /* benchmark */

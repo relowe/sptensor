@@ -1,0 +1,66 @@
+/*
+    This is a collection of functions which implement various
+    multiplications of tensor views.
+    Copyright (C) 2018 Robert Lowe <pngwen@acm.org>
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+#include <multiply.h>
+
+
+/* Matrix mulitplication between two tensor views, resulting in a
+   sparse tensor view containing a newly allocated sparse tensor. */
+tensor_view *
+matrix_product(tensor_view *a, tensor_view *b)
+{
+    tensor_view *result;          /* the result */
+    sp_index_t rdim[2];           /* result dimensions */
+    int i, j;                     /* indexes for loooping over indexes */
+    int annz, bnnz;               /* nnz numbers for both tensors */
+    sp_index_t aidx[2], bidx[2];  /* a index and b index */
+    sp_index_t ridx[2];           /* result index */
+    double val;                   /* working value */
+
+    /* compute the dimensions and allocate the tensor */
+    rdim[0] = a->dim[0];
+    rdim[1] = b->dim[1];
+    result = sptensor_view_alloc(sptensor_alloc(2, rdim));
+
+    /* perform the multiplication in an O(n^2 lg n) sort of way */
+    annz = TVNNZ(a);
+    bnnz = TVNNZ(b);
+    for(i=0; i<annz; i++) {
+	/* get the index */
+	TVIDX(a, i, aidx);
+
+	/* loop over b */
+	for(j=0; j<bnnz; j++) {
+	    /* get the index */
+	    TVIDX(b, j, bidx);
+
+	    /* see if this is something which needs multiplying */
+	    if(aidx[1] == bidx[0]) {
+		/* perform the multiplication and summation */
+		ridx[0] = aidx[0];
+		ridx[1] = bidx[1];
+		val = TVGET(a, aidx) * TVGET(a, bidx);
+		val += TVGET(result, ridx);
+		TVSET(result, ridx, val);
+	    }
+	}
+    }
+
+    return result;
+}
+
