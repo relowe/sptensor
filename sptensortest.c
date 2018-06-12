@@ -78,7 +78,7 @@ int
 main(int argc, char **argv)
 {
     sptensor *sp;
-    tensor_view *v, *vi, *vuf;
+    tensor_view *v, *vi, *vuf, *vt;
     tensor_view *vslice;
     tensor_slice_spec *slice;
     
@@ -159,6 +159,14 @@ main(int argc, char **argv)
     tensor_view_clprint(vslice);
     free(slice);
     TVFREE(vslice);
+    printf("\n\n");
+    
+    /* test transpose */
+    printf("Transpose\n");
+    vt = tensor_transpose(vi, 0, 1);
+    tensor_view_print(vt, 0);
+    TVFREE(vt);
+    printf("\n\n");
     
     /* benchmark */
     printf("%d random gets take: %g seconds\n", (int)RANDOM_TRIALS, randomGetTime(v, RANDOM_TRIALS));

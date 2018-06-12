@@ -113,4 +113,11 @@ void tensor_slice_spec_free(tensor_slice_spec *spec);
  */
 tensor_view *tensor_slice(tensor_view *v, tensor_slice_spec *spec);
 
+ 
+/* A view with two indices transposed
+ *   v - The view to transpose
+ *   i - The first mode to swap
+ *   j - The second mode to swap
+ */
+tensor_view *tensor_transpose(tensor_view *v, unsigned int i, unsigned int j);
 #endif

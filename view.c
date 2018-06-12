@@ -810,3 +810,58 @@ tensor_slice(tensor_view *v, tensor_slice_spec *spec)
 
     return sv;
 }
+
+
+
+/**********************************
+ * tensor_transpose 
+ **********************************/
+static void
+tensor_transpose_index(tensor_view *v, sp_index_t* in, sp_index_t *out)
+{
+    unsigned int *t = (unsigned int *)(v->data);
+    /* copy the index */
+    memmove(out, in, sizeof(sp_index_t) * v->nmodes);
+
+    /* transpose */
+    out[t[0]] = in[t[1]];
+    out[t[1]] = in[t[0]];
+}
+
+
+static void
+tensor_transpose_free(tensor_view *v)
+{
+    free(v->dim);
+    free(v->data);
+    free(v);
+}
+
+
+/* A view with two indices transposed
+ *   v - The view to transpose
+ *   i - The first mode to swap
+ *   j - The second mode to swap
+ */
+tensor_view *tensor_transpose(tensor_view *v, unsigned int i, unsigned int j)
+{
+    tensor_view *tv;
+
+    tv = base_view_alloc();
+    tv->to = tensor_transpose_index;
+    tv->from = tensor_transpose_index;
+    tv->tvfree = tensor_transpose_free;
+
+    /* set up the transposition data */
+    tv->data = malloc(sizeof(unsigned int) * 2);
+    ((unsigned int*)(tv->data))[0] = i;
+    ((unsigned int*)(tv->data))[1] = j;
+
+    /* set up the tensor and dimensions */
+    tv->tns = v;
+    tv->nmodes = v->nmodes;
+    tv->dim = malloc(sizeof(sp_index_t) * v->nmodes);
+    tensor_transpose_index(tv, v->dim, tv->dim);
+
+    return tv;
+}
