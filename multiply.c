@@ -16,6 +16,7 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+#include <string.h>
 #include <multiply.h>
 
 
@@ -54,7 +55,7 @@ matrix_product(tensor_view *a, tensor_view *b)
 		/* perform the multiplication and summation */
 		ridx[0] = aidx[0];
 		ridx[1] = bidx[1];
-		val = TVGET(a, aidx) * TVGET(a, bidx);
+		val = TVGET(a, aidx) * TVGET(b, bidx);
 		val += TVGET(result, ridx);
 		TVSET(result, ridx, val);
 	    }
@@ -64,3 +65,52 @@ matrix_product(tensor_view *a, tensor_view *b)
     return result;
 }
 
+
+/* N-Mode multiplication of tensor a by matrix u */
+tensor_view *
+nmode_product(unsigned int n, tensor_view *a, tensor_view *u)
+{
+    tensor_view *result;      /* the resultant tensor */
+    sp_index_t *idx;          /* general index a->nmodes entries */
+    sp_index_t *aidx;         /* index into the tensor */
+    sp_index_t uidx[2];       /* index into the matrix */
+    int i, j;                 /* indexes */
+    unsigned int annz, unnz;  /* non-zero counts for each tensor */
+    double val;               /* product value */
+
+    /* allocate the indexes */
+    idx = malloc(sizeof(sp_index_t)*a->nmodes);
+    aidx = malloc(sizeof(sp_index_t)*a->nmodes);
+
+    /* create the dimensions of the result and allocatethe result. */
+    memmove(idx, a->dim, sizeof(sp_index_t)*a->nmodes);
+    idx[n] = u->dim[0];
+    result = sptensor_view_alloc(sptensor_alloc(a->nmodes, idx));
+
+    /* go through each index in a */
+    annz = TVNNZ(a);
+    unnz = TVNNZ(u);
+    for(i=0; i<annz; i++) {
+	/* get the index */
+	TVIDX(a, i, aidx);
+
+	/* loop over u */
+	for(j=0; j<unnz; j++) {
+	    TVIDX(u, j, uidx);
+
+	    /* if this is a matched pair, add to the accumulated sum */
+	    if(aidx[n] == uidx[1]) {
+		memmove(idx, aidx, sizeof(sp_index_t)*a->nmodes);
+		idx[n] = uidx[0];
+		val = TVGET(a, aidx) * TVGET(u, uidx);
+		val += TVGET(result, idx);
+		TVSET(result, idx, val);
+	    }
+	}
+    }
+
+    /* cleanup and return */
+    free(idx);
+    free(aidx);
+    return result;
+}
