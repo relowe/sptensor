@@ -1,3 +1,22 @@
+/*
+  This program tests sptensor's multiply functions.
+
+  Copyright (C) 2018  Robert Lowe <pngwen@acm.org>
+
+  This program is free software: you can redistribute it and/or modify
+  it under the terms of the GNU General Public License as published by
+  the Free Software Foundation, either version 3 of the License, or
+  (at your option) any later version.
+
+  This program is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  GNU General Public License for more details.
+
+  You should have received a copy of the GNU General Public License
+  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+*/
 #include <stdio.h>
 #include <sptensor.h>
 #include <view.h>
@@ -33,6 +52,8 @@ int main()
     tensor_view *a;
     tensor_view *u;
     tensor_view *b;
+    tensor_view *m1, *m2;
+    tensor_slice_spec *slice;
     int i;
 
     /* build tensor a */
@@ -53,12 +74,28 @@ int main()
     tensor_view_print(u, 0);
     printf("\n\n");
 
-    /* try out each product */
+    /* try out each mode as a product */
     for(i=0; i<ANDIM; i++) {
 	printf("A x_%d U\n", i);
 	b = nmode_product(i, a, u);
 	tensor_view_print(b, 0);
 	printf("\n\n");
     }
-    
+
+    /* test out matrix multiplication */
+    slice = tensor_slice_spec_alloc(a);
+    slice->fixed[2] = 1;
+    m1 = tensor_slice(a, slice);
+    slice->fixed[2] = 2;
+    m2 = tensor_slice(a, slice);
+    printf("m1\n");
+    tensor_view_print(m1, 0);
+    printf("\n\n");
+    printf("m2\n");
+    tensor_view_print(m2, 0);
+    printf("\n\n");
+    printf("m1 x m2\n");
+    b = matrix_product(m1, m2);
+    tensor_view_print(b, 0);
+    printf("\n\n");
 }
