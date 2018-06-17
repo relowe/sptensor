@@ -1,5 +1,5 @@
 CFLAGS=-I. -g -L.
-ALL=sptensortest libsptensor.so libsptensor.a
+ALL=sptensortest libsptensor.so libsptensor.a multiplytest
 LDFLAGS=-lsptensor -lm
 CC=gcc
 SPTENSOR_LIB=sptensor.o sptensorio.o vector.o view.o multiply.o
@@ -21,5 +21,7 @@ multiply.o: multiply.h multiply.c
 	gcc -c multiply.c $(CFLAGS) -fPIC
 sptensortest: sptensortest.o libsptensor.a
 	gcc $(CFLAGS) sptensortest.o $(LDFLAGS) -o $@ -static
+multiplytest: multiplytest.o libsptensor.a
+	gcc $(CFLAGS) multiplytest.o $(LDFLAGS) -o $@ -static
 clean:
 	rm -f *.o $(ALL)
