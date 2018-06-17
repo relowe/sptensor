@@ -691,8 +691,8 @@ tensor_slice_idx(tensor_view *v, unsigned int i, sp_index_t *idx)
 
     /* find the ith nnz index within the slice */
     for(j=0; j<n; j++) {
-        TVIDX(v->tns, j, idx);
-        if(tensor_slice_index_within(v, idx)) {
+        TVIDX(v->tns, j, fidx);
+        if(tensor_slice_index_within(v, fidx)) {
             if(i==0) {
                 TVFROM(v, fidx, idx);
                 break;
@@ -804,6 +804,7 @@ tensor_slice(tensor_view *v, tensor_slice_spec *spec)
 
     /* wire up the functions */
     sv->nnz = tensor_slice_nnz;
+    sv->get_idx = tensor_slice_idx;
     sv->to = tensor_slice_to;
     sv->from = tensor_slice_from;
     sv->tvfree = tensor_slice_free;
