@@ -492,10 +492,10 @@ unfold_to(tensor_view *v, sp_index_t *in, sp_index_t *out)
     struct unfold_view *uv = (struct unfold_view*)v->data;
     int i;
     int j;
-    int k=((tensor_view*)v->tns)->nmodes-2;
+    int k=v->tns->nmodes-2;
 
     j=in[1]-1;
-    for(i=((tensor_view*)v->tns)->nmodes-1; i>=0; i--) {
+    for(i=v->tns->nmodes-1; i>=0; i--) {
         if(i == uv->n) {
             /* handle the folded mode */
             out[i] = in[0];
@@ -521,7 +521,7 @@ unfold_from(tensor_view *v, sp_index_t *in, sp_index_t *out)
 
     /* get the j part */
     out[1] = 1;
-    for(int i=0; i<((tensor_view*)v->tns)->nmodes; i++) {
+    for(int i=0; i<v->tns->nmodes; i++) {
 	/* skip the folded dimension */
 	if(i == uv->n) {
 	    continue;
