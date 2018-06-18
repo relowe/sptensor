@@ -35,7 +35,7 @@ typedef void (*index_trans_func)(tensor_view*, sp_index_t*, sp_index_t*);
 typedef void (*tensor_view_free_func)(tensor_view*);
 
 struct tensor_view {
-    void *tns;             /* The underlying object */
+    tensor_view *tns;      /* The underlying object */
     void *data;            /* Data to help the view */
     sp_index_t *dim;       /* The dimneison of view */
     unsigned int nmodes;   /* The mumber of modes in the view */
