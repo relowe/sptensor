@@ -57,7 +57,7 @@ int main()
     int i;
 
     /* build tensor a */
-    a = sptensor_view_alloc(sptensor_alloc(ANDIM, adim));
+    a = sptensor_view_tensor_alloc(ANDIM, adim);
     for(i = 0; i < ANELEM; i++) {
 	TVSET(a, aidx_list[i], a_values[i]);
     }
@@ -66,7 +66,7 @@ int main()
     printf("\n\n");
 
     /* build tensor u */
-    u = sptensor_view_alloc(sptensor_alloc(UNDIM, udim));
+    u = sptensor_view_tensor_alloc(UNDIM, udim);
     for(i = 0; i < UNELEM; i++) {
 	TVSET(u, uidx_list[i], u_values[i]);
     }
@@ -80,6 +80,7 @@ int main()
 	b = nmode_product(i, a, u);
 	tensor_view_print(b, 0);
 	printf("\n\n");
+	TVFREE(b);
     }
 
     /* test out matrix multiplication */
@@ -98,4 +99,11 @@ int main()
     b = matrix_product(m1, m2);
     tensor_view_print(b, 0);
     printf("\n\n");
+
+    /* cleanup! */
+    tensor_slice_spec_free(slice);
+    TVFREE(m1);
+    TVFREE(m2);
+    TVFREE(a);
+    TVFREE(u);
 }
