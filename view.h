@@ -84,6 +84,16 @@ void tensor_view_print(tensor_view *v, unsigned int precision);
 /* create an sptensor copy of a tensor view */
 sptensor *tensor_view_sptensor(tensor_view *v);
 
+/* allocate an sptensor view and create a new sptensor to fill it.
+   This uses the base free, which will deallocate the underlying sptensor
+   when the view is freed.
+
+   nmodes - The number of modes
+   dim    - The dimensions of the tensor
+*/
+tensor_view *sptensor_view_tensor_alloc(int nmodes, sp_index_t *dim);
+
+
 /* 
  * VIEW - sptensor view.  Wraps an sptensor and does no translation.  
  *        The intention here is to work as a base of a chain of views or
