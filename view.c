@@ -307,14 +307,14 @@ static unsigned int
 sptensor_view_nnz(tensor_view *v)
 {
     /* just return the number of entries in the tensor */
-    return ((sptensor*)v->tns)->ar->size;
+    return ((sptensor*)v->data)->ar->size;
 }
 
 
 static void
 sptensor_view_get_idx(tensor_view *v, unsigned int i, sp_index_t *idx)
 {
-    sptensor *tns = (sptensor*) v->tns;
+    sptensor *tns = (sptensor*) v->data;
     
     /* no translation, just copy */
     memcpy(idx, VPTR(tns->idx, i), tns->idx->element_size);
@@ -324,7 +324,7 @@ sptensor_view_get_idx(tensor_view *v, unsigned int i, sp_index_t *idx)
 static double
 sptensor_view_geti(tensor_view *v, unsigned int i)
 {
-    sptensor *tns = (sptensor*) v->tns;
+    sptensor *tns = (sptensor*) v->data;
 
     return VVAL(double, tns->ar, i);
 }
@@ -334,7 +334,7 @@ static double
 sptensor_view_get(tensor_view *v, sp_index_t *idx)
 {
     /* passthru */
-    return sptensor_get((sptensor*)v->tns, idx);
+    return sptensor_get((sptensor*)v->data, idx);
 }
 
 
@@ -342,7 +342,7 @@ static void
 sptensor_view_set(tensor_view *v, sp_index_t *idx, double value)
 {
     /* passthru */
-    sptensor_set((sptensor*)v->tns, idx, value);
+    sptensor_set((sptensor*)v->data, idx, value);
 }
 
 
@@ -350,7 +350,7 @@ static void
 sptensor_view_idxcpy(tensor_view *v, sp_index_t *in, sp_index_t *out)
 {
     /* just copy */
-    memcpy(out, in, ((sptensor*)v->tns)->idx->element_size);
+    memcpy(out, in, ((sptensor*)v->data)->idx->element_size);
 }
 
 
@@ -370,7 +370,7 @@ sptensor_view_alloc(sptensor *tns)
 
     /* allocate and populate the view */
     v = base_view_alloc();
-    v->tns = tns;
+    v->data = tns;
     v->dim = tns->dim;
     v->nmodes = tns->nmodes;
     v->nnz = sptensor_view_nnz;
