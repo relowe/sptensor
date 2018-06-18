@@ -272,6 +272,9 @@ base_view_free(tensor_view *v)
     if(v->tns) {
 	free(v->tns);
     }
+    if(v->data) {
+	free(v->data);
+    }
     free(v);
 }
 
@@ -384,6 +387,27 @@ sptensor_view_alloc(sptensor *tns)
     return v;
 }
 
+
+/* allocate an sptensor view and create a new sptensor to fill it.
+   This uses the base free, which will deallocate the underlying sptensor
+   when the view is freed.
+
+   nmodes - The number of modes
+   dim    - The dimensions of the tensor
+*/
+tensor_view *
+sptensor_view_tensor_alloc(int nmodes, sp_index_t *dim)
+{
+    tensor_view *result;
+    
+    /* allocate the tensor and view */
+    result = sptensor_view_alloc(sptensor_alloc(nmodes, dim));
+
+    /* set up our free method */
+    result->tvfree = base_view_free;
+
+    return result;
+}
 
 
 /***************************************
