@@ -26,4 +26,7 @@ tensor_view *matrix_product(tensor_view *a, tensor_view *b);
 
 /* N-Mode multiplication of tensor a by matrix u */
 tensor_view *nmode_product(unsigned int n, tensor_view *a, tensor_view *u);
+
+/* Outer (tensor) product of two tensor views */
+tensor_view *tensor_product(tensor_view *a, tensor_view *b);
 #endif

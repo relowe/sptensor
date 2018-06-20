@@ -114,3 +114,50 @@ nmode_product(unsigned int n, tensor_view *a, tensor_view *u)
     free(aidx);
     return result;
 }
+
+
+/* Outer (tensor) product of two tensor views */
+tensor_view *tensor_product(tensor_view *a, tensor_view *b)
+{
+    tensor_view *result;     /* the resultant tensor */
+    sp_index_t *idx;         /* insertion index */
+    sp_index_t *aidx, *bidx; /* tensor indexes */
+    int i, j;                /* indexes */
+    unsigned int annz, bnnz; /* non-zero counts for each tensor */
+
+    /* create the dimension, and allocate the tensor */
+    idx = malloc(sizeof(sp_index_t)*(a->nmodes + b->nmodes));
+    memcpy(idx, a->dim, sizeof(sp_index_t) * a->nmodes);
+    memcpy(idx+a->nmodes, b->dim, sizeof(sp_index_t) * b->nmodes);
+    result = sptensor_view_tensor_alloc(a->nmodes+b->nmodes, idx);
+
+    /* allocate indexes */
+    aidx = malloc(sizeof(sp_index_t) * a->nmodes);
+    bidx = malloc(sizeof(sp_index_t) * b->nmodes);
+
+    /* multiply each pairing */
+    annz = TVNNZ(a);
+    bnnz = TVNNZ(b);
+    for(int i=0; i<annz; i++) {
+	/* get the index */
+	TVIDX(a, i, aidx);
+	
+	for(int j=0; j<bnnz; j++) {
+	    /* get the index */
+	    TVIDX(b, j, bidx);
+
+	    /* concatenate the indexes to find the result index */
+	    memcpy(idx, aidx, sizeof(sp_index_t) * a->nmodes);
+	    memcpy(idx+a->nmodes, bidx, sizeof(sp_index_t) * b->nmodes);
+
+	    /* do the multiplication and put it in the result */
+	    TVSET(result, idx, TVGET(a, aidx) * TVGET(b, bidx));
+	}
+    }
+
+    /* cleanup and return */
+    free(aidx);
+    free(bidx);
+    free(idx);
+    return result;
+}
