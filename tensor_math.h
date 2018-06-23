@@ -20,11 +20,11 @@
 #define TENSOR_MATH_H
 #include <view.h>
 
-/* subtract two tensors, elementwise (returns a-b) */
-tensor_view *tensor_sub(tensor_view *a, tensor_view *b);
-
 /* add two tensors. elmentwise (returns a+b) */
 tensor_view *tensor_add(tensor_view *a, tensor_view *b);
+
+/* subtract two tensors, elementwise (returns a-b) */
+tensor_view *tensor_sub(tensor_view *a, tensor_view *b);
 
 /* multiply the tensor by a scalar (returns t*s) */
 tensor_view *scalar_mul(tensor_view *t, double s);
@@ -32,10 +32,10 @@ tensor_view *scalar_mul(tensor_view *t, double s);
 /* divide the tensor by a scalar (returns t/s) */
 tensor_view *scalar_div(tensor_view *t, double s);
 
-/* inplace addition of two tensors (a-=b) */
+/* inplace addition of two tensors (a+=b) */
 void tensor_increase(tensor_view *a, tensor_view *b);
 
-/* inplace subtraction of two tensors (a+=b) */
+/* inplace subtraction of two tensors (a-=b) */
 void tensor_decrease(tensor_view *a, tensor_view *b);
 
 /* inplace scaling of a tensor by a scalar (t*=s) */
