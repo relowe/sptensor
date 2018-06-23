@@ -44,22 +44,6 @@ tensor_alloc_cpy(tensor_view *t)
 }
 
 
-/* subtract two tensors, elementwise (returns a-b) */
-tensor_view *
-tensor_sub(tensor_view *a, tensor_view *b)
-{
-    tensor_view *result;
-
-    /* first, copy the tensor */
-    result = tensor_alloc_cpy(a);
-
-    /* apply the tensor decrease */
-    tensor_decrease(result, b);
-
-    return result;
-}
-
-
 /* add two tensors. elmentwise (returns a+b) */
 tensor_view *
 tensor_add(tensor_view *a, tensor_view *b)
@@ -71,6 +55,22 @@ tensor_add(tensor_view *a, tensor_view *b)
 
     /* apply the tensor increase */
     tensor_increase(result, b);
+
+    return result;
+}
+
+
+/* subtract two tensors, elementwise (returns a-b) */
+tensor_view *
+tensor_sub(tensor_view *a, tensor_view *b)
+{
+    tensor_view *result;
+
+    /* first, copy the tensor */
+    result = tensor_alloc_cpy(a);
+
+    /* apply the tensor decrease */
+    tensor_decrease(result, b);
 
     return result;
 }
