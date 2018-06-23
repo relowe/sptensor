@@ -41,4 +41,6 @@ void tensor_decrease(tensor_view *a, tensor_view *b);
 /* inplace scaling of a tensor by a scalar (t*=s) */
 void tensor_scale(tensor_view *t, double s);
 
+/* compute the LP norm of the tensor */
+double tensor_lpnorm(tensor_view *t, double p);
 #endif
