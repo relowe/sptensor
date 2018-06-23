@@ -1,5 +1,5 @@
 CFLAGS=-I. -g -L.
-ALL=sptensortest libsptensor.so libsptensor.a multiplytest
+ALL=sptensortest libsptensor.so libsptensor.a multiplytest mathtest
 LDFLAGS=-lsptensor -lm
 CC=gcc
 SPTENSOR_LIB=sptensor.o sptensorio.o vector.o view.o multiply.o tensor_math.o
