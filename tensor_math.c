@@ -176,3 +176,22 @@ tensor_scale(tensor_view *t, double s)
     /* cleanup */
     free(idx);
 }
+
+
+/* compute the LP norm of the tensor */
+double
+tensor_lpnorm(tensor_view *t, double p)
+{
+    double result = 0.0;
+    int nnz;
+    int i;
+
+    /* sum the absolute values raised to the p power */
+    nnz = TVNNZ(t);
+    for(i=0; i<nnz; i++) {
+	result += pow(fabs(TVGETI(t, i)), p);
+    }
+
+    /* return the norm */
+    return pow(result, 1.0/p);
+}
