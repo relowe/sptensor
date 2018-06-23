@@ -16,6 +16,7 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
  */
+#include <math.h>
 #include <tensor_math.h>
 
 /* The operations that create a new tensor_view need to produce a copy */
