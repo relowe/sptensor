@@ -25,5 +25,7 @@ sptensortest: sptensortest.o libsptensor.a
 	gcc $(CFLAGS) sptensortest.o $(LDFLAGS) -o $@ -static
 multiplytest: multiplytest.o libsptensor.a
 	gcc $(CFLAGS) multiplytest.o $(LDFLAGS) -o $@ -static
+mathtest: mathtest.o libsptensor.a
+	gcc $(CFLAGS) mathtest.o $(LDFLAGS) -o $@ -static
 clean:
 	rm -f *.o $(ALL)
