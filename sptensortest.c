@@ -82,6 +82,7 @@ main(int argc, char **argv)
     tensor_view *v, *vi, *vuf, *vt;
     tensor_view *vslice;
     tensor_slice_spec *slice;
+    tensor_view *tcpy;
     
     sp_index_t *idx;
     int i;
@@ -166,6 +167,13 @@ main(int argc, char **argv)
     printf("Transpose\n");
     vt = tensor_transpose(vi, 0, 1);
     tensor_view_print(vt, 0);
+    printf("\n\n");
+
+    /* test copy */
+    tcpy = tensor_view_deep_copy(vt);
+    printf("Copy of Transpose\n");
+    tensor_view_print(tcpy, 0);
+    TVFREE(tcpy);
     TVFREE(vt);
     printf("\n\n");
     
