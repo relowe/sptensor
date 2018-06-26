@@ -410,6 +410,31 @@ sptensor_view_tensor_alloc(int nmodes, sp_index_t *dim)
 }
 
 
+/* Copy a tensor view as a newly allocated tensor with underlying sptensor */
+tensor_view *tensor_view_deep_copy(tensor_view *t)
+{
+    tensor_view *result;
+    int i;
+    unsigned int nnz;
+    sp_index_t *idx;
+
+    /* allocate the new tensor and index */
+    result = sptensor_view_tensor_alloc(t->nmodes, t->dim);
+    idx = malloc(sizeof(sp_index_t) * t->nmodes);
+
+    /* copy the tensor's non-zero elements */
+    nnz = TVNNZ(t);
+    for(i=0; i<nnz; i++) {
+	TVIDX(t, i, idx);
+	TVSET(result, idx, TVGETI(t, i));
+    }
+
+    /* cleanup an return */
+    free(idx);
+    return result;
+}
+
+
 /***************************************
  * Identity Tensor
  ***************************************/
