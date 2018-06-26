@@ -133,4 +133,6 @@ tensor_view *tensor_slice(tensor_view *v, tensor_slice_spec *spec);
  *   j - The second mode to swap
  */
 tensor_view *tensor_transpose(tensor_view *v, unsigned int i, unsigned int j);
+
+
 #endif
