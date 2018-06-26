@@ -43,6 +43,17 @@ vector *vector_alloc(size_t element_size, int capacity);
 
 
 /*
+ * Copy a vector 
+ *
+ * Parameters: v - The vector to copy
+ *
+ * Returns a copy of the vector, perfectly sized to hold 
+ * its contents.
+ */
+vector *vector_copy(vector *v);
+
+
+/*
  * Free all the memory associated with a vector.
  * 
  * Parameters: v - The vector to free
