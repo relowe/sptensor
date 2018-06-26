@@ -93,6 +93,9 @@ sptensor *tensor_view_sptensor(tensor_view *v);
 */
 tensor_view *sptensor_view_tensor_alloc(int nmodes, sp_index_t *dim);
 
+/* Copy a tensor view as a newly allocated tensor with underlying sptensor */
+tensor_view *tensor_view_deep_copy(tensor_view *t);
+
 
 /* 
  * VIEW - sptensor view.  Wraps an sptensor and does no translation.  
