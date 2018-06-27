@@ -1,0 +1,54 @@
+Dimensions and Notes
+====================
+A - I1 x I2 x I3... x IN
+C (when identity) is Jn x Jn ... x Jn
+U_n has dimension In x Jn
+B_n = ( C x1 U1 ... xn-1 Un-1 xn+1 ... xN UN )_(n)
+  The nth dimension of B_n is Jn
+
+A_n has dimension I_n x Product of the rest
+M: Jn x Jn
+N: In x Jn
+D: Jn
+
+
+CCD-Update(A_n, B_n, Lambda_n, Un, max_iter, tol)
+  Set M = B_n * B'_n
+  Set N = A_n * B'_n - Lambda_n
+  Set D = [M(1,1) M(2,2) ... M(Jn, Jn)];
+  Set M(j,j) = 0 for all 1 <= j <= Jn;
+  Set iter = 0
+  while error > tol and iter < max_iter
+    Un_last = Un
+    for j = 1 to Jn do
+      Un(:,j) = max( 0, (N(:,j)-UnM(:,j))/D(j) )
+    end for
+    error = || Un - Un_last ||
+    iter = iter + 1
+  end while
+
+CCD-Core(A, C, Lambda, max_iter, tol)
+  Set nmodes = number of modes in A
+  Set U = list of nmodes tensors
+  Set iter = 0
+  Set max_error = infinity
+  
+  for i = 1 to nmodes do
+    U(i) = CCCD-U-Init(A, C, i)
+  end for
+
+  while max_error > tol and iter < max_iter
+    max_error = 0
+    for i = 1 to nmodes do
+      B_n = CCD-Compute-Bn(C, U, i)
+      A_n = unfold(A, i)
+      ULast = U(i)
+      CCD-Update(A_n, B_n, Lambda(i), U(i), max_iter, tol)
+      error = || U(i) - ULast ||
+      if error > max_error
+        max_error = error
+      end if
+    end for
+    iter = iter + 1
+  end while
+  
