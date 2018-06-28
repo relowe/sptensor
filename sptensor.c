@@ -56,6 +56,8 @@ sptensor_alloc(int nmodes, const sp_index_t *dim)
 			   SPTENSOR_DEFAULT_CAPACITY);
     tns->idx = vector_alloc(sizeof(sp_index_t)*tns->nmodes,
 			    SPTENSOR_DEFAULT_CAPACITY);
+
+    return tns;
 }
 
 
