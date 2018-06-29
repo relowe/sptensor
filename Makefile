@@ -1,4 +1,4 @@
-CFLAGS=-I. -g -L.
+CFLAGS=-I. -g -L. -std=c99
 ALL=sptensortest libsptensor.so libsptensor.a multiplytest mathtest
 LDFLAGS=-lsptensor -lm
 CC=gcc
