@@ -19,6 +19,7 @@
 #ifndef VIEW_H
 #define VIEW_H
 #include <stdlib.h>
+#include <stdio.h>
 #include <sptensor.h>
 
 /* struct prototype */
@@ -75,6 +76,9 @@ typedef struct tensor_slice_spec {
 /********************************
  * generic tensor view functions 
  ********************************/
+/* write coordinate list to file */
+void tensor_view_write(FILE *file, tensor_view *v);
+
 /* coordinate list print */
 void tensor_view_clprint(tensor_view *v);
 
