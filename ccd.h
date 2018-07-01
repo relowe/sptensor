@@ -35,6 +35,15 @@
 #define CCD_H
 #include <view.h>
 
+typedef struct ccd_result {
+    tensor_view *core;  /* core tensor */
+    tensor_view **u;    /* factor matrices */
+    int n;              /* number of factor matrices */
+    unsigned int iter;  /* number of iterations ran */
+    double final_error; /* how much the final iteration changed */
+    double fit;         /* ||(A-A*)||/||A|| */
+} ccd_result;
+
 /*
  * Perform CCD non-negative tensor factorization using an identity 
  * tensor of the specified sized as the core tensor.
@@ -44,34 +53,38 @@
  *               (ie the number of factors)
  *      lambda - A set of L1 sparsity constraints.  This array must 
  *               have one entry for each mode of a
- * Returns:  An array of tensor view pointerss representing the factors.
- *           One matrix is returned for each mode. The array is terminated
- *           by a null pointer.
+ * Returns:  A ccd_result structure.  This structure should be deallocated
+ *           by ccd_free when it is no longer needed.
  */
-tensor_view **ccd_identity(tensor_view *a, unsigned int n, double lambda[],
-			   tensor_view *un, int max_iter, double tol);
+ccd_result *ccd_identity(tensor_view *a, unsigned int n, double lambda[],
+			 int max_iter, double tol);
 
 /*
  * Perform CCD non-negative tensor factorization using the specified 
  * core tensor.
  * Parameters:
  *      a      - The tensor to be factored
- *      n      - The number of elements in the core tensors 
- *               (ie the number of factors)
+ *      c      - The core tensor to use for factorization
  *      lambda - A set of L1 sparsity constraints.  This array must 
  *               have one entry for each mode of a
- * Returns:  An array of tensor view pointerss representing the factors.
- *           One matrix is returned for each mode. The array is terminated
- *           by a null pointer.
+ * Returns:  A ccd_result structure.  This structure should be deallocated
+ *           by ccd_free when it is no longer needed.
  */
-tensor_view **ccd_core(tensor_view *a, tensor_view *c, double lambda[],
-		       tensor_view *un, int max_iter, double tol);
+ccd_result *ccd_core(tensor_view *a, tensor_view *c, double lambda[],
+		     int max_iter, double tol);
+
+
+/* 
+ * Constructs the tensor described by the ccd_result structure 
+ */
+tensor_view *ccd_construct(ccd_result *result);
+
 
 /*
- * Free's the ccd factor list.
+ * Free's the ccd result
  * Parameters;
- *     u - A factor list returned by a ccd composition
+ *     result - The result to free
  */
-void ccd_free(tensor_view **u);
+void ccd_free(ccd_result *result);
 
 #endif

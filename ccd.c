@@ -27,6 +27,10 @@
 /* static prototypes */
 static void ccd_update(tensor_view *an, tensor_view *bn, double ln,
 		       tensor_view *un, int max_iter, double tol);
+static void ccd_un_init(ccd_result *result, tensor_view *a, int n);
+static tensor_view *ccd_compute_bn(ccd_result *result, int n);
+static void ccd_bn_free(tensor_view *bn);
+
 
 /*
  * Perform CCD non-negative tensor factorization using an identity 
@@ -37,17 +41,16 @@ static void ccd_update(tensor_view *an, tensor_view *bn, double ln,
  *               (ie the number of factors)
  *      lambda - A set of L1 sparsity constraints.  This array must 
  *               have one entry for each mode of a
- * Returns:  An array of tensor view pointerss representing the factors.
- *           One matrix is returned for each mode. The array is terminated
- *           by a null pointer.
+ * Returns:  A ccd_result structure.  This structure should be deallocated
+ *           by ccd_free when it is no longer needed.
  */
-tensor_view **
+ccd_result *
 ccd_identity(tensor_view *a, unsigned int n, double lambda[],
-	     tensor_view *un, int max_iter, double tol)
+	     int max_iter, double tol)
 {
     tensor_view *c;
     sp_index_t *dim;
-    tensor_view **u;
+    ccd_result *result;
     int i;
 
     /* create the core tensor */
@@ -58,13 +61,13 @@ ccd_identity(tensor_view *a, unsigned int n, double lambda[],
     c = identity_tensor(a->nmodes, dim);
 
     /* run the algorithm */
-    u = ccd_core(a, c, lambda);
+    result = ccd_core(a, c, lambda, max_iter, tol);
 
     /* clean up and return */
     free(dim);
     TVFREE(c);
     
-    return u;
+    return result;
 }
 
 
@@ -73,39 +76,127 @@ ccd_identity(tensor_view *a, unsigned int n, double lambda[],
  * core tensor.
  * Parameters:
  *      a      - The tensor to be factored
- *      n      - The number of elements in the core tensors 
- *               (ie the number of factors)
+ *      c      - The core tensor to use for factorization
  *      lambda - A set of L1 sparsity constraints.  This array must 
  *               have one entry for each mode of a
- * Returns:  An array of tensor view pointerss representing the factors.
- *           One matrix is returned for each mode. The array is terminated
- *           by a null pointer.
+ * Returns:  A ccd_result structure.  This structure should be deallocated
+ *           by ccd_free when it is no longer needed.
  */
-tensor_view **
-ccd_core(tensor_view *a, tensor_view *c, double labmda[],
-	 tensor_view *un, int max_iter, double tol)
+ccd_result *
+ccd_core(tensor_view *a, tensor_view *c, double lambda[],
+	 int max_iter, double tol)
 {
-    return 0x00;
+    ccd_result *result;
+    tensor_view *unlast;
+    tensor_view *bn, *b;
+    tensor_view **a_unfold;
+    double max_error;
+    double error;
+    int i;
+
+    /* allocate and initialize the result */
+    result = malloc(sizeof(ccd_result));
+    result->core = tensor_view_deep_copy(c);
+    result->n = a->nmodes;
+    result->u = malloc(sizeof(tensor_view*)*result->n);
+    result->iter = 0;
+    result->final_error = INFINITY;
+    result->fit = 0;
+    for(i=0; i<result->n; i++) {
+	ccd_un_init(result, a, i);
+    }
+
+    /* create the unfolds for a */
+    a_unfold = malloc(sizeof(tensor_view*) * result->n);
+    for(i=0; i<result->n; i++) {
+	a_unfold[i] = unfold_tensor(a, i);
+    }
+
+    /* run the iterations */
+    while(result->final_error > tol && result->iter < max_iter) {
+	/* run the updates */
+	max_error = 0;
+	for(i=0; i<result->n; i++) {
+	    unlast = tensor_view_deep_copy(result->u[i]);
+	    bn = ccd_compute_bn(result, i);
+	    ccd_update(a_unfold[i], bn, lambda[i], result->u[i], max_iter, tol);
+	    ccd_bn_free(bn);
+
+	    /* compute the error */
+	    tensor_decrease(unlast, result->u[i]);
+	    error = tensor_lpnorm(unlast, 2.0);
+	    if(error > max_error) {
+		max_error = error;
+	    }
+
+	    /* cleanup */
+	    TVFREE(unlast);
+	}
+
+	/* update iteration stats */
+	result->final_error = max_error;
+	result->iter++;
+    }
+
+    /* compute the fit */
+    b = ccd_construct(result);
+    tensor_decrease(b, a);
+    result->fit = 1.0 - tensor_lpnorm(b, 2.0)/tensor_lpnorm(a, 2.0);
+    TVFREE(b);
+
+    /* cleanup */
+    for(i=0; i<result->n; i++) {
+	TVFREE(a_unfold[i]);
+    }
+    free(a_unfold);
+    
+    return result;
+}
+
+
+/* 
+ * Constructs the tensor described by the ccd_result structure 
+ */
+tensor_view *
+ccd_construct(ccd_result *result)
+{
+    tensor_view *t;
+    tensor_view *prev;
+    int i;        
+
+    /* we begin with the core */
+    t = tensor_view_deep_copy(result->core);
+
+    for(i=0; i<result->n; i++) {
+	/* perform the multiplication */
+	prev = t;
+	t = nmode_product(i, t, result->u[i]);
+	TVFREE(prev);
+    }
+
+    return t;
 }
 
 
 /*
- * Free's the ccd factor list.
+ * Free's the ccd result
  * Parameters;
- *     u - A factor list returned by a ccd composition
+ *     result - The result to free
  */
 void
-ccd_free(tensor_view **u)
+ccd_free(ccd_result *result)
 {
-    tensor_view **ptr;
+    int i;
 
     /* loop over the factor array, freeing as we go */
-    for(ptr = u; *ptr; ptr++) {
-	TVFREE(*ptr);
+    for(i=0; i<result->n; i++) {
+	TVFREE(result->u[i]);
     }
 
-    /* dispose of the list of pointers */
-    free(ptr);
+    /* dispose of the rest */
+    free(result->u);
+    free(result->core);
+    free(result);
 }
 
 
@@ -155,6 +246,7 @@ static void ccd_update(tensor_view *an, tensor_view *bn, double ln,
     double val;
     double error = INFINITY;
     tensor_slice_spec *slice;
+    double dj;
 
     /* get preliminary things set up */
     jmax = un->dim[1];
@@ -206,7 +298,12 @@ static void ccd_update(tensor_view *an, tensor_view *bn, double ln,
 		idx[0] = VVAL(sp_index_t, rows, i);
 		idx[1] = j;
 		val = TVGET(n, idx) - TVGET(unm, idx);
-		val /= TVGET(d, &j);
+		dj = TVGET(d, &j);
+		if(dj != 0.0) {
+		    val /= TVGET(d, &j);
+		} else {
+		    val = 0;
+		}
 		TVSET(un, idx, MAX(0, val));
 	    }
 
@@ -230,4 +327,87 @@ static void ccd_update(tensor_view *an, tensor_view *bn, double ln,
     TVFREE(d);
     vector_free(rows);
     tensor_slice_spec_free(slice);
+}
+
+
+static void
+ccd_un_init(ccd_result *result, tensor_view *a, int n)
+{
+    sp_index_t dim[2];
+    sp_index_t *idx;
+    int i, j;
+    int nnz;
+    double min = INFINITY;
+    double max = -INFINITY;
+    double val;
+    vector *rows;
+
+    /* first, set up the dimensions of U[i] and allocate */
+    dim[0] = a->dim[n];  /* I_n from the paper */
+    dim[1] = result->core->dim[n]; /* J_n from the paper */
+    result->u[n] = sptensor_view_tensor_alloc(2, dim);
+
+    /* build a list of rows to populate in U_n, and find min and max */
+    idx = malloc(sizeof(sp_index_t) * a->nmodes);
+    nnz = TVNNZ(a);
+    rows = vector_alloc(sizeof(sp_index_t), 128);
+    for(i=0; i<nnz; i++) {
+	TVIDX(a, i, idx);
+	val = TVGETI(a, i);
+	if(val < min) {
+	    min = val;
+	}
+	if(val > max) {
+	    max = val;
+	}
+	vector_set_insert(rows, idx+n, setcmp);
+    }
+    free(idx);
+
+    /* populate the rows with random values between min and max */
+    for(i=0; i<rows->size; i++) {
+	for(j=1; j<=result->u[n]->dim[1]; j++) {
+	    val = ((double)rand()/RAND_MAX) * (max-min) + min;
+	    dim[0] = VVAL(sp_index_t, rows,i);
+	    dim[1] = j;
+	    TVSET(result->u[n], dim, val);
+	}
+    }
+    
+    /* cleanup */
+    vector_free(rows);
+}
+
+
+static tensor_view *
+ccd_compute_bn(ccd_result *result, int n)
+{
+    tensor_view *bn;
+    tensor_view *prev;
+    int i;        
+
+    /* we begin with the core */
+    bn = tensor_view_deep_copy(result->core);
+
+    for(i=0; i<result->n; i++) {
+	/* skip the nth product */
+	if(i == n) continue;
+	
+
+	/* perform the multiplication */
+	prev = bn;
+	bn = nmode_product(i, bn, result->u[i]);
+	TVFREE(prev);
+    }
+
+    return unfold_tensor(bn, n);
+}
+
+
+static void
+ccd_bn_free(tensor_view *bn)
+{
+    /* free both levels, the real tensor and the unfolded one */
+    TVFREE(bn->tns);
+    TVFREE(bn);
 }

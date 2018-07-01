@@ -1,8 +1,8 @@
 CFLAGS=-I. -g -L. -std=c99
-ALL=sptensortest libsptensor.so libsptensor.a multiplytest mathtest
+ALL=sptensortest libsptensor.so libsptensor.a multiplytest mathtest ccdtest
 LDFLAGS=-lsptensor -lm
 CC=gcc
-SPTENSOR_LIB=sptensor.o sptensorio.o vector.o view.o multiply.o tensor_math.o
+SPTENSOR_LIB=sptensor.o sptensorio.o vector.o view.o multiply.o tensor_math.o ccd.o binsearch.o
 
 all: $(ALL)
 libsptensor.so: $(SPTENSOR_LIB)
@@ -21,6 +21,12 @@ multiply.o: multiply.h multiply.c
 	gcc -c multiply.c $(CFLAGS) -fPIC
 tensor_math.o: tensor_math.h tensor_math.c
 	gcc -c tensor_math.c $(CFLAGS) -fPIC
+ccd.o: ccd.h ccd.c
+	gcc -c ccd.c $(CFLAGS) -fPIC
+binsearch.o: binsearch.h binsearch.c
+	gcc -c binsearch.c $(CFLAGS) -fPIC
+ccdtest: ccdtest.o
+	gcc $(CFLAGS) ccdtest.o $(LDFLAGS) -o $@ -static
 sptensortest: sptensortest.o libsptensor.a
 	gcc $(CFLAGS) sptensortest.o $(LDFLAGS) -o $@ -static
 multiplytest: multiplytest.o libsptensor.a
