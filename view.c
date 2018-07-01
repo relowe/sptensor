@@ -25,9 +25,9 @@
  * generic tensor view functions 
  ********************************/
 
-/* coordinate list print */
+/* write coordinate list to file */
 void
-tensor_view_clprint(tensor_view *v)
+tensor_view_write(FILE *file, tensor_view *v)
 {
     sp_index_t *idx;
     int i,j;
@@ -38,11 +38,11 @@ tensor_view_clprint(tensor_view *v)
     idx=TVIDX_ALLOC(v);
 
     /* print the header */
-    printf("%u", v->nmodes);
+    fprintf(file, "%u", v->nmodes);
     for(j=0; j<v->nmodes; j++) {
-	printf("\t%u", v->dim[j]);
+	fprintf(file, "\t%u", v->dim[j]);
     }
-    printf("\n");
+    fprintf(file, "\n");
 
     /* go through the list, printing the tensor */
     for(i=0; i<nnz; i++) {
@@ -50,16 +50,22 @@ tensor_view_clprint(tensor_view *v)
 	
 	/* print the index */
 	for(j=0; j<v->nmodes; j++) {
-	    printf("%d\t", idx[j]);
+	    fprintf(file, "%d\t", idx[j]);
 	}
 
 	/* print the value */
-	printf("%g\n", TVGET(v,idx));
+	fprintf(file, "%g\n", TVGET(v,idx));
     }
 
     free(idx);
 }
 
+/* coordinate list print */
+void
+tensor_view_clprint(tensor_view *v)
+{
+    tensor_view_write(stdout, v);
+}
 
 /* 
  * Find the maximum number of digits to the left 
