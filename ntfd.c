@@ -18,10 +18,50 @@
  */
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
+#include <math.h>
 #include <sptensor.h>
 #include <view.h>
 #include <ccd.h>
 #include <sptensorio.h>
+
+/* find the root name of the file without extension or directory */
+char *root_name(char *str)
+{
+    int start, end;  /* bounds of the core name in the string */
+    int len;
+    int i;
+    char *name;
+
+    /* find the last / if there is one */
+    for(i=strlen(str)-1; i>=0; i--) {
+	if(str[i] == '/') {
+	    break;
+	}
+    }
+    start = i+1;
+
+    /* find the last . if there is one */
+    for(i=strlen(str)-1; i>=0; i--) {
+	if(str[i] == '.') {
+	    break;
+	}
+    }
+    end = i;
+    if(end == 0) {
+	end = strlen(str);
+    }
+
+    /* compute length of the new string and allocate it */
+    len = end - start;
+    name = malloc(sizeof(len+1));
+
+    /* produce and return the result */
+    strncpy(name, str + start, end);
+    name[len] = '\0';
+    return name;
+}
+
 
 int main(int argc, char **argv)
 {
@@ -34,7 +74,18 @@ int main(int argc, char **argv)
     ccd_result *result;
     double *lambda;
     double tol;
+    int max_name_len;
+    char *rname;
+    char *fname;
 
+    /* display usage message (if needed) */
+    if(argc<5) {
+	fprintf(stderr,
+		"\nUsage: %s tns-file nfactors max_iter tol [lambda_1 lambda_2 ... ]\n\n",
+		argv[0]);
+	return -1;
+    }
+    
     /* open the file up and build the tensor view*/
     file = fopen(argv[1], "r");
     sptns = sptensor_read(file);
@@ -64,14 +115,36 @@ int main(int argc, char **argv)
     fprintf(stderr, "Final Error: %lf\n", result->final_error);
     fprintf(stderr, "Fit: %lf\n", result->fit);
 
-    /* write the ccd result */
-    
+
+    /* make sapce for the file names.  This is probably a tad too long,
+       but what's a couple of bytes between friends? */
+    rname = root_name(argv[1]);
+    max_name_len = (int)ceil(log10(result->n)) + strlen(rname) + 10; 
+    fname = malloc(max_name_len);
+
+    /* write the core tensor */
+    sprintf(fname, "%s-core.tns", rname);
+    file = fopen(fname, "w");
+    tensor_view_write(file, result->core);
+    fclose(file);
+    fprintf(stderr, "%s Written\n", fname);
+
+    /* write the factor matrices */
+    for(i=0; i<result->n; i++) {
+	sprintf(fname, "%s-u%d.tns", rname, i+1);
+	file = fopen(fname, "w");
+	tensor_view_write(file, result->u[i]);
+	fclose(file);
+	fprintf(stderr, "%s Written\n", fname);
+    }
 
     /* cleanup */
     TVFREE(t);
     sptensor_free(sptns);
     ccd_free(result);
     free(lambda);
+    free(rname);
+    free(fname);
     
     return 0;
 }
