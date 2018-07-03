@@ -44,4 +44,15 @@ int vector_binsearch(vector *v, void *item, binsearch_cmp_func cmp_f);
  *   cmp  - The comparison function to use on the vector
  */
 int vector_set_insert(vector *v, void *item, binsearch_cmp_func cmp);
+
+/*
+ * Insert an item into a vector, maintaining it in sorted order by using
+ * binary search to find its position. The position the item is inserted 
+ * at is returned.
+ *   v    - The vector to insert into
+ *   item - Pointer to the item to insert
+ *   cmp  - The comparison function to use on the vector
+ */
+int vector_sorted_insert(vector *v, void *item, binsearch_cmp_func cmp);
+
 #endif
