@@ -1,5 +1,5 @@
 /*
-    This progra performs non-negative tensor factorization using the CCD
+    This program performs non-negative tensor factor decomposition using the CCD
     algorithm.
     Copyright (C) 2018 Robert Lowe <pngwen@acm.org>
 
