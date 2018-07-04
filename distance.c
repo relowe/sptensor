@@ -34,7 +34,7 @@ main(int argc, char **argv)
     int ntns;
     double lp;
     FILE *file;
-    int i;
+    int i,j;
     int idx[2];
 
     /* ensure proper usage */
@@ -64,9 +64,11 @@ main(int argc, char **argv)
     dist = sptensor_alloc(2, idx);
 
     /* compute the distances */
-    for(idx[0]=0; idx[0]<ntns; idx[0]++) {
-	for(idx[1]=0; idx[1]<ntns; idx[1]++) {
-	    diff = tensor_sub(u[idx[0]], u[idx[1]]);
+    for(j=0; j<ntns; j++) {
+	idx[0] = j+1;
+	for(i=0; i<ntns; i++) {
+	    idx[1] = i+1;
+	    diff = tensor_sub(u[j], u[i]);
 	    sptensor_set(dist, idx, tensor_lpnorm(diff, lp));
 	    TVFREE(diff);
 	}
