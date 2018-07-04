@@ -19,7 +19,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <math.h>
-#include <view.h>
+#include <sptensor/view.h>
 
 /********************************
  * generic tensor view functions 

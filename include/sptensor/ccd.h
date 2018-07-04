@@ -33,7 +33,7 @@
  */
 #ifndef CCD_H
 #define CCD_H
-#include <view.h>
+#include <sptensor/view.h>
 
 typedef struct ccd_result {
     tensor_view *core;  /* core tensor */

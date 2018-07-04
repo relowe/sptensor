@@ -18,7 +18,7 @@
  */
 #ifndef TENSOR_MATH_H
 #define TENSOR_MATH_H
-#include <view.h>
+#include <sptensor/view.h>
 
 /* add two tensors. elmentwise (returns a+b) */
 tensor_view *tensor_add(tensor_view *a, tensor_view *b);

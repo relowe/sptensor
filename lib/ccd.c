@@ -17,10 +17,10 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 #include <math.h>
-#include <ccd.h>
-#include <tensor_math.h>
-#include <multiply.h>
-#include <binsearch.h>
+#include <sptensor/ccd.h>
+#include <sptensor/tensor_math.h>
+#include <sptensor/multiply.h>
+#include <sptensor/binsearch.h>
 
 #define MAX(a, b) ((a)>(b) ? (a) : (b))
 

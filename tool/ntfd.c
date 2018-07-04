@@ -20,10 +20,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
-#include <sptensor.h>
-#include <view.h>
-#include <ccd.h>
-#include <sptensorio.h>
+#include <sptensor/sptensor.h>
 
 /* find the root name of the file without extension or directory */
 char *root_name(char *str)

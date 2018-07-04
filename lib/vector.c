@@ -21,7 +21,7 @@
 
 #include <stdlib.h>
 #include <string.h>
-#include <vector.h>
+#include <sptensor/vector.h>
 
 /*
  * Allocate a vector.

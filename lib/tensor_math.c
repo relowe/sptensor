@@ -17,7 +17,7 @@
 
  */
 #include <math.h>
-#include <tensor_math.h>
+#include <sptensor/tensor_math.h>
 
 /* The operations that create a new tensor_view need to produce a copy */
 static tensor_view *

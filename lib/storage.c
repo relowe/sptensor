@@ -19,7 +19,7 @@
 
 #include <stdlib.h>
 #include <string.h>
-#include <sptensor.h>
+#include <sptensor/storage.h>
 
 
 

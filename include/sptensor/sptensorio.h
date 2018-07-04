@@ -20,9 +20,8 @@
 #ifndef SPTENSORIO_H
 #define SPTENSORIO_H
 
-#include <sptensor.h>
 #include <stdio.h>
-
+#include <sptensor/sptensor.h>
 
 /* 
  * Read a sparse tensor from a file stream. The file stream is

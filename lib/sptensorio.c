@@ -18,7 +18,7 @@
  */
 
 #include <stdlib.h>
-#include <sptensorio.h>
+#include <sptensor/sptensorio.h>
 
 /* 
  * Read a sparse tensor from a file stream. The file stream is

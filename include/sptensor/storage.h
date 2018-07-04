@@ -16,9 +16,9 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
  */
-#ifndef SPTENSOR_H
-#define SPTENSOR_H
-#include <vector.h>
+#ifndef STORAGE_H
+#define STORAGE_H
+#include <sptensor/vector.h>
 
 #define SPTENSOR_DEFAULT_CAPACITY 128
 

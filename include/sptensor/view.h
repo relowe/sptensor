@@ -20,7 +20,7 @@
 #define VIEW_H
 #include <stdlib.h>
 #include <stdio.h>
-#include <sptensor.h>
+#include <sptensor/storage.h>
 
 /* struct prototype */
 struct tensor_view;

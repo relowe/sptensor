@@ -2,8 +2,5 @@
 *.o
 *.so
 *.a
-sptensortest
-multiplytest
-mathtest
-ccdtest
-ntfd
+build
+test/*test

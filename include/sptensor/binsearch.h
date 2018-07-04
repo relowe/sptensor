@@ -20,7 +20,7 @@
  */
 #ifndef BINSEARCH_H
 #define BINSEARCH_H
-#include <vector.h>
+#include <sptensor/vector.h>
 
 typedef int (*binsearch_cmp_func)(int element_size, void *a, void *b);
 

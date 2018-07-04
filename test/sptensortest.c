@@ -18,12 +18,9 @@
 */
 
 #include <stdio.h>
-#include <sptensor.h>
-#include <sptensorio.h>
-#include <view.h>
-#include <multiply.h>
 #include <stdlib.h>
 #include <time.h>
+#include <sptensor/sptensor.h>
 #define RANDOM_TRIALS 1e6
 
 /* returns number of seconds n random lookups take */

@@ -17,10 +17,7 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 #include <stdio.h>
-#include <sptensor.h>
-#include <sptensorio.h>
-#include <view.h>
-#include <tensor_math.h>
+#include <sptensor/sptensor.h>
 
 
 int

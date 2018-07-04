@@ -18,9 +18,7 @@
 
 */
 #include <stdio.h>
-#include <sptensor.h>
-#include <view.h>
-#include <ccd.h>
+#include <sptensor/sptensor.h>
 
 #define ARSIZE(a) (sizeof(a)/sizeof(a[0]))
 

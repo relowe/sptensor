@@ -1,45 +1,56 @@
-CFLAGS=-I. -g -L. -std=c99
-ALL=sptensortest libsptensor.so libsptensor.a multiplytest mathtest ccdtest ntfd factors distance tnsprint
+CFLAGS=-I./include -g -L./build/lib -std=c99
+ALL=test/sptensortest build/lib/libsptensor.so build/lib/libsptensor.a test/multiplytest test/mathtest test/ccdtest build/bin/ntfd build/bin/factors build/bin/distance build/bin/tnsprint
 LDFLAGS=-lsptensor -lm
 CC=gcc
-SPTENSOR_LIB=sptensor.o sptensorio.o vector.o view.o multiply.o tensor_math.o ccd.o binsearch.o
+SPTENSOR_LIB=build/obj/sptensor.o build/obj/sptensorio.o build/obj/vector.o build/obj/view.o build/obj/multiply.o build/obj/tensor_math.o build/obj/ccd.o build/obj/binsearch.o
 
-all: $(ALL)
-libsptensor.so: $(SPTENSOR_LIB)
+all: dirs $(ALL)
+dirs: build/lib build/bin build/obj
+build/lib:
+	mkdir -p $@
+build/bin:
+	mkdir -p $@
+build/obj:
+	mkdir -p $@
+build/lib/libsptensor.so: $(SPTENSOR_LIB)
 	gcc -o $@ $(CFLAGS) -fPIC $^ -shared
-libsptensor.a: $(SPTENSOR_LIB)
-	ar crf libsptensor.a $^
-sptensor.o: sptensor.h sptensor.c
-	gcc -c sptensor.c $(CFLAGS) -fPIC
-sptensorio.o: sptensorio.h sptensorio.c
-	gcc -c sptensorio.c $(CFLAGS) -fPIC
-vector.o: vector.h vector.c
-	gcc -c vector.c $(CFLAGS) -fPIC
-view.o: view.h view.c
-	gcc -c view.c $(CFLAGS) -fPIC
-multiply.o: multiply.h multiply.c
-	gcc -c multiply.c $(CFLAGS) -fPIC
-tensor_math.o: tensor_math.h tensor_math.c
-	gcc -c tensor_math.c $(CFLAGS) -fPIC
-ccd.o: ccd.h ccd.c
-	gcc -c ccd.c $(CFLAGS) -fPIC
-binsearch.o: binsearch.h binsearch.c
-	gcc -c binsearch.c $(CFLAGS) -fPIC
-tnsprint: tnsprint.o libsptensor.a
-	gcc $(CFLAGS) tnsprint.o $(LDFLAGS) -o $@ -static
-distance: distance.o libsptensor.a
-	gcc $(CFLAGS) distance.o $(LDFLAGS) -o $@ -static
-factors: factors.o libsptensor.a
-	gcc $(CFLAGS) factors.o $(LDFLAGS) -o $@ -static
-ntfd: ntfd.o libsptensor.a
-	gcc $(CFLAGS) ntfd.o $(LDFLAGS) -o $@ -static
-ccdtest: ccdtest.o libsptensor.a
-	gcc $(CFLAGS) ccdtest.o $(LDFLAGS) -o $@ -static
-sptensortest: sptensortest.o libsptensor.a
-	gcc $(CFLAGS) sptensortest.o $(LDFLAGS) -o $@ -static
-multiplytest: multiplytest.o libsptensor.a
-	gcc $(CFLAGS) multiplytest.o $(LDFLAGS) -o $@ -static
-mathtest: mathtest.o libsptensor.a
-	gcc $(CFLAGS) mathtest.o $(LDFLAGS) -o $@ -static
+build/lib/libsptensor.a: $(SPTENSOR_LIB)
+	ar crf build/lib/libsptensor.a $^
+build/obj/sptensor.o: include/sptensor/sptensor.h lib/storage.c
+	gcc -o $@ -c lib/storage.c $(CFLAGS) -fPIC
+build/obj/sptensorio.o: include/sptensor/sptensorio.h lib/sptensorio.c
+	gcc -o $@ -c lib/sptensorio.c $(CFLAGS) -fPIC
+build/obj/vector.o: include/sptensor/vector.h lib/vector.c
+	gcc -o $@ -c lib/vector.c $(CFLAGS) -fPIC
+build/obj/view.o: include/sptensor/view.h lib/view.c
+	gcc -o $@ -c lib/view.c $(CFLAGS) -fPIC
+build/obj/multiply.o: include/sptensor/multiply.h lib/multiply.c
+	gcc -o $@ -c lib/multiply.c $(CFLAGS) -fPIC
+build/obj/tensor_math.o: include/sptensor/tensor_math.h lib/tensor_math.c
+	gcc -o $@ -c lib/tensor_math.c $(CFLAGS) -fPIC
+build/obj/ccd.o: include/sptensor/ccd.h lib/ccd.c
+	gcc -o $@ -c lib/ccd.c $(CFLAGS) -fPIC
+build/obj/binsearch.o: include/sptensor/binsearch.h lib/binsearch.c
+	gcc -o $@ -c lib/binsearch.c $(CFLAGS) -fPIC
+
+#tool programs
+build/bin/tnsprint: tool/tnsprint.c build/lib/libsptensor.a
+	gcc $(CFLAGS) $^ $(LDFLAGS) -o $@ -static
+build/bin/distance: tool/distance.c build/lib/libsptensor.a
+	gcc $(CFLAGS) $^ $(LDFLAGS) -o $@ -static
+build/bin/factors: tool/factors.c build/lib/libsptensor.a
+	gcc $(CFLAGS) $^ $(LDFLAGS) -o $@ -static
+build/bin/ntfd: tool/ntfd.c build/lib/libsptensor.a
+	gcc $(CFLAGS) $^ $(LDFLAGS) -o $@ -static
+
+#test programs
+test/ccdtest: test/ccdtest.c build/lib/libsptensor.a
+	gcc $(CFLAGS) $^ $(LDFLAGS) -o $@ -static
+test/sptensortest: test/sptensortest.c build/lib/libsptensor.a
+	gcc $(CFLAGS) $^ $(LDFLAGS) -o $@ -static
+test/multiplytest: test/multiplytest.c build/lib/libsptensor.a
+	gcc $(CFLAGS) $^ $(LDFLAGS) -o $@ -static
+test/mathtest: test/mathtest.c build/lib/libsptensor.a
+	gcc $(CFLAGS) $^ $(LDFLAGS) -o $@ -static
 clean:
-	rm -f *.o $(ALL)
+	rm -rf *.o build $(ALL)

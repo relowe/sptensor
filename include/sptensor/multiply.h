@@ -1,5 +1,6 @@
 /*
-    This program pretty prints a tensor.
+    This is a collection of functions which implement various
+    multiplications of tensor views.
     Copyright (C) 2018 Robert Lowe <pngwen@acm.org>
 
     This program is free software: you can redistribute it and/or modify
@@ -15,35 +16,17 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-#include <stdio.h>
-#include <sptensor.h>
-#include <sptensorio.h>
-#include <view.h>
-#include <tensor_math.h>
+#ifndef MULTIPLY_H
+#define MULTIPLY_H
+#include <sptensor/view.h>
 
+/* Matrix mulitplication between two tensor views, resulting in a
+   sparse tensor view containing a newly allocated sparse tensor. */
+tensor_view *matrix_product(tensor_view *a, tensor_view *b);
 
-int main(int argc, char **argv)
-{
-    sptensor *t;
-    tensor_view *tv;
-    int precision;
-    FILE *file;
+/* N-Mode multiplication of tensor a by matrix u */
+tensor_view *nmode_product(unsigned int n, tensor_view *a, tensor_view *u);
 
-    if(argc != 2 && argc != 3) {
-	fprintf(stderr, "\nUsage: %s file [precision]\n\n", argv[0]);
-	exit(-1);
-    }
-    
-    if(argc == 3) {
-	precision = atoi(argv[2]);
-    } else {
-	precision = 2;
-    }
-
-    file = fopen(argv[1], "r");
-    t = sptensor_read(file);
-    tv = sptensor_view_alloc(t);
-    tensor_view_print(tv, precision);
-    TVFREE(tv);
-    sptensor_free(t);
-}
+/* Outer (tensor) product of two tensor views */
+tensor_view *tensor_product(tensor_view *a, tensor_view *b);
+#endif

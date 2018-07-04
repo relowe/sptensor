@@ -23,13 +23,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
-#include <sptensor.h>
-#include <view.h>
-#include <tensor_math.h>
-#include <multiply.h>
-#include <vector.h>
-#include <binsearch.h>
-#include <sptensorio.h>
+#include <sptensor/sptensor.h>
 
 /* prototypes */
 static int factorcmp(int size, void *a, void *b);
