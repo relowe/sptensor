@@ -103,6 +103,13 @@ tensor_view_max_digits(tensor_view* v)
 void
 tensor_view_print(tensor_view *v, unsigned int precision)
 {
+    tensor_view_fprint(stdout, v, precision);
+}
+
+
+void
+tensor_view_fprint(FILE *file, tensor_view *v, unsigned int precision)
+{
     unsigned int width;
     int ui;  /* index being updated */
     sp_index_t *idx = TVIDX_ALLOC(v);
@@ -124,7 +131,7 @@ tensor_view_print(tensor_view *v, unsigned int precision)
      */
     while(!done) {
 	/* print the value */
-	printf("  %*.*lf", width, precision,TVGET(v, idx));
+	fprintf(file, "  %*.*lf", width, precision,TVGET(v, idx));
 
 	/* detect if we are done */
 	if(sptensor_indexcmp(v->nmodes, idx, v->dim) == 0) {
@@ -161,9 +168,9 @@ tensor_view_print(tensor_view *v, unsigned int precision)
 
 	/* terminate rows */
 	if(ui == 0) {
-	    printf("\n");
+	    fprintf(file, "\n");
 	} else if(ui != 1) {
-	    printf("\n\n"); /* blank line separator */
+	    fprintf(file, "\n\n"); /* blank line separator */
 	}
     }
 
