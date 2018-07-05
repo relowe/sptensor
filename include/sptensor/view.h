@@ -83,7 +83,8 @@ void tensor_view_write(FILE *file, tensor_view *v);
 void tensor_view_clprint(tensor_view *v);
 
 /* pretty print */
-void tensor_view_print(tensor_view *v, unsigned int precision);   
+void tensor_view_print(tensor_view *v, unsigned int precision);
+void tensor_view_fprint(FILE *file, tensor_view *v, unsigned int precision);   
 
 /* create an sptensor copy of a tensor view */
 sptensor *tensor_view_sptensor(tensor_view *v);
