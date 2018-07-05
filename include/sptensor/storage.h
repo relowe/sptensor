@@ -43,7 +43,7 @@ typedef struct sptensor
  *
  * Return: A pointer to the newly created tensor.
  */ 
-sptensor* sptensor_alloc(int nmodes, const sp_index_t *dim);
+sptensor* sptensor_alloc(int nmodes, sp_index_t *dim);
 
 
 /*
@@ -58,7 +58,7 @@ void sptensor_free(sptensor *tns);
  * Parameters: tns - The sparse tensor to retrieve from
  *             idx - The index of the item to retrieve
  */
-double sptensor_get(sptensor *tns, const sp_index_t *idx);
+double sptensor_get(sptensor *tns, sp_index_t *idx);
 
 
 /* 
@@ -68,7 +68,7 @@ double sptensor_get(sptensor *tns, const sp_index_t *idx);
  *             idx - The index of the item to retrieve
  *             val - The value to write to the tensor
  */
-void sptensor_set(sptensor *tns, const sp_index_t *idx, double val);
+void sptensor_set(sptensor *tns, sp_index_t *idx, double val);
 
 
 /* 
@@ -97,6 +97,6 @@ int sptensor_indexcmp(unsigned int nmodes, const sp_index_t *a, const sp_index_t
  * Return: The index into ar of element idx.  If the index is
  *         not of a non-zero value, return -1.
  */
-int sptensor_find_index(sptensor *tns, const sp_index_t *idx);
+int sptensor_find_index(sptensor *tns, sp_index_t *idx);
 
 #endif
