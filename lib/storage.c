@@ -20,13 +20,11 @@
 #include <stdlib.h>
 #include <string.h>
 #include <sptensor/storage.h>
-
+#include <sptensor/binsearch.h>
 
 
 /* static helper prototypes */
-static void sptensor_index_sort(sptensor *tns, int left, int right);
-static int  sptensor_index_partition(sptensor *tns, int left, int right);
-static void sptensor_insert(sptensor *tns, const sp_index_t *idx, double val);
+static void sptensor_insert(sptensor *tns, int i, sp_index_t *idx, double val);
 
 
 /*
@@ -39,7 +37,7 @@ static void sptensor_insert(sptensor *tns, const sp_index_t *idx, double val);
  * Return: A pointer to the newly created tensor.
  */ 
 sptensor*
-sptensor_alloc(int nmodes, const sp_index_t *dim)
+sptensor_alloc(int nmodes, sp_index_t *dim)
 {
     sptensor *tns;
 
@@ -81,7 +79,7 @@ sptensor_free(sptensor *tns)
  *             idx - The index of the item to retrieve
  */
 double
-sptensor_get(sptensor *tns, const sp_index_t *idx)
+sptensor_get(sptensor *tns, sp_index_t *idx)
 {
     int i;
 
@@ -104,7 +102,7 @@ sptensor_get(sptensor *tns, const sp_index_t *idx)
  *             val - The value to write to the tensor
  */
 void
-sptensor_set(sptensor *tns, const sp_index_t *idx, double val)
+sptensor_set(sptensor *tns, sp_index_t *idx, double val)
 {
     int i;
 
@@ -124,7 +122,7 @@ sptensor_set(sptensor *tns, const sp_index_t *idx, double val)
 
     /* set or insert as needed */
     if(i < 0) {
-	sptensor_insert(tns, idx, val);
+	sptensor_insert(tns, -(i+1), idx, val);
     } else {
 	VVAL(double, tns->ar, i) = val;
     }
@@ -165,6 +163,12 @@ sptensor_indexcmp(unsigned int nmodes, const sp_index_t *a, const sp_index_t *b)
 }
 
 
+static int spindex_bincmp(int element_size, void *a, void *b)
+{
+    return sptensor_indexcmp(element_size / sizeof(sp_index_t), a, b);
+}
+
+
 /*
  * Find the index into ar of the tensor struct.
  * 
@@ -175,83 +179,17 @@ sptensor_indexcmp(unsigned int nmodes, const sp_index_t *a, const sp_index_t *b)
  *         not of a non-zero value, return -1.
  */
 int
-sptensor_find_index(sptensor *tns, const sp_index_t *idx)
+sptensor_find_index(sptensor *tns, sp_index_t *idx)
 {
-    int left = 0;
-    int right = tns->ar->size - 1;
-    int mid;
-    int cmp;
-
-    /* do a binary search on the list of indexes */
-    while(left <= right) {
-	mid = (right+left) / 2;
-	cmp = sptensor_indexcmp(tns->nmodes, idx, VPTR(tns->idx, mid));
-	if(cmp == 0) {
-	    return mid;
-	} else if(cmp < 0) {
-	    right = mid-1;
-	} else {
-	    left = mid+1;
-	}
-    }
-
-    return -1;
+    return vector_binsearch(tns->idx, idx, spindex_bincmp);
 }
+
 
 
 static void
-sptensor_index_sort(sptensor *tns, int left, int right)
-{
-    int p;
-    
-    /* quicksort! */
-    if(left < right) {
-	p = sptensor_index_partition(tns, left, right);
-	sptensor_index_sort(tns, left, p);
-	sptensor_index_sort(tns, p+1, right);
-    }
-}
-
-
-static int
-sptensor_index_partition(sptensor *tns, int left, int right)
-{
-    int i, j;
-    int pivot;
-    
-    /* use the midpoint pivot */
-    pivot = (left+right)/2;
-    i = left - 1;
-    j = right + 1;
-
-    /* here we go! */
-    for(;;) {
-	do {
-	    i++;
-	} while(sptensor_indexcmp(tns->nmodes, VPTR(tns->idx,i), VPTR(tns->idx,pivot)) < 0);
-
-	do {
-	    j--;
-	} while(sptensor_indexcmp(tns->nmodes, VPTR(tns->idx,j), VPTR(tns->idx,pivot)) > 0);
-
-	if(i >= j) {
-	    return j;
-	}
-
-	/* swap */
-	vector_swap(tns->idx, i, j);
-	vector_swap(tns->ar, i, j);
-    }
-}
-
-
-static void
-sptensor_insert(sptensor *tns, const sp_index_t *idx, double val)
+sptensor_insert(sptensor *tns, int i, sp_index_t *idx, double val)
 {
     /* put the value and index in the list */
-    vector_push_back(tns->idx, idx);
-    vector_push_back(tns->ar, &val);
-
-    /* cleanup! */
-    sptensor_index_sort(tns, 0, tns->ar->size-1);
+    vector_insert(tns->idx, i, idx);
+    vector_insert(tns->ar, i, &val);
 }
