@@ -18,39 +18,39 @@
  */
 #include <stdio.h>
 #include <sptensor/sptensor.h>
+#include "commands.h"
 
 
-int
-main(int argc, char **argv)
+void
+cmd_distance(cmdargs *args)
 {
     sptensor **t;
     tensor_view **u;
     tensor_view *diff;
     sptensor *dist;
-    char *fname;
+    tensor_view *dist_view;
     int ntns;
-    double lp;
     FILE *file;
     int i,j;
     int idx[2];
+    int argc = args->args->size;
+    char **argv = (char**)(args->args->ar);
 
     /* ensure proper usage */
-    if(argc < 4) {
+    if(argc < 3) {
 	fprintf(stderr,
-		"\nUsage: %s lpnorm outfile tensor1 [tensor2 ...]\n\n", argv[0]);
-	exit(-1);
+		"\nUsage: sptensor distance tensor1 [tensor2 ... ]\n\n");
+	return;
     }
 
     /* process the easy parameters */
-    lp = atof(argv[1]);
-    fname = argv[2];
-    ntns = argc - 3;
+    ntns = argc - 2;
 
     /* read in the tensors */
     t = malloc(sizeof(sptensor*)*ntns);
     u = malloc(sizeof(tensor_view*)*ntns);
     for(i=0; i<ntns; i++) {
-	file = fopen(argv[3+i], "r");
+	file = fopen(argv[2+i], "r");
 	t[i] = sptensor_read(file);
 	u[i] = sptensor_view_alloc(t[i]);
 	fclose(file);
@@ -66,15 +66,14 @@ main(int argc, char **argv)
 	for(i=0; i<ntns; i++) {
 	    idx[1] = i+1;
 	    diff = tensor_sub(u[j], u[i]);
-	    sptensor_set(dist, idx, tensor_lpnorm(diff, lp));
+	    sptensor_set(dist, idx, tensor_lpnorm(diff, args->lp));
 	    TVFREE(diff);
 	}
     }
 
     /* write the output */
-    file = fopen(fname, "w");
-    sptensor_write(file, dist);
-    fclose(file);
+    dist_view = sptensor_view_alloc(dist);
+    cmd_write_tensor(args, "distance", -1, dist_view);
 
     /* cleanup */
     sptensor_free(dist);
@@ -82,4 +81,5 @@ main(int argc, char **argv)
 	TVFREE(u[i]);
 	sptensor_free(t[i]);
     }
+    TVFREE(dist_view);
 }

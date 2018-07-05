@@ -24,54 +24,50 @@
 #include <string.h>
 #include <math.h>
 #include <sptensor/sptensor.h>
+#include "commands.h"
 
 /* prototypes */
 static int factorcmp(int size, void *a, void *b);
 static void insert_factor(vector *factor, vector *lambda, tensor_view *f, double norm);
 
 
-int
-main(int argc, char **argv)
+void
+cmd_norm_factor(cmdargs *args)
 {
-    sptensor **t;
     tensor_view **u;
     tensor_view *f;
     tensor_view *col;
     tensor_view *prev;
     tensor_slice_spec *slice;
-    char *prefix;
-    char *fname;
     int ntns;
     vector *factor;
     vector *lambda;
-    double lp;
+    tensor_view *lambda_view;
     double norm;
     FILE *file;
     int i,j;
+    int idx;
+    int argc=args->args->size;
+    char **argv=(char**)(args->args->ar);
+
+    
 
     /* ensure proper usage */
-    if(argc < 4) {
+    if(argc < 2) {
 	fprintf(stderr,
-		"\nUsage: %s lpnorm output-prefix tensor1 [tensor2 ...]\n\n", argv[0]);
-	exit(-1);
+		"\nUsage: sptensor norm-factor tensor1 [tensor2 ...]\n\n");
+	return;
     }
 
     /* process the easy parameters */
-    lp = atof(argv[1]);
-    prefix = argv[2];
-    ntns = argc - 3;
-    fname = malloc(strlen(prefix) + ceil(log10(ntns)) + 15);
+    ntns = argc - 1;
     factor = vector_alloc(sizeof(tensor_view*), 16);
     lambda = vector_alloc(sizeof(double), 16);
 
     /* read in the tensors */
-    t = malloc(sizeof(sptensor*)*ntns);
     u = malloc(sizeof(tensor_view*)*ntns);
     for(i=0; i<ntns; i++) {
-	file = fopen(argv[3+i], "r");
-	t[i] = sptensor_read(file);
-	u[i] = sptensor_view_alloc(t[i]);
-	fclose(file);
+	u[i] = cmd_read_tensor(argv[1+i]);
     }
 
     /* assemble and insert the factors */
@@ -79,7 +75,7 @@ main(int argc, char **argv)
 	for(i=0; i<ntns; i++) {
 	    slice = tensor_slice_spec_alloc(u[i]);
 	    slice->fixed[1] = j;
-	    col = tensor_slice(u[0], slice);
+	    col = tensor_slice(u[i], slice);
 	    if(i==0) {
 		f = tensor_view_deep_copy(col);
 	    } else {
@@ -91,36 +87,35 @@ main(int argc, char **argv)
 	    tensor_slice_spec_free(slice);
 	}
 	
-	norm = tensor_lpnorm(f, lp);
+	norm = tensor_lpnorm(f, args->lp);
 	tensor_scale(f, 1.0/norm);
 	insert_factor(factor, lambda, f, norm);
     }
 
     /* write the factor files */
     for(i=0; i<factor->size; i++) {
-	sprintf(fname, "%s%d.tns", prefix, i+1);
-	file = fopen(fname, "w");
-	tensor_view_write(file, VVAL(tensor_view*, factor, i));
-	fclose(file);
+	cmd_write_tensor(args, "factor", i+1, VVAL(tensor_view*, factor, i));
     }
 
     /* write the lambdas */
-    sprintf(fname, "%s-lambda.tns", prefix);
-    file = fopen(fname, "w");
-    fprintf(file, "1 %d\n", lambda->size);
-    for(i=0; i<lambda->size; i++) {
-	fprintf(file, "%d %lf\n", i+1, VVAL(double, lambda, i));
+    idx = lambda->size;
+    lambda_view = sptensor_view_tensor_alloc(1, &idx);
+    for(i=0; i<factor->size; i++) {
+	idx = i+1;
+	TVSET(lambda_view, &idx, VVAL(int, lambda, i));
     }
-    fclose(file);
+    cmd_write_tensor(args, "lambda", -1, lambda_view);
 
     /* cleanup */
     for(i=0; i<ntns; i++) {
-	sptensor_free(t[i]);
 	TVFREE(u[i]);
     }
     for(i=0; i<factor->size; i++) {
 	TVFREE(VVAL(tensor_view*, factor, i));
     }
+    vector_free(factor);
+    vector_free(lambda);
+    TVFREE(lambda_view);
 }
 
 
