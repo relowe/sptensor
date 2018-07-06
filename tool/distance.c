@@ -44,7 +44,7 @@ cmd_distance(cmdargs *args)
     }
 
     /* process the easy parameters */
-    ntns = argc - 2;
+    ntns = argc - 1;
 
     /* read in the tensors */
     t = malloc(sizeof(sptensor*)*ntns);
