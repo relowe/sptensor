@@ -49,16 +49,16 @@ build/obj/single.o: tool/single.c tool/cmdargs.h tool/commands.h
 build/obj/sptensor.o: tool/sptensor.c tool/cmdargs.h tool/commands.h
 	gcc -o $@ -c tool/sptensor.c $(CFLAGS)
 build/bin/sptensor: build/obj/cmdargs.o build/obj/distance.o build/obj/factors.o build/obj/ntfd.o build/obj/series.o build/obj/single.o build/obj/sptensor.o build/lib/libsptensor.a
-	gcc $(CFLAGS) $^ $(LDFLAGS) -o $@ -static
+	gcc $(CFLAGS) $^ $(LDFLAGS) -o $@
 
 #test programs
 test/ccdtest: test/ccdtest.c build/lib/libsptensor.a
-	gcc $(CFLAGS) $^ $(LDFLAGS) -o $@ -static
+	gcc $(CFLAGS) $^ $(LDFLAGS) -o $@
 test/sptensortest: test/sptensortest.c build/lib/libsptensor.a
-	gcc $(CFLAGS) $^ $(LDFLAGS) -o $@ -static
+	gcc $(CFLAGS) $^ $(LDFLAGS) -o $@
 test/multiplytest: test/multiplytest.c build/lib/libsptensor.a
-	gcc $(CFLAGS) $^ $(LDFLAGS) -o $@ -static
+	gcc $(CFLAGS) $^ $(LDFLAGS) -o $@
 test/mathtest: test/mathtest.c build/lib/libsptensor.a
-	gcc $(CFLAGS) $^ $(LDFLAGS) -o $@ -static
+	gcc $(CFLAGS) $^ $(LDFLAGS) -o $@
 clean:
 	rm -rf *.o build $(ALL)
