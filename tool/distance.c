@@ -17,6 +17,7 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 #include <stdio.h>
+#include <math.h>
 #include <sptensor/sptensor.h>
 #include "commands.h"
 
@@ -35,7 +36,13 @@ cmd_distance(cmdargs *args)
     int idx[2];
     int argc = args->args->size;
     char **argv = (char**)(args->args->ar);
-
+    double x;
+    double sum=0;
+    double sumsq=0;
+    double mean;
+    double sp, ss;
+    int count=0;
+    
     /* ensure proper usage */
     if(argc < 3) {
 	fprintf(stderr,
@@ -50,7 +57,7 @@ cmd_distance(cmdargs *args)
     t = malloc(sizeof(sptensor*)*ntns);
     u = malloc(sizeof(tensor_view*)*ntns);
     for(i=0; i<ntns; i++) {
-	file = fopen(argv[2+i], "r");
+	file = fopen(argv[1+i], "r");
 	t[i] = sptensor_read(file);
 	u[i] = sptensor_view_alloc(t[i]);
 	fclose(file);
@@ -66,8 +73,16 @@ cmd_distance(cmdargs *args)
 	for(i=0; i<ntns; i++) {
 	    idx[1] = i+1;
 	    diff = tensor_sub(u[j], u[i]);
-	    sptensor_set(dist, idx, tensor_lpnorm(diff, args->lp));
+	    x=tensor_lpnorm(diff, args->lp);
+	    sptensor_set(dist, idx, x);
 	    TVFREE(diff);
+
+	    /* gather statistiscs */
+	    if(i != j) {
+		count++;
+		sum += x;
+		sumsq += x*x;
+	    }
 	}
     }
 
@@ -82,4 +97,11 @@ cmd_distance(cmdargs *args)
 	sptensor_free(t[i]);
     }
     TVFREE(dist_view);
+
+    /* compute statitstics and print to stderr */
+    mean=sum/count;
+    ss=sp=sumsq - 2.0 * mean * sum + mean * mean * count;
+    ss = sqrt(ss/(count-1));
+    sp = sqrt(sp/count);
+    fprintf(stderr, "Distribution\nMean: %lf\n Standard Deviation: %lf\nSample Standard Deviation: %lf\n", mean, sp, ss);
 }
