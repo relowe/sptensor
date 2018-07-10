@@ -19,9 +19,9 @@
 
 #include <stdlib.h>
 #include <string.h>
+#include <math.h>
 #include <sptensor/storage.h>
 #include <sptensor/binsearch.h>
-
 
 /* static helper prototypes */
 static void sptensor_insert(sptensor *tns, int i, sp_index_t *idx, double val);
@@ -110,7 +110,7 @@ sptensor_set(sptensor *tns, sp_index_t *idx, double val)
     i = sptensor_find_index(tns, idx);
 
     /* if it is zero, we either ignore it or remove it! */
-    if(val == 0.0) {
+    if(fabs(val) <= 1.0e-7) {
 	if(i<0) return;  /* nothing to do! */
 
 	/* we need to remove an item */

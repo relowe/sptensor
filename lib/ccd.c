@@ -116,6 +116,7 @@ ccd_core(tensor_view *a, tensor_view *c, double lambda[],
     while(result->final_error > tol && result->iter < max_iter) {
 	/* run the updates */
 	max_error = 0;
+	printf("Iteration: %d\n", result->iter);
 	for(i=0; i<result->n; i++) {
 	    unlast = tensor_view_deep_copy(result->u[i]);
 	    bn = ccd_compute_bn(result, i);
@@ -279,7 +280,7 @@ static void ccd_update(tensor_view *an, tensor_view *bn, double ln,
     /* run the update loop */
     while(error > tol && iter < max_iter) {
 	unlast = tensor_view_deep_copy(un);
-
+        printf("    Iteration: %d\n", iter);
 	/* update each column */
 	for(j=1; j <= jmax; j++) {
 	    slice->fixed[1] = j;
@@ -365,6 +366,7 @@ ccd_un_init(ccd_result *result, tensor_view *a, int n)
     free(idx);
 
     /* populate the rows with random values between min and max */
+    printf("U%d: %d\n", n, rows->size);
     for(i=0; i<rows->size; i++) {
 	for(j=1; j<=result->u[n]->dim[1]; j++) {
 	    val = ((double)rand()/RAND_MAX) * (max-min) + min;
