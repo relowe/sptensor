@@ -42,6 +42,7 @@ cmd_distance(cmdargs *args)
     double mean;
     double sp, ss;
     int count=0;
+    int swap;
     
     /* ensure proper usage */
     if(argc < 3) {
@@ -61,6 +62,7 @@ cmd_distance(cmdargs *args)
 	t[i] = sptensor_read(file);
 	u[i] = sptensor_view_alloc(t[i]);
 	fclose(file);
+    fprintf(stderr, "Loaded %d\n", i);
     }
 
     /* allocate the distances */
@@ -69,11 +71,16 @@ cmd_distance(cmdargs *args)
 
     /* compute the distances */
     for(j=0; j<ntns; j++) {
-	idx[0] = j+1;
-	for(i=0; i<ntns; i++) {
+    fprintf(stderr, "Row: %d\n", j+1);
+	for(i=0; i<j; i++) {
+	    idx[0] = j+1;
 	    idx[1] = i+1;
 	    diff = tensor_sub(u[j], u[i]);
 	    x=tensor_lpnorm(diff, args->lp);
+	    sptensor_set(dist, idx, x);
+        swap=idx[0];
+        idx[0]=idx[1];
+        idx[1]=swap;
 	    sptensor_set(dist, idx, x);
 	    TVFREE(diff);
 
