@@ -1,4 +1,4 @@
-CFLAGS=-I./include -g -L./build/lib -std=c99 -g
+CFLAGS=-I./include -g -L./build/lib -ansi -g
 ALL=test/sptensortest build/lib/libsptensor.so build/lib/libsptensor.a test/multiplytest test/mathtest test/ccdtest build/bin/sptensor
 LDFLAGS=-lsptensor -lm
 CC=gcc

@@ -21,7 +21,6 @@
 #include <sptensor/tensor_math.h>
 #include <sptensor/multiply.h>
 #include <sptensor/binsearch.h>
-
 #define MAX(a, b) ((a)>(b) ? (a) : (b))
 
 /* static prototypes */
@@ -100,7 +99,7 @@ ccd_core(tensor_view *a, tensor_view *c, double lambda[],
     result->n = a->nmodes;
     result->u = malloc(sizeof(tensor_view*)*result->n);
     result->iter = 0;
-    result->final_error = INFINITY;
+    result->final_error = HUGE_VAL;
     result->fit = 0;
     for(i=0; i<result->n; i++) {
 	ccd_un_init(result, a, i);
@@ -245,7 +244,7 @@ static void ccd_update(tensor_view *an, tensor_view *bn, double ln,
     int i;
     int nnz;
     double val;
-    double error = INFINITY;
+    double error = HUGE_VAL;
     tensor_slice_spec *slice;
     double dj;
 
@@ -338,8 +337,8 @@ ccd_un_init(ccd_result *result, tensor_view *a, int n)
     sp_index_t *idx;
     int i, j;
     int nnz;
-    double min = INFINITY;
-    double max = -INFINITY;
+    double min = HUGE_VAL;
+    double max = -HUGE_VAL;
     double val;
     vector *rows;
 

@@ -138,11 +138,11 @@ tensor_view *tensor_product(tensor_view *a, tensor_view *b)
     /* multiply each pairing */
     annz = TVNNZ(a);
     bnnz = TVNNZ(b);
-    for(int i=0; i<annz; i++) {
+    for(i=0; i<annz; i++) {
 	/* get the index */
 	TVIDX(a, i, aidx);
 	
-	for(int j=0; j<bnnz; j++) {
+	for(j=0; j<bnnz; j++) {
 	    /* get the index */
 	    TVIDX(b, j, bidx);
 

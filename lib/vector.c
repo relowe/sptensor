@@ -187,7 +187,7 @@ vector_swap(vector *v, unsigned int i, unsigned int j)
     /* do iterative xor swap */
     /* We are told this is ugly, but it's ok, we're pros! */
     /*   Ok, it's hideous but saves a malloc! */
-    for(int count=0; count < v->element_size; count++, p1++, p2++) {
+    for(count=0; count < v->element_size; count++, p1++, p2++) {
 	*p1 = *p1 ^ *p2;
 	*p2 = *p1 ^ *p2; 
 	*p1 = *p1 ^ *p2;

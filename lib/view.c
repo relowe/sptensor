@@ -458,7 +458,7 @@ identity_nnz(tensor_view *v)
     int i;
 
     /* find the minimum mode */
-    for(int i=0; i<v->nmodes; i++) {
+    for(i=0; i<v->nmodes; i++) {
 	if(v->dim[i] < min) {
 	    min = v->dim[i];
 	}
@@ -583,7 +583,7 @@ unfold_from(tensor_view *v, sp_index_t *in, sp_index_t *out)
 
     /* get the j part */
     out[1] = 1;
-    for(int i=0; i<v->tns->nmodes; i++) {
+    for(i=0; i<v->tns->nmodes; i++) {
 	/* skip the folded dimension */
 	if(i == uv->n) {
 	    continue;

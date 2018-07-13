@@ -149,7 +149,7 @@ sptensor_indexcmp(unsigned int nmodes, const sp_index_t *a, const sp_index_t *b)
     int i;
 
     /* look for < or > comparisons */
-    for(int i=0; i < nmodes; i++) {
+    for(i=0; i < nmodes; i++) {
 	if(a[i] < b[i]) {
 	    return -1;
 	}
