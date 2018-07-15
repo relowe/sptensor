@@ -97,18 +97,18 @@ main(int argc, char **argv)
 
     /* create an sptensor view */
     printf("sptensor view\n");
-    v = sptensor_view_alloc(sp);
-    tensor_view_clprint(v);
+    v = sptensor_view(sp);
+    tensor_clprint(v);
     printf("\n\n");
     printf("Pretty Print\n");
-    tensor_view_print(v, 2);
+    tensor_print(v, 2);
     printf("\n\n");
 
     /* do some unfolding */
     for(i=0; i<v->nmodes; i++) {
         printf("Unfold along mode %d\n", i);
         vuf = unfold_tensor(v, i);
-        tensor_view_print(vuf, 2);
+        tensor_print(vuf, 2);
         TVFREE(vuf);
         printf("\n\n");
     }
@@ -116,7 +116,7 @@ main(int argc, char **argv)
     /* identity tensor */
     vi = identity_tensor(v->nmodes, v->dim);
     printf("identity tensor\n");
-    tensor_view_print(vi, 0);
+    tensor_print(vi, 0);
     printf("\n\n");
 
     /* tensor slice */
@@ -126,8 +126,8 @@ main(int argc, char **argv)
         slice->fixed[i]=1;
     }
     vslice = tensor_slice(vi, slice);
-    tensor_view_print(vslice, 0);
-    tensor_view_clprint(vslice);
+    tensor_print(vslice, 0);
+    tensor_clprint(vslice);
     free(slice);
     TVFREE(vslice);
     printf("\n\n");
@@ -141,8 +141,8 @@ main(int argc, char **argv)
         slice->fixed[i]=1;
     }
     vslice=tensor_slice(vi, slice);
-    tensor_view_print(vslice, 0);
-    tensor_view_clprint(vslice);
+    tensor_print(vslice, 0);
+    tensor_clprint(vslice);
     free(slice);
     TVFREE(vslice);
     printf("\n\n");
@@ -154,8 +154,8 @@ main(int argc, char **argv)
         slice->fixed[i]=vi->dim[i]/2;
     }
     vslice = tensor_slice(vi, slice);
-    tensor_view_print(vslice, 0);
-    tensor_view_clprint(vslice);
+    tensor_print(vslice, 0);
+    tensor_clprint(vslice);
     free(slice);
     TVFREE(vslice);
     printf("\n\n");
@@ -163,13 +163,13 @@ main(int argc, char **argv)
     /* test transpose */
     printf("Transpose\n");
     vt = tensor_transpose(vi, 0, 1);
-    tensor_view_print(vt, 0);
+    tensor_print(vt, 0);
     printf("\n\n");
 
     /* test copy */
     tcpy = tensor_view_deep_copy(vt);
     printf("Copy of Transpose\n");
-    tensor_view_print(tcpy, 0);
+    tensor_print(tcpy, 0);
     TVFREE(tcpy);
     TVFREE(vt);
     printf("\n\n");

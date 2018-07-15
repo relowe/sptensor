@@ -43,12 +43,12 @@ int main()
     double lambda[] = {0.33, 0.33, 0.33};
 
     /* build tensor a */
-    a = sptensor_view_tensor_alloc(ANDIM, adim);
+    a = tensor_alloc(ANDIM, adim);
     for(i = 0; i < ANELEM; i++) {
 	TVSET(a, aidx_list[i], a_values[i]);
     }
     printf("Tensor A\n");
-    tensor_view_print(a, 0);
+    tensor_print(a, 0);
     printf("\n\n");
 
     /* run ccd */
@@ -57,14 +57,14 @@ int main()
     /* display the results */
     b = ccd_construct(result);
     printf("Constructed Tensor\n");
-    tensor_view_print(b, 2);
+    tensor_print(b, 2);
     printf("\n\n");
     printf("Core Tensor\n");
-    tensor_view_print(result->core, 2);
+    tensor_print(result->core, 2);
     printf("\n\n");
     for(i=0; i<result->n; i++) {
 	printf("U_%d\n", i);
-	tensor_view_print(result->u[i], 2);
+	tensor_print(result->u[i], 2);
 	printf("\n\n");
     }
     printf("Iterations: %d\n", result->iter);

@@ -178,9 +178,9 @@ cmd_write_tensor(cmdargs *args, const char *suffix, int seq, tensor_view *v)
 
     /* write the tensor in its appropriate format */
     if(args->fmt == CL) {
-	tensor_view_write(file, v);
+	tensor_write(file, v);
     } else {
-	tensor_view_fprint(file, v, args->precision);
+	tensor_fprint(file, v, args->precision);
     }
 
     /* close the file (if it is not stdout) */
@@ -200,7 +200,7 @@ cmd_read_tensor(char *fname)
     stns = sptensor_read(file);
     fclose(file);
     
-    u = sptensor_view_alloc(stns);
+    u = sptensor_view(stns);
     result = tensor_view_deep_copy(u);
     TVFREE(u);
     sptensor_free(stns);

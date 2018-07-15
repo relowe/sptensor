@@ -60,7 +60,7 @@ cmd_distance(cmdargs *args)
     for(i=0; i<ntns; i++) {
 	file = fopen(argv[1+i], "r");
 	t[i] = sptensor_read(file);
-	u[i] = sptensor_view_alloc(t[i]);
+	u[i] = sptensor_view(t[i]);
 	fclose(file);
     fprintf(stderr, "Loaded %d\n", i);
     }
@@ -94,7 +94,7 @@ cmd_distance(cmdargs *args)
     }
 
     /* write the output */
-    dist_view = sptensor_view_alloc(dist);
+    dist_view = sptensor_view(dist);
     cmd_write_tensor(args, "distance", -1, dist_view);
 
     /* cleanup */

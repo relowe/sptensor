@@ -46,48 +46,48 @@ int main()
     int i;
 
     /* build a and b */
-    a = sptensor_view_tensor_alloc(ANDIM, adim);
+    a = tensor_alloc(ANDIM, adim);
     for(i=0; i<ANELEM; i++) {
 	TVSET(a, aidx_list[i], a_values[i]);
     }
-    b = sptensor_view_tensor_alloc(BNDIM, bdim);
+    b = tensor_alloc(BNDIM, bdim);
     for(i=0; i<BNELEM; i++) {
 	TVSET(b, bidx_list[i], b_values[i]);
     }
 
     /* print a and b */
     printf("A\n");
-    tensor_view_print(a, 0);
+    tensor_print(a, 0);
     printf("\n\n");
     printf("B\n");
-    tensor_view_print(b, 0);
+    tensor_print(b, 0);
     printf("\n\n");
 
     /* test addition */
     printf("A+B\n");
     c = tensor_add(a, b);
-    tensor_view_print(c, 0);
+    tensor_print(c, 0);
     printf("\n\n");
     TVFREE(c);
 
     /* test subtraction */
     printf("A-B\n");
     c = tensor_sub(a, b);
-    tensor_view_print(c, 0);
+    tensor_print(c, 0);
     printf("\n\n");
     TVFREE(c);
 
     /* test scalar multiplication */
     printf("3 * A\n");
     c = scalar_mul(a, 3);
-    tensor_view_print(c, 0);
+    tensor_print(c, 0);
     printf("\n\n");
     TVFREE(c);
     
     /* test scalar division */
     printf("A/3\n");
     c = scalar_div(a, 3);
-    tensor_view_print(c, 0);
+    tensor_print(c, 0);
     printf("\n\n");
     TVFREE(c);
 

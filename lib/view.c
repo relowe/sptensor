@@ -27,7 +27,7 @@
 
 /* write coordinate list to file */
 void
-tensor_view_write(FILE *file, tensor_view *v)
+tensor_write(FILE *file, tensor_view *v)
 {
     sp_index_t *idx;
     int i,j;
@@ -62,9 +62,9 @@ tensor_view_write(FILE *file, tensor_view *v)
 
 /* coordinate list print */
 void
-tensor_view_clprint(tensor_view *v)
+tensor_clprint(tensor_view *v)
 {
-    tensor_view_write(stdout, v);
+    tensor_write(stdout, v);
 }
 
 /* 
@@ -101,14 +101,14 @@ tensor_view_max_digits(tensor_view* v)
 
 /* pretty print */
 void
-tensor_view_print(tensor_view *v, unsigned int precision)
+tensor_print(tensor_view *v, unsigned int precision)
 {
-    tensor_view_fprint(stdout, v, precision);
+    tensor_fprint(stdout, v, precision);
 }
 
 
 void
-tensor_view_fprint(FILE *file, tensor_view *v, unsigned int precision)
+tensor_fprint(FILE *file, tensor_view *v, unsigned int precision)
 {
     unsigned int width;
     int ui;  /* index being updated */
@@ -380,7 +380,7 @@ sptensor_view_free(tensor_view *v)
 
 /* allocate an sptensor view */
 tensor_view *
-sptensor_view_alloc(sptensor *tns)
+sptensor_view(sptensor *tns)
 {
     tensor_view *v;  /* the allocated view */
 
@@ -409,12 +409,12 @@ sptensor_view_alloc(sptensor *tns)
    dim    - The dimensions of the tensor
 */
 tensor_view *
-sptensor_view_tensor_alloc(int nmodes, sp_index_t *dim)
+tensor_alloc(int nmodes, sp_index_t *dim)
 {
     tensor_view *result;
     
     /* allocate the tensor and view */
-    result = sptensor_view_alloc(sptensor_alloc(nmodes, dim));
+    result = sptensor_view(sptensor_alloc(nmodes, dim));
 
     /* set up our free method */
     result->tvfree = base_view_free;
@@ -432,7 +432,7 @@ tensor_view *tensor_view_deep_copy(tensor_view *t)
     sp_index_t *idx;
 
     /* allocate the new tensor and index */
-    result = sptensor_view_tensor_alloc(t->nmodes, t->dim);
+    result = tensor_alloc(t->nmodes, t->dim);
     idx = malloc(sizeof(sp_index_t) * t->nmodes);
 
     /* copy the tensor's non-zero elements */

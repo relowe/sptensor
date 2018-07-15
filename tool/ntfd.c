@@ -47,7 +47,7 @@ cmd_ntfd(cmdargs *args)
     file = fopen(argv[1], "r");
     sptns = sptensor_read(file);
     fclose(file);
-    t = sptensor_view_alloc(sptns);
+    t = sptensor_view(sptns);
 
     /* get the lambda values */
     lambda = malloc(sizeof(double) * t->nmodes);

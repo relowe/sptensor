@@ -77,14 +77,14 @@ typedef struct tensor_slice_spec {
  * generic tensor view functions 
  ********************************/
 /* write coordinate list to file */
-void tensor_view_write(FILE *file, tensor_view *v);
+void tensor_write(FILE *file, tensor_view *v);
 
 /* coordinate list print */
-void tensor_view_clprint(tensor_view *v);
+void tensor_clprint(tensor_view *v);
 
 /* pretty print */
-void tensor_view_print(tensor_view *v, unsigned int precision);
-void tensor_view_fprint(FILE *file, tensor_view *v, unsigned int precision);   
+void tensor_print(tensor_view *v, unsigned int precision);
+void tensor_fprint(FILE *file, tensor_view *v, unsigned int precision);   
 
 /* create an sptensor copy of a tensor view */
 sptensor *tensor_view_sptensor(tensor_view *v);
@@ -96,7 +96,7 @@ sptensor *tensor_view_sptensor(tensor_view *v);
    nmodes - The number of modes
    dim    - The dimensions of the tensor
 */
-tensor_view *sptensor_view_tensor_alloc(int nmodes, sp_index_t *dim);
+tensor_view *tensor_alloc(int nmodes, sp_index_t *dim);
 
 /* Copy a tensor view as a newly allocated tensor with underlying sptensor */
 tensor_view *tensor_view_deep_copy(tensor_view *t);
@@ -107,7 +107,7 @@ tensor_view *tensor_view_deep_copy(tensor_view *t);
  *        The intention here is to work as a base of a chain of views or
  *        to use raw sptensors with all the math functions that use views.
  */
-tensor_view *sptensor_view_alloc(sptensor *tns);
+tensor_view *sptensor_view(sptensor *tns);
 
 /* Unfold a tensor along dimension n */
 tensor_view *unfold_tensor(tensor_view* v, sp_index_t n);

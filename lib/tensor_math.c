@@ -29,7 +29,7 @@ tensor_alloc_cpy(tensor_view *t)
     sp_index_t *idx;
 
     /* allocate the result */
-    result = sptensor_view_tensor_alloc(t->nmodes, t->dim);
+    result = tensor_alloc(t->nmodes, t->dim);
     idx = malloc(sizeof(sp_index_t)*t->nmodes);
 
     /* copy the non-zero elements of a */

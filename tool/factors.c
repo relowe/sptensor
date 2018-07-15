@@ -99,7 +99,7 @@ cmd_norm_factor(cmdargs *args)
 
     /* write the lambdas */
     idx = lambda->size;
-    lambda_view = sptensor_view_tensor_alloc(1, &idx);
+    lambda_view = tensor_alloc(1, &idx);
     for(i=0; i<factor->size; i++) {
 	idx = i+1;
 	TVSET(lambda_view, &idx, VVAL(double, lambda, i));

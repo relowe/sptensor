@@ -269,7 +269,7 @@ static void ccd_update(tensor_view *an, tensor_view *bn, double ln,
 
     /* compute d and zero M's diagonal */
     idx[0] = jmax;
-    d = sptensor_view_tensor_alloc(1, idx);
+    d = tensor_alloc(1, idx);
     for(j=1; j<=jmax; j++) {
 	idx[0] = idx[1] = j;
 	TVSET(d, idx, TVGET(m, idx));
@@ -345,7 +345,7 @@ ccd_un_init(ccd_result *result, tensor_view *a, int n)
     /* first, set up the dimensions of U[i] and allocate */
     dim[0] = a->dim[n];  /* I_n from the paper */
     dim[1] = result->core->dim[n]; /* J_n from the paper */
-    result->u[n] = sptensor_view_tensor_alloc(2, dim);
+    result->u[n] = tensor_alloc(2, dim);
 
     /* build a list of rows to populate in U_n, and find min and max */
     idx = malloc(sizeof(sp_index_t) * a->nmodes);

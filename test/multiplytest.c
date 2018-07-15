@@ -71,29 +71,29 @@ int main()
     int i;
 
     /* build tensor a */
-    a = sptensor_view_tensor_alloc(ANDIM, adim);
+    a = tensor_alloc(ANDIM, adim);
     for(i = 0; i < ANELEM; i++) {
 	TVSET(a, aidx_list[i], a_values[i]);
     }
     printf("Tensor A\n");
-    tensor_view_print(a, 0);
+    tensor_print(a, 0);
     printf("\n\n");
 
     /* build tensor u */
-    u = sptensor_view_tensor_alloc(UNDIM, udim);
+    u = tensor_alloc(UNDIM, udim);
     for(i = 0; i < UNELEM; i++) {
 	TVSET(u, uidx_list[i], u_values[i]);
     }
     printf("Tensor U\n");
-    tensor_view_print(u, 0);
+    tensor_print(u, 0);
     printf("\n\n");
 
     /* build v1 and v2 */
-    v1 = sptensor_view_tensor_alloc(V1NDIM, v1dim);
+    v1 = tensor_alloc(V1NDIM, v1dim);
     for(i = 0; i < V1NELEM; i++) {
 	TVSET(v1, v1idx_list[i], v1_values[i]);
     }
-    v2 = sptensor_view_tensor_alloc(V2NDIM, v2dim);
+    v2 = tensor_alloc(V2NDIM, v2dim);
     for(i = 0; i < V2NELEM; i++) {
 	TVSET(v2, v2idx_list[i], v2_values[i]);
     }
@@ -103,7 +103,7 @@ int main()
     for(i=0; i<ANDIM; i++) {
 	printf("A x_%d U\n", i);
 	b = nmode_product(i, a, u);
-	tensor_view_print(b, 0);
+	tensor_print(b, 0);
 	printf("\n\n");
 	TVFREE(b);
     }
@@ -115,24 +115,24 @@ int main()
     slice->fixed[2] = 2;
     m2 = tensor_slice(a, slice);
     printf("m1\n");
-    tensor_view_print(m1, 0);
+    tensor_print(m1, 0);
     printf("\n\n");
     printf("m2\n");
-    tensor_view_print(m2, 0);
+    tensor_print(m2, 0);
     printf("\n\n");
     printf("m1 x m2\n");
     b = matrix_product(m1, m2);
-    tensor_view_print(b, 0);
+    tensor_print(b, 0);
     printf("\n\n");
 
     /* tensor product */
     printf("V1\n");
-    tensor_view_print(v1, 0);
+    tensor_print(v1, 0);
     printf("V2\n");
-    tensor_view_print(v2, 0);
+    tensor_print(v2, 0);
     printf("V1 xt V2\n");
     c = tensor_product(v1, v2);
-    tensor_view_print(c, 0);
+    tensor_print(c, 0);
     printf("\n\n");
 
     /* cleanup! */
