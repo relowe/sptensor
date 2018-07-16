@@ -27,11 +27,11 @@
 #include <sptensor/vector.h>
 #include <sptensor/view.h>
 
-/* Maximum memory to use for dtensors */
+/* Maximum memory to use for dtensors (default 100MB) */
 extern unsigned int sptensor_max_memory;
 
-/* 1 for verbose output, 0 for no output */
+/* 1 for verbose output, 0 for no output (default 0) */
 extern unsigned int sptensor_verbose;
 
-/* default norm level to use in tensor algorithms */
+/* default norm level to use in tensor algorithms (default 2) */
 extern int stpensor_default_lp;
