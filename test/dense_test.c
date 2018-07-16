@@ -56,7 +56,7 @@ int main()
     }
 
     printf("Pretty Print\n");
-    tensor_print(tns);
+    tensor_print(tns, 2);
     printf("\n\n");
 
     printf("Coordinate List\n");
