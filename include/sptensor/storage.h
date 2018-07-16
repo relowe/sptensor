@@ -87,6 +87,10 @@ void sptensor_set(sptensor *tns, sp_index_t *idx, double val);
 int sptensor_indexcmp(unsigned int nmodes, const sp_index_t *a, const sp_index_t *b);
 
 
+/* 
+ * Increment an index in a row major way 
+ */
+void sptensor_index_inc(unsigned int nmodes, const sp_index_t *dim, sp_index_t *idx);
 
 /*
  * Find the index into ar of the tensor struct.
