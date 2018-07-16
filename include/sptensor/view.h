@@ -101,6 +101,9 @@ tensor_view *tensor_alloc(int nmodes, sp_index_t *dim);
 /* Copy a tensor view as a newly allocated tensor with underlying sptensor */
 tensor_view *tensor_view_deep_copy(tensor_view *t);
 
+/* Create a dense tensor view (useful for smaller tensors) */
+tensor_view *dense_tensor_alloc(int nmodes, sp_index_t *dim);
+
 
 /* 
  * VIEW - sptensor view.  Wraps an sptensor and does no translation.  
