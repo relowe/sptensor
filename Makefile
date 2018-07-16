@@ -1,5 +1,5 @@
 CFLAGS=-I./include -g -L./build/lib -ansi -g
-ALL=test/sptensortest build/lib/libsptensor.so build/lib/libsptensor.a test/multiplytest test/mathtest test/ccdtest build/bin/sptensor
+ALL=test/sptensortest build/lib/libsptensor.so build/lib/libsptensor.a test/multiplytest test/mathtest test/ccdtest build/bin/sptensor test/dense_test
 LDFLAGS=-lsptensor -lm
 CC=gcc
 SPTENSOR_LIB=build/obj/storage.o build/obj/sptensorio.o build/obj/vector.o build/obj/view.o build/obj/multiply.o build/obj/tensor_math.o build/obj/ccd.o build/obj/binsearch.o lib/params.c
@@ -59,6 +59,8 @@ test/sptensortest: test/sptensortest.c build/lib/libsptensor.a
 test/multiplytest: test/multiplytest.c build/lib/libsptensor.a
 	gcc $(CFLAGS) $^ $(LDFLAGS) -o $@
 test/mathtest: test/mathtest.c build/lib/libsptensor.a
+	gcc $(CFLAGS) $^ $(LDFLAGS) -o $@
+test/dense_test: test/dense_test.c build/lib/libsptensor.a
 	gcc $(CFLAGS) $^ $(LDFLAGS) -o $@
 clean:
 	rm -rf *.o build $(ALL)
