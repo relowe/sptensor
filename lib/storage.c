@@ -163,6 +163,47 @@ sptensor_indexcmp(unsigned int nmodes, const sp_index_t *a, const sp_index_t *b)
 }
 
 
+/* 
+ * Increment an index in a row major way 
+ */
+void
+sptensor_index_inc(unsigned int nmodes, const sp_index_t *dim, sp_index_t *idx)
+{
+    unsigned int ui;
+
+    /* start with columns! */
+    if(nmodes >= 2) {
+	ui = 1;
+    } else {
+	ui = 0;
+    }
+
+    do {
+	idx[ui]++;  /* increment */
+
+	/* accept valid increments */
+	if(idx[ui] <= dim[ui]) {
+	    return;
+	}
+
+	/* go on to the next mode! */
+	idx[ui] = 1;
+	if(ui == 0) {
+	    ui = 2;
+	} else if(ui == 1){
+	    ui = 0;
+	} else {
+	    ui++;
+	}
+    } while(ui < nmodes); /* once we have done the last mode, God help us! */
+
+    /* make it bigger */
+    for(ui=0; ui<nmodes; ui++) {
+	idx[ui] = dim[ui]+1;
+    }
+}
+
+
 static int spindex_bincmp(int element_size, void *a, void *b)
 {
     return sptensor_indexcmp(element_size / sizeof(sp_index_t), a, b);
