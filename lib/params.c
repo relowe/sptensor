@@ -21,7 +21,7 @@
 unsigned int sptensor_max_memory = 100 * 1024 * 1024;
 
 /* 1 for verbose output, 0 for no output (default 0) */
-extern unsigned int sptensor_verbose = 0;
+unsigned int sptensor_verbose = 0;
 
 /* default norm level to use in tensor algorithms (default 2) */
-extern int stpensor_default_lp = 2;
+int stpensor_default_lp = 2;
