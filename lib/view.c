@@ -449,6 +449,176 @@ tensor_view *tensor_view_deep_copy(tensor_view *t)
 
 
 /***************************************
+ * Dense Tensor Representation/View
+ ***************************************/
+struct dense_tensor {
+    sp_index_t *mul;
+    unsigned int totalCount;
+    double *elem;
+};
+
+
+static unsigned int
+dense_tensor_nnz(tensor_view *v)
+{
+    struct dense_tensor *dtns = (struct dense_tensor *) v->data;
+    unsigned int nnz=0;
+    int i;
+
+    for(i=0; i<dtns->totalCount; i++) {
+	if(dtns->elem[i] == 0.0) {
+	    nnz++;
+	}
+    }
+
+    return nnz;
+}
+
+
+static void
+dense_tensor_idx(tensor_view *v, unsigned int i, sp_index_t *idx)
+{
+    struct dense_tensor *dtns = (struct dense_tensor *) v->data;
+    int ui;
+    int j;
+    int first = 1;
+
+    /* find the ith non-zero element */
+    for(j=0; i>=0 && j<dtns->totalCount; j++) {
+	if(dtns->elem[j] != 0) {
+	    if(first) {
+		first = 0;
+		if(i == 0) break;
+	    } else {
+		i--;
+	    }
+	}
+    }
+
+    /* translate the index */
+    for(ui=0; ui<v->nmodes; ui++){
+	idx[ui] = j/dtns->mul[ui];
+	j %= dtns->mul[ui];
+    }
+}
+
+
+static double
+dense_tensor_geti(tensor_view *v, unsigned int i)
+{
+    struct dense_tensor *dtns = (struct dense_tensor *) v->data;
+    int j;
+    int first = 1;
+
+    /* find the ith non-zero element */
+    for(j=0; i>=0 && j<dtns->totalCount; j++) {
+	if(dtns->elem[j] != 0) {
+	    if(first) {
+		first = 0;
+		if(i == 0) break;
+	    } else {
+		i--;
+	    }
+	}
+    }
+
+    return dtns->elem[j];
+}
+
+
+static unsigned int
+dense_tensor_compute_index(tensor_view *v, sp_index_t *idx)
+{
+    struct dense_tensor *dtns = (struct dense_tensor *) v->data;
+    int j=0;
+    int ui;
+
+    for(ui=0; ui<v->nmodes; ui++) {
+	j += idx[ui] * dtns->mul[ui];
+    }
+
+    return j;
+}
+
+
+static double
+dense_tensor_get(tensor_view *v, sp_index_t *idx)
+{
+    struct dense_tensor *dtns = (struct dense_tensor *) v->data;
+
+    return dtns->elem[dense_tensor_compute_index(v, idx)];
+}
+
+
+static void
+dense_tensor_set(tensor_view *v, sp_index_t *idx, double val)
+{
+    struct dense_tensor *dtns = (struct dense_tensor *) v->data;
+
+    dtns->elem[dense_tensor_compute_index(v, idx)] = val;
+}
+
+
+static void
+dense_tensor_idxcpy(tensor_view *v, sp_index_t *in, sp_index_t *out)
+{
+    memcpy(out, in, v->nmodes * sizeof(sp_index_t));
+}
+
+
+static void
+dense_tensor_free(tensor_view *v)
+{
+    struct dense_tensor *dtns = (struct dense_tensor *) v->data;
+
+    free(dtns->mul);
+    free(dtns->elem);
+    free(v->data);
+    free(v->dim);
+    free(v);
+}
+
+
+/* Create a dense tensor view (useful for smaller tensors) */
+tensor_view *
+dense_tensor_alloc(int nmodes, sp_index_t *dim)
+{
+    tensor_view *v; /* the allocated view */
+    struct dense_tensor *dtns;
+    int i;
+    
+
+    /* allocate and poulate the view */
+    v = base_view_alloc();
+    v->data = malloc(sizeof(struct dense_tensor));
+    v->dim = malloc(sizeof(sp_index_t) * nmodes);
+    memcpy(v->dim, dim, sizeof(sp_index_t) * nmodes);
+    v->nmodes = nmodes;
+    v->nnz = dense_tensor_nnz;
+    v->get_idx = dense_tensor_idx;
+    v->geti = dense_tensor_geti;
+    v->get = dense_tensor_get;
+    v->set =dense_tensor_set;
+    v->to = dense_tensor_idxcpy;
+    v->from = dense_tensor_idxcpy;
+    v->tvfree  = dense_tensor_free;
+
+    /* allocate and set up the dense tensor elements */
+    dtns = (struct dense_tensor *)v->data;
+    dtns->mul = malloc(sizeof(sp_index_t) * nmodes);
+    dtns->mul[nmodes-1] = 1;
+    dtns->totalCount = v->dim[nmodes-1];
+    for(i=nmodes-2; i>=0; i--) {
+	dtns->totalCount *= v->dim[i];
+	dtns->mul[i] = dtns->mul[i+1]*v->dim[i];
+    }
+    dtns->elem = calloc(dtns->totalCount, sizeof(double));
+    return v;
+}
+
+
+
+/***************************************
  * Identity Tensor
  ***************************************/
 static unsigned int
@@ -650,7 +820,7 @@ unfold_tensor(tensor_view *v, sp_index_t n)
 
 
 /***************************************
- * Unfoleded Tensor View
+ * Tensor Slice View
  ***************************************/
 
 /*
