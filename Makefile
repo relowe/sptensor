@@ -2,7 +2,7 @@ CFLAGS=-I./include -g -L./build/lib -ansi -g
 ALL=test/sptensortest build/lib/libsptensor.so build/lib/libsptensor.a test/multiplytest test/mathtest test/ccdtest build/bin/sptensor
 LDFLAGS=-lsptensor -lm
 CC=gcc
-SPTENSOR_LIB=build/obj/storage.o build/obj/sptensorio.o build/obj/vector.o build/obj/view.o build/obj/multiply.o build/obj/tensor_math.o build/obj/ccd.o build/obj/binsearch.o
+SPTENSOR_LIB=build/obj/storage.o build/obj/sptensorio.o build/obj/vector.o build/obj/view.o build/obj/multiply.o build/obj/tensor_math.o build/obj/ccd.o build/obj/binsearch.o lib/params.c
 
 all: dirs $(ALL)
 dirs: build/lib build/bin build/obj
