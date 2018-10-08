@@ -34,7 +34,6 @@ int main()
 
     idx = malloc(sizeof(sp_index_t) * nmodes);
     dim = malloc(sizeof(sp_index_t) * nmodes);
-    tns = dense_tensor_alloc(nmodes, dim);
 
     printf("Dims: ");
     for(i=0; i<nmodes; i++) {
@@ -42,17 +41,20 @@ int main()
 	idx[i] = 1;
     }
 
+    tns = dense_tensor_alloc(nmodes, dim);
+    
     i=0;
     for(idx; sptensor_indexcmp(nmodes, idx, dim) <=0;
-	sptensor_index_inc(nmodes, dim, idx), i++) {
+	sptensor_index_inc(nmodes, dim, idx)) {
 
-	if(rand()%10 < 3) {
+	if(rand()%6 < 3) {
 	    val = 0.0;
 	} else {
 	    val = i+1;
 	}
 
 	TVSET(tns, idx, val);
+	i++;
     }
 
     printf("Pretty Print\n");

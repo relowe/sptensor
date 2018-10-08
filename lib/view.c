@@ -466,7 +466,7 @@ dense_tensor_nnz(tensor_view *v)
     int i;
 
     for(i=0; i<dtns->totalCount; i++) {
-	if(dtns->elem[i] == 0.0) {
+	if(dtns->elem[i] != 0.0) {
 	    nnz++;
 	}
     }
@@ -497,7 +497,7 @@ dense_tensor_idx(tensor_view *v, unsigned int i, sp_index_t *idx)
 
     /* translate the index */
     for(ui=0; ui<v->nmodes; ui++){
-	idx[ui] = j/dtns->mul[ui];
+	idx[ui] = j/dtns->mul[ui]+1;
 	j %= dtns->mul[ui];
     }
 }
@@ -534,7 +534,7 @@ dense_tensor_compute_index(tensor_view *v, sp_index_t *idx)
     int ui;
 
     for(ui=0; ui<v->nmodes; ui++) {
-	j += idx[ui] * dtns->mul[ui];
+	j += (idx[ui]-1) * dtns->mul[ui];
     }
 
     return j;
