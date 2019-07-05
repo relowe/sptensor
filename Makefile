@@ -1,8 +1,8 @@
 CFLAGS=-I./include -g -L./build/lib -ansi -g
-ALL=test/sptensortest build/lib/libsptensor.so build/lib/libsptensor.a test/multiplytest test/mathtest test/ccdtest build/bin/sptensor test/dense_test
+ALL=test/sptensortest build/lib/libsptensor.so build/lib/libsptensor.a test/multiplytest test/mathtest test/ccdtest build/bin/sptensor test/dense_test test/hash_test
 LDFLAGS=-lsptensor -lm
 CC=gcc
-SPTENSOR_LIB=build/obj/storage.o build/obj/sptensorio.o build/obj/vector.o build/obj/view.o build/obj/multiply.o build/obj/tensor_math.o build/obj/ccd.o build/obj/binsearch.o lib/params.c
+SPTENSOR_LIB=build/obj/storage.o build/obj/sptensorio.o build/obj/vector.o build/obj/view.o build/obj/multiply.o build/obj/tensor_math.o build/obj/ccd.o build/obj/binsearch.o build/obj/hash.o lib/params.c
 
 all: dirs $(ALL)
 dirs: build/lib build/bin build/obj
@@ -32,6 +32,8 @@ build/obj/ccd.o: include/sptensor/ccd.h lib/ccd.c
 	gcc -o $@ -c lib/ccd.c $(CFLAGS) -fPIC
 build/obj/binsearch.o: include/sptensor/binsearch.h lib/binsearch.c
 	gcc -o $@ -c lib/binsearch.c $(CFLAGS) -fPIC
+build/obj/hash.o: lib/hash.c
+	gcc -o $@ -c lib/hash.c $(CFLAGS) -fPIC
 
 #tool program
 build/obj/cmdargs.o: tool/cmdargs.c tool/cmdargs.h tool/commands.h
@@ -61,6 +63,8 @@ test/multiplytest: test/multiplytest.c build/lib/libsptensor.a
 test/mathtest: test/mathtest.c build/lib/libsptensor.a
 	gcc $(CFLAGS) $^ $(LDFLAGS) -o $@
 test/dense_test: test/dense_test.c build/lib/libsptensor.a
+	gcc $(CFLAGS) $^ $(LDFLAGS) -o $@
+test/hash_test: test/hash_test.c build/lib/libsptensor.a
 	gcc $(CFLAGS) $^ $(LDFLAGS) -o $@
 clean:
 	rm -rf *.o build $(ALL)
