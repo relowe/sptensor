@@ -22,9 +22,11 @@
 #include <stdio.h>
 #include <sptensor/storage.h>
 
-/* struct prototype */
+/* struct prototypes */
 struct tensor_view;
 typedef struct tensor_view tensor_view;
+struct tensor_view_iterator;
+typedef struct tensor_view_iterator tensor_view_iterator;
 
 /* function pointer types */
 typedef unsigned int (*nnz_func)(tensor_view *);
@@ -34,6 +36,9 @@ typedef double (*get_func)(tensor_view*, sp_index_t*);
 typedef void (*set_func)(tensor_view*, sp_index_t*, double);
 typedef void (*index_trans_func)(tensor_view*, sp_index_t*, sp_index_t*);
 typedef void (*tensor_view_free_func)(tensor_view*);
+typedef int (*tensor_view_iterator_next_func)(tensor_view_iterator*);
+typedef int (*tensor_view_iterator_prev_func)(tensor_view_iterator*);
+typedef void (*tensor_view_iterator_free_func)(tensor_view_iterator*);
 
 struct tensor_view {
     tensor_view *tns;      /* The underlying object */
@@ -61,6 +66,20 @@ typedef struct tensor_slice_spec {
     */
 } tensor_slice_spec;
 
+
+struct tensor_view_iterator {
+    int valid;        /* 1 if iterator is pointing to an item, 0 o.w. */
+    tensor_view *tns; /* The view we are iterating over */
+    sp_index_t *idx;  /* The index we are currently viewing */
+    double *val;      /* The value we are currently viewing */
+    void *v;          /* additional data for the iterator */
+
+    /* function pointers for movement and destruction */
+    tensor_view_iterator_next_func next;
+    tensor_view_iterator_prev_func prev;
+    tensor_view_iterator_free_func itrfree;
+};
+
 /* Macro wrappers for function pointers and others */
 #define TVNNZ(v) (*((tensor_view*)(v))->nnz)((tensor_view*)(v))
 #define TVIDX(v,i, idx) (*((tensor_view*)(v))->get_idx)((tensor_view*)(v), (i), (idx))
@@ -72,6 +91,9 @@ typedef struct tensor_slice_spec {
 #define TVFREE(v) (*((tensor_view*)(v))->tvfree)(((tensor_view*)v))
 #define TVIDX_ALLOC(v) malloc(sizeof(sp_index_t) * ((tensor_view*)(v))->nmodes)
 #define TVNMODES(v) (((tensor_view*)(v))->nmodes)
+#define TV_ITR_NEXT(itr) ((itr)->next((itr)))
+#define TV_ITR_PREV(itr) ((itr)->prev((itr)))
+#define TV_ITR_FREE(itr) ((itr)->free((itr)))
 
 /********************************
  * generic tensor view functions 
@@ -142,5 +164,28 @@ tensor_view *tensor_slice(tensor_view *v, tensor_slice_spec *spec);
  */
 tensor_view *tensor_transpose(tensor_view *v, unsigned int i, unsigned int j);
 
+
+/********************************
+ * Generic Iterator Functions 
+ ********************************/
+
+/* 
+ * Return a tensor iterator that will visit every index in the  
+ * tensor view. The iterator is initialized to the first index.
+ */
+tensor_view_iterator *tensor_view_iterator_begin(tensor_view *tv);
+
+
+/*
+ * Return a tensor iterator that will visit every non zero index in 
+ * the tensor view.  The iterator is initialized to the first index.
+ */
+tensor_view_iterator *tensor_view_iterator_begin_nnz(tensor_view *tv);
+
+
+/*
+ * Allocate an empty tensor view iterator, all pointers set to null.
+ */
+tensor_view_iterator *tensor_view_iterator_alloc();
 
 #endif
