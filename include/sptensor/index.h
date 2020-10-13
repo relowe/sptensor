@@ -22,7 +22,7 @@
 #define SPTENSOR_INDEX_H
 
 /* data type for index values */
-typedef unsigned int sp_index_t;
+typedef unsigned int sptensor_index_t;
 
 /* 
  * Compare two indexes for a given tensor.  Comparison is 
@@ -37,12 +37,12 @@ typedef unsigned int sp_index_t;
  *            0 if a == b
  *          > 0 if a > b
  */
-int sptensor_index_cmp(unsigned int nmodes, const sp_index_t *a, const sp_index_t *b);
+int sptensor_index_cmp(unsigned int nmodes, const sptensor_index_t *a, const sptensor_index_t *b);
 
 
 /* 
  * Increment an index in a row major way 
  */
-void sptensor_index_inc(unsigned int nmodes, const sp_index_t *dim, sp_index_t *idx);
+void sptensor_index_inc(unsigned int nmodes, const sptensor_index_t *dim, sptensor_index_t *idx);
 
 #endif

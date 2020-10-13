@@ -35,7 +35,7 @@
  *          > 0 if a > b
  */
 int
-sptensor_index_cmp(unsigned int nmodes, const sp_index_t *a, const sp_index_t *b)
+sptensor_index_cmp(unsigned int nmodes, const sptensor_index_t *a, const sptensor_index_t *b)
 {
     int i;
 
@@ -58,7 +58,7 @@ sptensor_index_cmp(unsigned int nmodes, const sp_index_t *a, const sp_index_t *b
  * Increment an index in a row major way 
  */
 void
-sptensor_index_inc(unsigned int nmodes, const sp_index_t *dim, sp_index_t *idx)
+sptensor_index_inc(unsigned int nmodes, const sptensor_index_t *dim, sptensor_index_t *idx)
 {
     unsigned int ui;
 
