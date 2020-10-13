@@ -18,21 +18,21 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
  */
-
+#include <gmp.h>
+#include <sptensor/index.h>
 
 /* General tensor framework */
 #ifndef SPTENSOR_H
 #define SPTENSOR_H
 
 /* basic typedefs and struct prototypes */
-typedef unsigned int sptensor_index_t;
 struct sptensor;
 struct sptensor_iterator;
 
 /* function prototype types */
-typedef double (*sptensor_get_f)(struct sptensor*, sptensor_index_t*);
-typedef double (*sptensor_set_f)(struct sptensor*, sptensor_index_t*, double);
-typedef struct sptensor_iterator* (*sptensor_iterator_f)(struct sptensor*);
+typedef void (*sptensor_get_f)(sptensor_t*, sptensor_index_t*, mpf_t );
+typedef void (*sptensor_set_f)(sptensor_t*, sptensor_index_t*, mpf_t);
+typedef struct sptensor_iterator* (*sptensor_iterator_f)(sptensor_t*);
 typedef void (*sptensor_free_f)(void*);
 typedef int (*sptensor_iterator_next_f)(struct sptensor_iterator*);
 typedef int (*sptensor_iterator_prev_f)(struct sptensor_iterator*);
@@ -64,8 +64,8 @@ typedef struct sptensor_iterator
 
 
 /* inline wrappers for sptensor functions */
-inline double sptensor_get(sptensor_t * t, sptensor_index_t *i) { return t->get(t, i); }
-inline double sptensor_set(sptensor_t * t, sptensor_index_t *i, double d) { return t->set(t, i, d); }
+inline void sptensor_get(sptensor_t * t, sptensor_index_t *i, mpf_t v) { t->get(t, i, v); }
+inline void sptensor_set(sptensor_t * t, sptensor_index_t *i, mpf_t v) { t->set(t, i, v); }
 inline sptensor_iterator_t* sptensor_iterator(sptensor_t *t) { return t->iterator(t); }
 inline sptensor_iterator_t* sptensor_nz_iterator(sptensor_t *t) { return t->nz_iterator(t); }
 inline void sptensor_free(sptensor_t* t){ t->free(t); }
