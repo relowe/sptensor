@@ -37,8 +37,8 @@ typedef struct sptensor_coo
     sptensor_free_f free;
 
     /* coo specific fields */
-    vector coo;
-    vector data;
+    sptensor_vector coo;
+    sptensor_vector data;
 } sptensor_coo_t;
 
 /* COO allocation functions */

@@ -22,89 +22,89 @@
 #define VECTOR_H
 #include <stdlib.h>
 
-typedef struct vector {
+typedef struct sptensor_vector {
     void *ar;
     size_t element_size;
     unsigned int size;
     unsigned int capacity;
-} vector;
+} sptensor_vector;
 
 #define VPTR(v, i) ((v)->ar + (i) * (v)->element_size)
 #define VVAL(type, v, i) *((type*)(VPTR((v),(i))))
 
 /*
- * Allocate a vector.
+ * Allocate a sptensor_vector.
  * 
- * Parameters: element_size - The size of each vector element
- *             capacity     - The initial capacity of the vector
+ * Parameters: element_size - The size of each sptensor_vector element
+ *             capacity     - The initial capacity of the sptensor_vector
  * 
- * Returns: The newly allocated vector
+ * Returns: The newly allocated sptensor_vector
  */
-vector *vector_alloc(size_t element_size, int capacity);
+sptensor_vector *sptensor_vector_alloc(size_t element_size, int capacity);
 
 
 /*
- * Copy a vector 
+ * Copy a sptensor_vector 
  *
- * Parameters: v - The vector to copy
+ * Parameters: v - The sptensor_vector to copy
  *
- * Returns a copy of the vector, perfectly sized to hold 
+ * Returns a copy of the sptensor_vector, perfectly sized to hold 
  * its contents.
  */
-vector *vector_copy(vector *v);
+sptensor_vector *sptensor_vector_copy(sptensor_vector *v);
 
 
 /*
- * Free all the memory associated with a vector.
+ * Free all the memory associated with a sptensor_vector.
  * 
- * Parameters: v - The vector to free
+ * Parameters: v - The sptensor_vector to free
  */
-void vector_free(vector *v);
+void sptensor_vector_free(sptensor_vector *v);
 
 
 /* 
- * Grow the vector's capacity by a factor of two.
+ * Grow the sptensor_vector's capacity by a factor of two.
  * 
- * Parameters: v - The vector to grow
+ * Parameters: v - The sptensor_vector to grow
  */
-void vector_grow(vector *v);
+void sptensor_vector_grow(sptensor_vector *v);
 
 
 /*
- * Append an item to the back of the vector, growing if needed.
+ * Append an item to the back of the sptensor_vector, growing if needed.
  * 
- * Paremters: v    - The vector to append to
- *            item - The item to copy into the vector
+ * Paremters: v    - The sptensor_vector to append to
+ *            item - The item to copy into the sptensor_vector
  */
-void vector_push_back(vector *v, const void *item);
+void sptensor_vector_push_back(sptensor_vector *v, const void *item);
 
 /*
- * Insert an item into a vector at index i.  Everythine 
+ * Insert an item into a sptensor_vector at index i.  Everythine 
  * after this position is pushed one slot further down.
  *
- * Paraemters: v  -   The vector to insert into
+ * Paraemters: v  -   The sptensor_vector to insert into
  *             i    - The index of the position to be inserted
- *             item - The item to copy into the vector
+ *             item - The item to copy into the sptensor_vector
  */
-void vector_insert(vector *v, unsigned int i, const void *item);
+void sptensor_vector_insert(sptensor_vector *v, unsigned int i, const void *item);
 
 
 /*
- * Remove the element at index i from the vector, shifting everything
+ * Remove the element at index i from the sptensor_vector, shifting everything
  * After i back one position.
  * 
- * Parameters: v - The vector to be modified
+ * Parameters: v - The sptensor_vector to be modified
  *             i - The index of the item to be removed
  */
-void vector_remove(vector *v, unsigned int i);
+void sptensor_vector_remove(sptensor_vector *v, unsigned int i);
 
 
 /*
- * Swap two elements in a vector.
- * Parameters: v - The vector to be modified
+ * Swap two elements in a sptensor_vector.
+ * Parameters: v - The sptensor_vector to be modified
  *             i - The index of the first item
  *             j - The index of the second item
  */
-void vector_swap(vector *v, unsigned int i, unsigned int j);
+void sptensor_vector_swap(sptensor_vector *v, unsigned int i, unsigned int j);
 
 #endif
