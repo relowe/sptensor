@@ -22,6 +22,8 @@
 #define VECTOR_H
 #include <stdlib.h>
 
+#define SPTENSOR_VECTOR_DEFAULT_CAPACITY 128
+
 typedef struct sptensor_vector {
     void *ar;
     size_t element_size;
