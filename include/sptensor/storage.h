@@ -71,26 +71,6 @@ double sptensor_get(sptensor *tns, sp_index_t *idx);
 void sptensor_set(sptensor *tns, sp_index_t *idx, double val);
 
 
-/* 
- * Compare two indexes for a given tensor.  Comparison is 
- * performed from left to right.  Pretty much exactly as 
- * strcmp, except with ints.
- * 
- * Parameter: nmodes - The number of modes
- *            a   - The left hand index being compared
- *            b   - The right hand index being compared
- *  
- * Return:  < 0 if a < b
- *            0 if a == b
- *          > 0 if a > b
- */
-int sptensor_indexcmp(unsigned int nmodes, const sp_index_t *a, const sp_index_t *b);
-
-
-/* 
- * Increment an index in a row major way 
- */
-void sptensor_index_inc(unsigned int nmodes, const sp_index_t *dim, sp_index_t *idx);
 
 /*
  * Find the index into ar of the tensor struct.
