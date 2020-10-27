@@ -3,7 +3,8 @@ LDFLAGS=-lsptensor -lm
 CC=gcc
 
 SPTENSOR_LIB_SRCFILES := lib/index.c \
-                         lib/vector.c
+                         lib/vector.c \
+                         lib/index_iterator.c
 
 SPTENSOR_LIB_OBJFILES := $(patsubst lib/%.c, build/obj/%.o, $(SPTENSOR_LIB_SRCFILES))
 
