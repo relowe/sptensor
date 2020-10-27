@@ -18,7 +18,26 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+#include <stdlib.h>
 #include <sptensor/index.h>
+
+
+/* 
+ * Allocate an index capable of storing nmodes.
+ */
+sptensor_index_t *sptensor_index_alloc(unsigned int nmodes)
+{
+    return malloc(sizeof(sptensor_index_t) * nmodes);
+}
+
+
+/*
+ * Deallocate the sptensor index.
+ */
+void sptensor_index_free(sptensor_index_t *idx)
+{
+    free(idx);
+}
 
 
 /* 

@@ -16,17 +16,17 @@ int main()
 
     /* Let's allocate a four mode dimension and initialize it */
     nmodes = 4;
-    dim = (sptensor_index_t*) malloc(sizeof(sptensor_index_t) * nmodes);
+    dim = sptensor_index_alloc(nmodes);
     dim[0] = 2;
     dim[1] = 3;
     dim[2] = 2;
     dim[3] = 3;
 
     /* now we will do the index */
-    idx = (sptensor_index_t*) malloc(sizeof(sptensor_index_t) * nmodes);
+    idx = sptensor_index_alloc(nmodes);
 
     /* and the lower bound */
-    lbound = (sptensor_index_t*) malloc(sizeof(sptensor_index_t) * nmodes);
+    lbound = sptensor_index_alloc(nmodes);
 
     /* test incrementing */
     printf("INCREMENT TEST\n");
@@ -49,6 +49,10 @@ int main()
         sptensor_index_dec(nmodes, dim, idx);
     }
     printf("==========================================\n\n");
+
+    sptensor_index_free(idx);
+    sptensor_index_free(lbound);
+    sptensor_index_free(dim);
 }
 
 

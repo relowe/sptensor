@@ -25,6 +25,16 @@
 typedef unsigned int sptensor_index_t;
 
 /* 
+ * Allocate an index capable of storing nmodes.
+ */
+sptensor_index_t *sptensor_index_alloc(unsigned int nmodes);
+
+/*
+ * Deallocate the sptensor index.
+ */
+void sptensor_index_free(sptensor_index_t *idx);
+
+/* 
  * Compare two indexes for a given tensor.  Comparison is 
  * performed from left to right.  Pretty much exactly as 
  * strcmp, except with ints.
