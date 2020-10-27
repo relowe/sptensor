@@ -10,9 +10,11 @@ SPTENSOR_LIB_OBJFILES := $(patsubst lib/%.c, build/obj/%.o, $(SPTENSOR_LIB_SRCFI
 SPTENSOR_LIB_TARGETS := build/lib/libsptensor.so \
                         build/lib/libsptensor.a
 
+SPTENSOR_TEST_TARGETS := build/test/indextest
 
-all: dirs $(SPTENSOR_LIB_TARGETS)
-dirs: build/lib/ build/bin/ build/obj/
+
+all: dirs $(SPTENSOR_LIB_TARGETS) $(SPTENSOR_TEST_TARGETS)
+dirs: build/lib/ build/bin/ build/obj/ build/test/
 build/%/:
 	mkdir -p $@
 
@@ -25,6 +27,10 @@ build/lib/libsptensor.a: $(SPTENSOR_LIB_OBJFILES)
 #Object Builds
 build/obj/%.o: lib/%.c
 	gcc -o $@ -c $< $(CFLAGS) -fPIC
+
+#Test Builds
+build/test/%: test/%.c
+	gcc -o $@ $< -static $(CFLAGS) $(LDFLAGS) 
 
 
 
