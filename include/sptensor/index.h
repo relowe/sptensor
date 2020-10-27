@@ -45,4 +45,10 @@ int sptensor_index_cmp(unsigned int nmodes, const sptensor_index_t *a, const spt
  */
 void sptensor_index_inc(unsigned int nmodes, const sptensor_index_t *dim, sptensor_index_t *idx);
 
+
+/* 
+ * Decrement an index in a row major way 
+ */
+void sptensor_index_dec(unsigned int nmodes, const sptensor_index_t *dim, sptensor_index_t *idx);
+
 #endif
