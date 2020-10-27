@@ -18,7 +18,26 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+#include <stdlib.h>
 #include <sptensor/index.h>
+
+
+/* 
+ * Allocate an index capable of storing nmodes.
+ */
+sptensor_index_t *sptensor_index_alloc(unsigned int nmodes)
+{
+    return malloc(sizeof(sptensor_index_t) * nmodes);
+}
+
+
+/*
+ * Deallocate the sptensor index.
+ */
+void sptensor_index_free(sptensor_index_t *idx)
+{
+    free(idx);
+}
 
 
 /* 
@@ -64,32 +83,73 @@ sptensor_index_inc(unsigned int nmodes, const sptensor_index_t *dim, sptensor_in
 
     /* start with columns! */
     if(nmodes >= 2) {
-	ui = 1;
+	    ui = 1;
     } else {
-	ui = 0;
+	    ui = 0;
     }
 
     do {
-	idx[ui]++;  /* increment */
+	    idx[ui]++;  /* increment */
 
-	/* accept valid increments */
-	if(idx[ui] <= dim[ui]) {
-	    return;
-	}
+	    /* accept valid increments */
+	    if(idx[ui] <= dim[ui]) {
+	        return;
+	    }
 
-	/* go on to the next mode! */
-	idx[ui] = 1;
-	if(ui == 0) {
-	    ui = 2;
-	} else if(ui == 1){
-	    ui = 0;
-	} else {
-	    ui++;
-	}
+    	/* go on to the next mode! */
+	    idx[ui] = 1;
+	    if(ui == 0) {
+	        ui = 2;
+	    } else if(ui == 1){
+	        ui = 0;
+	    } else {
+	        ui++;
+	    }
     } while(ui < nmodes); /* once we have done the last mode, God help us! */
 
     /* make it bigger */
     for(ui=0; ui<nmodes; ui++) {
-	idx[ui] = dim[ui]+1;
+	    idx[ui] = dim[ui]+1;
+    }
+}
+
+
+/* 
+ * Decrement an index in a row major way 
+ */
+void
+sptensor_index_dec(unsigned int nmodes, const sptensor_index_t *dim, sptensor_index_t *idx)
+{
+    unsigned int ui;
+
+    /* start with columns! */
+    if(nmodes >= 2) {
+	    ui = 1;
+    } else {
+	    ui = 0;
+    }
+
+    do {
+	    idx[ui]--; /* decrement */
+
+	    /* accept valid increments */
+	    if(idx[ui] > 0) {
+	        return;
+	    }
+
+    	/* go on to the next mode! */
+	    idx[ui] = dim[ui];
+	    if(ui == 0) {
+	        ui = 2;
+	    } else if(ui == 1){
+	        ui = 0;
+	    } else {
+	        ui++;
+	    }
+    } while(ui < nmodes); /* once we have done the last mode, God help us! */
+
+    /* make it smaller */
+    for(ui=0; ui<nmodes; ui++) {
+	    idx[ui] = 0;
     }
 }
