@@ -166,7 +166,7 @@ static bool sptensor_skbt_should_expand(sptensor_skbt_t* t, int* tensor_coo, int
 
         }
      }*/
-	return true;
+	return true;  
 }
 
 
@@ -182,7 +182,7 @@ static bool sptensor_skbt_should_expand(sptensor_skbt_t* t, int* tensor_coo, int
  *  
  * Return:  None
  */
-static void sptensor_skbt_add_mid(sptensor_skbt_t* t, sptensor_coo_t* tensor_coo, int dim_no, int index, int* bounds){
+static void sptensor_skbt_add_mid(sptensor_skbt_t* t, sptensor_coo_t* tensor_coo, unsigned int dim_no, unsigned int index, int* bounds, unsigned int bit_index){
     /*Calculate high and low and if the next child would be a leaf*/
     int high = bounds[(dim_no*2)+1];
     int low = bounds[(dim_no*2)];
@@ -192,15 +192,16 @@ static void sptensor_skbt_add_mid(sptensor_skbt_t* t, sptensor_coo_t* tensor_coo
 
     /*Add midpoint to current index*/
 	mpf_set_ui(t->tree_values[index], (bounds[(dim_no*2)] + bounds[(dim_no*2)+1]) / 2);
-	mpz_setbit(t->*(tree_bitmap), index);
+	// mpz_setbit(t->*(tree_bitmap), index);
 
     /*Expand tree left if it should*/
     if(sptensor_skbt_should_expand(tensor_coo, bounds, 'l', dim_no == t->modes - 1 ? 0 : dim_no + 1)){
         int* boundsl = (int*)calloc(t->modes*2, sizeof(int));
         memcpy(boundsl, bounds, t->modes*2*sizeof(int));
         boundsl[(dim_no*2)+1] = (boundsl[dim_no*2] + boundsl[(dim_no*2)+1]) / 2;
-        sptensor_skbt_add_mid (t, tensor_coo, dim_no == t->modes - 1 ? 0 : dim_no + 1, 2 * (index) + 1, boundsl);
+        sptensor_skbt_add_mid (t, tensor_coo, dim_no == t->modes - 1 ? 0 : dim_no + 1, 2 * (index) + 1, boundsl, 2*((2*bit_index)+1));
         free(boundsl);
+		mpz_setbit(t->*(tree_bitmap), bit_index);
     }
 
     /*Expand tree right if it should*/
@@ -208,8 +209,9 @@ static void sptensor_skbt_add_mid(sptensor_skbt_t* t, sptensor_coo_t* tensor_coo
         int* boundsr = (int*)calloc(2*t->modes, sizeof(int));
         memcpy(boundsr, bounds, t->*2*sizeof(int));
         boundsr[(dim_no*2)] = ((boundsr[(dim_no*2)] + boundsr[(dim_no*2)+1]) / 2) + 1;
-        sptensor_skbt_add_mid(t, tensor_coo, dim_no == sptensor_skbt.modes - 1 ? 0 : dim_no + 1, 2 * (index) + 1 + 1, boundsr);
+        sptensor_skbt_add_mid(t, tensor_coo, dim_no == sptensor_skbt.modes - 1 ? 0 : dim_no + 1, 2 * (index) + 1 + 1, boundsr, 2*((2*bit_index)+1));
      	free(boundsr);
+		mpz_setbit(t->*(tree_bitmap), bit_index+1);
     }
  }
 
@@ -250,6 +252,6 @@ void sptensor_skbt_maketree(sptensor_skbt_t* t, sptensor_coo_t* tensor_coo, int*
         bounds[(i*2)+1] = t->d_sizes[i] - 1;
     }
 	
-    sptensor_skbt_add_mid(t, tensor_coo, 0, 0, bounds);
+    sptensor_skbt_add_mid(t, tensor_coo, 0, 0, bounds, 0);
 	free(bounds);
 }
