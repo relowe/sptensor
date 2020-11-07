@@ -19,6 +19,7 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 #include <stdlib.h>
+#include <string.h>
 #include <sptensor/index.h>
 
 
@@ -36,7 +37,8 @@ sptensor_index_t *sptensor_index_alloc(unsigned int nmodes)
  */
 void sptensor_index_free(sptensor_index_t *idx)
 {
-    free(idx);
+    if(idx)
+        free(idx);
 }
 
 
@@ -152,4 +154,14 @@ sptensor_index_dec(unsigned int nmodes, const sptensor_index_t *dim, sptensor_in
     for(ui=0; ui<nmodes; ui++) {
 	    idx[ui] = 0;
     }
+}
+
+
+
+/*
+ * Copy an index 
+ */
+void sptensor_index_cpy(unsigned int nmodes, sptensor_index_t *dest, sptensor_index_t *src)
+{
+    memcpy(dest, src, sizeof(sptensor_index_t) * nmodes);
 }
