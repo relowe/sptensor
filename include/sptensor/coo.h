@@ -37,12 +37,12 @@ typedef struct sptensor_coo
     sptensor_free_f free;
 
     /* coo specific fields */
-    sptensor_vector coo;
-    sptensor_vector data;
+    sptensor_vector* coo;
+    sptensor_vector* data;
 } sptensor_coo_t;
 
 /* COO allocation functions */
-sptensor_coo_t* sptensor_coo_alloc(sptensor_index_t *modes, int nmodes);
+sptensor_t* sptensor_coo_alloc(sptensor_index_t *modes, int nmodes);
 void sptensor_coo_free(sptensor_coo_t* t);
 
 /* COO element access functions */
