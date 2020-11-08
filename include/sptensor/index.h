@@ -61,4 +61,9 @@ void sptensor_index_inc(unsigned int nmodes, const sptensor_index_t *dim, sptens
  */
 void sptensor_index_dec(unsigned int nmodes, const sptensor_index_t *dim, sptensor_index_t *idx);
 
+
+/*
+ * Copy an index 
+ */
+void sptensor_index_cpy(unsigned int nmodes, sptensor_index_t *dest, sptensor_index_t *src);
 #endif
