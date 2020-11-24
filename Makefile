@@ -6,7 +6,8 @@ SPTENSOR_LIB_SRCFILES := lib/index.c \
                          lib/vector.c \
                          lib/index_iterator.c\
 						 lib/coo.c\
-						 lib/sptensor.c
+						 lib/sptensor.c\
+						 lib/inzt.c
 
 SPTENSOR_LIB_OBJFILES := $(patsubst lib/%.c, build/obj/%.o, $(SPTENSOR_LIB_SRCFILES))
 
@@ -14,7 +15,8 @@ SPTENSOR_LIB_TARGETS := build/lib/libsptensor.so \
                         build/lib/libsptensor.a
 
 SPTENSOR_TEST_SRCFILES := test/indextest.c\
-	                      test/coo-test.c
+	                      test/coo-test.c\
+						  test/inzt-test.c
 
 SPTENSOR_TEST_TARGETS := $(patsubst test/%.c,  build/test/%, $(SPTENSOR_TEST_SRCFILES))
 
