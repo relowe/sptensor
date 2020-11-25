@@ -42,7 +42,7 @@ typedef struct sptensor_skbt
 } sptensor_skbt_t;
 
 /* SKBT allocation functions */
-sptensor_skbt_t* sptensor_skbt_alloc(sptensor_index_t *modes, int nmodes);
+sptensor_t* sptensor_skbt_alloc(sptensor_index_t *modes, int nmodes);
 void sptensor_skbt_free(sptensor_skbt_t* t);
 
 /* SKBT element access functions */
@@ -53,7 +53,7 @@ void sptensor_skbt_set(sptensor_skbt_t* t, sptensor_index_t *i, mpf_t v);
 void sptensor_skbt_print_tree(sptensor_skbt_t* t);
 void sptensor_skbt_print_bitmap(sptensor_skbt_t* t);
 void sptensor_skbt_save_raw_bitmap_to_file(sptensor_skbt_t* t, char file_name[]);
-void sptensor_skbt_make_tree(sptensor_skb t_t* t, int* tensor_coo, int num_dimensions, int* d_sizes, int num_non_zeros);
+void sptensor_skbt_make_tree(sptensor_skbt_t* t, sptensor_coo_t* tensor_coo, int num_dimensions, int* d_sizes, int num_non_zeros);
 
 /* Iterator Functions */
 sptensor_iterator_t* sptensor_skbt_iterator(sptensor_coo_t *t);

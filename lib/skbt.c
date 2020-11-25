@@ -44,7 +44,7 @@ struct sptensor_skbt_nz_iterator{
  *  
  * Return:  pointer to a sptensor_skbt_t struct with all initialized members
  */
-sptensor_skbt_t* sptensor_skbt_alloc(sptensor_index_t *modes, int nmodes){
+sptensor_t* sptensor_skbt_alloc(sptensor_index_t *modes, int nmodes){
 	sptensor_skbt_t* sptensor_skbt;
 	sptensor_skbt = malloc(sizeof(sptensor_skbt_t));
 	
@@ -56,7 +56,7 @@ sptensor_skbt_t* sptensor_skbt_alloc(sptensor_index_t *modes, int nmodes){
 	sptensor_skbt->modes = nmodes;
 	sptensor_skbt->d_sizes = (int*) calloc(nmodes* 2 * sizeof(int));
 		
-	return sptensor_skbt;
+	return (sptensor_t*) sptensor_skbt;
 }
 
 
@@ -339,7 +339,7 @@ static void sptensor_skbt_nz_load_index(struct sptensor_skbt_nz_iterator* itr){
 			}
 		}
 		/*load the dimension index into the itr->index*/		
-		sptensor_index_cpy(t->modes, itr->index, &((sp_tensor_index)constraints));
+		sptensor_index_cpy(t->modes, itr->index, &constraints);
     }
 }
 
