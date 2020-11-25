@@ -236,7 +236,7 @@ static void sptensor_skbt_add_mid(sptensor_skbt_t* t, sptensor_coo_t* tensor_coo
  *  
  * Return:  None
  */
-void sptensor_skbt_maketree(sptensor_skbt_t* t, sptensor_coo_t* tensor_coo, int* d_sizes, int num_non_zeros){
+void sptensor_skbt_maketree(sptensor_t* t, sptensor_t* tensor_coo, int* d_sizes, int num_non_zeros){
 	
 	t->d_sizes = d_sizes;
 	t->num_non_zeros = num_non_zeros;
