@@ -319,14 +319,19 @@ static void sptensor_skbt_nz_load_index(struct sptensor_skbt_nz_iterator* itr){
 				i++;
 			}
 		}
-		/*trace path from parent to the value in tree_bitmap, keep track of dimensions with each one, */
+		/*trace path from parent to the value in tree_values, keep track of dimensions with each one, */
 		unsigned int* constraints = malloc(itr->t->modes * sizeof(unsigned int));
 		
 		int dim_no = 0;
 		unsigned int current_index = 0;
-		for(int i = 0; i<levels; i++){
+		for(int i = levels-1; i>=0; i++){
 			int temp = mpf_get_d(itr->t->tree_values[current_index]));
 			constraints[dim_no] = temp;
+			if(path_bottom_to_top[i] == 0){
+				current_index = 2*(current_index) + 1;
+			}else if(path_bottom_to_top[i] == 1){
+				current_index = 2*(current_index) + 2;
+			}
 			if(dim_no == itr->t->modes - 1){
 				dim_no = 0;
 			}else{
@@ -335,10 +340,8 @@ static void sptensor_skbt_nz_load_index(struct sptensor_skbt_nz_iterator* itr){
 		}		
 		/*load the dimension index into the itr->index*/
 		for(int i = 0; i < itr->modes; i++){
-			itr->index[i] = constaints[i];
+			itr->index[i] = constraints[i];
 		}
-		
-        sptensor_index_cpy(t->modes, itr->index, VPTR(t->tree_values), itr->ti));
     }
 }
 
