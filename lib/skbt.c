@@ -84,10 +84,25 @@ void sptensor_skbt_free(sptensor_skbt_t* t){
  * Return:  none
  */
 void sptensor_skbt_get(sptensor_skbt_t* t, sptensor_index_t *i, mpf_t v){
-	if(mpz_tstbit(*(t->tree_bitmap), *i) == 0){
-		mpf_set_ui(v, 0);
-	}else{
-		mpf_set(v, t->tree_values[*i]);
+	unsigned int current_index = 0;
+	unsigned int dim_no = 0;
+	bool found = 0;
+	while(!found){
+		if((mpz_tstbit(*(t->tree_bitmap), current_index * 2 == 1) && (mpz_tstbit(*(t->tree_bitmap), current_index * 2 + 1 == 1)){
+			mpf_set(v, *(t->tree_values[current_index]));
+			found = true;
+		}else{
+			if(t->tree_values[current_index] <= i[dim_no]){
+				current_index = current_index * 2 + 1;
+			}else{
+				current_index = current_index * 2 + 2;
+			}
+			if(dim_no == t->modes){
+				dim_no = 0;
+			}else{
+				dim_no++;
+			}
+		}
 	}
 }
 
