@@ -17,6 +17,7 @@ SPTENSOR_LIB_TARGETS := build/lib/libsptensor.so \
 SPTENSOR_TEST_SRCFILES := test/indextest.c\
 	                      test/coo-test.c\
 						  test/inzt-test.c\
+						  test/morton-test.c\
 						  test/skbttest.c
 
 SPTENSOR_TEST_TARGETS := $(patsubst test/%.c,  build/test/%, $(SPTENSOR_TEST_SRCFILES))
