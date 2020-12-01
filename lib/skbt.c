@@ -354,7 +354,7 @@ static void sptensor_skbt_nz_load_index(struct sptensor_skbt_nz_iterator* itr){
 			}
 		}
 		/*load the dimension index into the itr->index*/		
-		sptensor_index_cpy(t->modes, itr->index, &constraints);
+		sptensor_index_cpy(t->modes, itr->index, constraints);
     }
 }
 
