@@ -16,7 +16,6 @@
 */
 
 #include <sptensor/sptensor.h>
-#include <sptensor/vector.h>
 
 #ifndef SPTENSOR_SKBT_H
 #define SPTENSOR_SKBT_H
