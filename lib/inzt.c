@@ -178,14 +178,17 @@ static int inzt_partition(sptensor_vector *ar, int low, int high)
     int i = low - 1;
     int j = high + 1;
     sptensor_inzt_index_t *aridx = ar->ar;
+    mpz_t pivot;
+
+    mpz_init_set(pivot, aridx[p].morton);
 
     for(;;) {
         do {
             i = i+1;
-        } while(mpz_cmp(aridx[i].morton, aridx[p].morton) < 0);
+        } while(mpz_cmp(aridx[i].morton, pivot) < 0);
         do {
             j = j-1;
-        } while(mpz_cmp(aridx[j].morton, aridx[p].morton) > 0);
+        } while(mpz_cmp(aridx[j].morton, pivot) > 0);
         if(i >= j) {
             return j;
         }
