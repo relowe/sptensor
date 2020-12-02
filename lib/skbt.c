@@ -116,8 +116,8 @@ void sptensor_skbt_set(sptensor_skbt_t* t, sptensor_index_t *i, mpf_t v){
 /*
 	static function prototypes
 */
-static bool sptensor_skbt_should_expand();
-static void sptensor_skbt_add_mid();
+static bool sptensor_skbt_should_expand(sptensor_t* a, sptensor_t* b, int* bounds, char direction, int dim_no);
+static void sptensor_skbt_add_mid(sptensor_t* a, sptensor_t* b, unsigned int dim_no, unsigned int index, int* bounds, unsigned int bit_index);
 
 
 /* 
@@ -187,7 +187,7 @@ void sptensor_skbt_save_raw_bitmap_to_file(sptensor_skbt_t* t, char file_name[])
  * Return:  true if should expand (sub tree is not empty)
  *          false if shouldn't expand (sub tree is empty)
  */
-static bool sptensor_skbt_should_expand(sptensor_skbt_t* t, int* tensor_coo, int* bounds, char direction, int dim_no){
+static bool sptensor_skbt_should_expand(sptensor_t* a, sptensor_t* b, int* bounds, char direction, int dim_no){
     if(direction != 'l' && direction !='r'){
         printf("direction should be either 'l' or 'r'");
         return false;
