@@ -27,7 +27,7 @@
 /* sptensor iterator (base type) */
 struct sptensor_skbt_nz_iterator{
 	sptensor_t* t;
-	sptensor_index* index;
+	sptensor_index_t* index;
 	sptensor_iterator_valid_f valid;
 	sptensor_iterator_next_f next;
 	sptensor_iterator_prev_f prev;
