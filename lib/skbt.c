@@ -16,6 +16,7 @@
 */
 
 #include <sptensor/skbt.h>
+#include <sptensor/coo.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
@@ -130,8 +131,10 @@ static void sptensor_skbt_add_mid();
 void sptensor_skbt_print_tree(sptensor_skbt_t* t){
 	printf("The tree: \n");
     int k = 0;
-    for(int i = 0; i < t->modes * ceil(log10(10) / log10(2)) ; i++){
-        for(int j =0; j < pow(2,i); j++){
+	int i;
+    for(i = 0; i < t->modes * ceil(log10(10) / log10(2)) ; i++){
+		int j;
+        for(j =0; j < pow(2,i); j++){
             if (mpf_cmp_ui(t->tree_values[k], -1) == 0){
                 printf("    \t");
             }else{
@@ -210,7 +213,9 @@ static bool sptensor_skbt_should_expand(sptensor_skbt_t* t, int* tensor_coo, int
  *  
  * Return:  None
  */
-static void sptensor_skbt_add_mid(sptensor_skbt_t* t, sptensor_coo_t* tensor_coo, unsigned int dim_no, unsigned int index, int* bounds, unsigned int bit_index){
+static void sptensor_skbt_add_mid(sptensor_t* a, sptensor_t* b, unsigned int dim_no, unsigned int index, int* bounds, unsigned int bit_index){
+	sptensor_skbt_t* t = (sptensor_skbt_t*) a;
+	sptensor_coo_t* tensor_coo = (sptensor_coo_t*) b;
     /*Calculate high and low and if the next child would be a leaf*/
     int high = bounds[(dim_no*2)+1];
     int low = bounds[(dim_no*2)];
@@ -229,7 +234,7 @@ static void sptensor_skbt_add_mid(sptensor_skbt_t* t, sptensor_coo_t* tensor_coo
         boundsl[(dim_no*2)+1] = (boundsl[dim_no*2] + boundsl[(dim_no*2)+1]) / 2;
         sptensor_skbt_add_mid (t, tensor_coo, dim_no == t->modes - 1 ? 0 : dim_no + 1, 2 * (index) + 1, boundsl, 2*((2*bit_index)+1));
         free(boundsl);
-		mpz_setbit(t->*(tree_bitmap), bit_index);
+		mpz_setbit(*(t->tree_bitmap), bit_index);
     }
 
     /*Expand tree right if it should*/
@@ -239,7 +244,7 @@ static void sptensor_skbt_add_mid(sptensor_skbt_t* t, sptensor_coo_t* tensor_coo
         boundsr[(dim_no*2)] = ((boundsr[(dim_no*2)] + boundsr[(dim_no*2)+1]) / 2) + 1;
         sptensor_skbt_add_mid(t, tensor_coo, dim_no == t->modes - 1 ? 0 : dim_no + 1, 2 * (index) + 1 + 1, boundsr, 2*((2*bit_index)+1));
      	free(boundsr);
-		mpz_setbit(t->*(tree_bitmap), bit_index+1);
+		mpz_setbit(*(t->tree_bitmap), bit_index+1);
     }
  }
 
