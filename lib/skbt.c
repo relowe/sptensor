@@ -48,13 +48,13 @@ sptensor_t* sptensor_skbt_alloc(sptensor_index_t *modes, int nmodes){
 	sptensor_skbt_t* sptensor_skbt;
 	sptensor_skbt = malloc(sizeof(sptensor_skbt_t));
 	
-	sptensor_skbt-> get = (sp_tensor_get_f) sptensor_skbt_get;
-	sptensor_skbt-> set = null;
+	sptensor_skbt-> get = (sptensor_get_f) sptensor_skbt_get;
+	sptensor_skbt-> set = NULL;
 	
-	sptensor_skbt->tree_values = (mpf_t*) malloc(pow(2, sptensor_skbt.modes*ceil(log10(10) / log10(2))) *  sizeof(mpf_t));
+	sptensor_skbt->tree_values = (mpf_t*) malloc(pow(2, nmodes*ceil(log10(10) / log10(2))) *  sizeof(mpf_t));
 	sptensor_skbt->tree_bitmap = (mpz_t*) malloc(sizeof(mpz_t));
 	sptensor_skbt->modes = nmodes;
-	sptensor_skbt->d_sizes = (int*) calloc(nmodes* 2 * sizeof(int));
+	sptensor_skbt->d_sizes = (int*) calloc(nmodes* 2, sizeof(int));
 		
 	return (sptensor_t*) sptensor_skbt;
 }
