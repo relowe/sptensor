@@ -88,11 +88,12 @@ void sptensor_skbt_get(sptensor_skbt_t* t, sptensor_index_t *i, mpf_t v){
 	unsigned int dim_no = 0;
 	bool found = 0;
 	while(!found){
-		if((mpz_tstbit(*(t->tree_bitmap), current_index * 2 == 1) && (mpz_tstbit(*(t->tree_bitmap), current_index * 2 + 1 == 1)){
-			mpf_set(v, *(t->tree_values[current_index]));
+		if( (mpz_tstbit(*(t->tree_bitmap), current_index * 2 == 1)) && (mpz_tstbit(*(t->tree_bitmap), current_index * 2 + 1 == 1))){
+			mpf_set(v, t->tree_values[current_index]);
 			found = true;
 		}else{
-			if(t->tree_values[current_index] <= i[dim_no]){
+			unsigned int split_midpoint = (unsigned int) mpf_get_d(t->tree_values[current_index]);
+			if(split_midpoint <= i[dim_no]){
 				current_index = current_index * 2 + 1;
 			}else{
 				current_index = current_index * 2 + 2;
