@@ -34,7 +34,7 @@ struct sptensor_skbt_nz_iterator{
 	sptensor_free_f free;
 
 	int ti;
-}
+};
 
 /* 
  * Allocate memory for all required members in the sptensor_skbt_t struct
@@ -234,9 +234,9 @@ static void sptensor_skbt_add_mid(sptensor_skbt_t* t, sptensor_coo_t* tensor_coo
     /*Expand tree right if it should*/
     if(sptensor_skbt_should_expand(tensor_coo, bounds, 'r', dim_no == t->modes - 1 ? 0 : dim_no + 1)){
         int* boundsr = (int*)calloc(2*t->modes, sizeof(int));
-        memcpy(boundsr, bounds, t->*2*sizeof(int));
+        memcpy(boundsr, bounds, t->modes*2*sizeof(int));
         boundsr[(dim_no*2)] = ((boundsr[(dim_no*2)] + boundsr[(dim_no*2)+1]) / 2) + 1;
-        sptensor_skbt_add_mid(t, tensor_coo, dim_no == sptensor_skbt.modes - 1 ? 0 : dim_no + 1, 2 * (index) + 1 + 1, boundsr, 2*((2*bit_index)+1));
+        sptensor_skbt_add_mid(t, tensor_coo, dim_no == t->modes - 1 ? 0 : dim_no + 1, 2 * (index) + 1 + 1, boundsr, 2*((2*bit_index)+1));
      	free(boundsr);
 		mpz_setbit(t->*(tree_bitmap), bit_index+1);
     }
