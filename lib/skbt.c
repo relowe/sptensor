@@ -15,14 +15,15 @@
   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include <sptensor/skbt.h>
-#include <sptensor/coo.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
 #include <string.h>
 #include <stdbool.h>
 #include <gmp.h>
+#include <sptensor/skbt.h>
+#include <sptensor/coo.h>
+#include <sptensor/index_iterator.h>
 
 /* nonzero iterator */
 /* sptensor iterator (base type) */
@@ -225,24 +226,23 @@ static void sptensor_skbt_add_mid(sptensor_t* a, sptensor_t* b, unsigned int dim
 
     /*Add midpoint to current index*/
 	mpf_set_ui(t->tree_values[index], (bounds[(dim_no*2)] + bounds[(dim_no*2)+1]) / 2);
-	// mpz_setbit(t->*(tree_bitmap), index);
 
     /*Expand tree left if it should*/
-    if(sptensor_skbt_should_expand(tensor_coo, bounds, 'l', dim_no == t->modes - 1 ? 0 : dim_no + 1)){
+    if(sptensor_skbt_should_expand(a, b, bounds, 'l', dim_no == t->modes - 1 ? 0 : dim_no + 1)){
         int* boundsl = (int*)calloc(t->modes*2, sizeof(int));
         memcpy(boundsl, bounds, t->modes*2*sizeof(int));
         boundsl[(dim_no*2)+1] = (boundsl[dim_no*2] + boundsl[(dim_no*2)+1]) / 2;
-        sptensor_skbt_add_mid (t, tensor_coo, dim_no == t->modes - 1 ? 0 : dim_no + 1, 2 * (index) + 1, boundsl, 2*((2*bit_index)+1));
+        sptensor_skbt_add_mid ((sptensor_t*) t, (sptensor_t*)tensor_coo, dim_no == t->modes - 1 ? 0 : dim_no + 1, 2 * (index) + 1, boundsl, 2*((2*bit_index)+1));
         free(boundsl);
 		mpz_setbit(*(t->tree_bitmap), bit_index);
     }
 
     /*Expand tree right if it should*/
-    if(sptensor_skbt_should_expand(tensor_coo, bounds, 'r', dim_no == t->modes - 1 ? 0 : dim_no + 1)){
+    if(sptensor_skbt_should_expand(a, b, bounds, 'r', dim_no == t->modes - 1 ? 0 : dim_no + 1)){
         int* boundsr = (int*)calloc(2*t->modes, sizeof(int));
         memcpy(boundsr, bounds, t->modes*2*sizeof(int));
         boundsr[(dim_no*2)] = ((boundsr[(dim_no*2)] + boundsr[(dim_no*2)+1]) / 2) + 1;
-        sptensor_skbt_add_mid(t, tensor_coo, dim_no == t->modes - 1 ? 0 : dim_no + 1, 2 * (index) + 1 + 1, boundsr, 2*((2*bit_index)+1));
+        sptensor_skbt_add_mid((sptensor_t*) t, (sptensor_t*)tensor_coo, dim_no == t->modes - 1 ? 0 : dim_no + 1, 2 * (index) + 1 + 1, boundsr, 2*((2*bit_index)+1));
      	free(boundsr);
 		mpz_setbit(*(t->tree_bitmap), bit_index+1);
     }
@@ -257,21 +257,25 @@ static void sptensor_skbt_add_mid(sptensor_t* a, sptensor_t* b, unsigned int dim
  *  
  * Return:  None
  */
-void sptensor_skbt_maketree(sptensor_t* t, sptensor_t* tensor_coo, int* d_sizes, int num_non_zeros){
-	
+void sptensor_skbt_maketree(sptensor_t* a, sptensor_t* b, int* d_sizes, int num_non_zeros){
+
+	sptensor_skbt_t* t = (sptensor_skbt_t*) a;
+	sptensor_coo_t* tensor_coo = (sptensor_coo_t*) b; 
+
 	t->d_sizes = d_sizes;
 	t->num_non_zeros = num_non_zeros;
 	
     /*Get longest dimension*/
     int nMax = 0;
-    for(int i = 0; i < t->modes; i++){
+	int i;
+    for(i = 0; i < t->modes; i++){
         if(t->d_sizes[i] > nMax){
             nMax = t->d_sizes[i];
         }
     }
 
     /* Initialize all nonzeros to -1*/
-    for(int i = 0; i < pow(2, t->modes * ceil(log10(10) / log10(2)) ); i++){
+    for(i = 0; i < pow(2, t->modes * ceil(log10(10) / log10(2)) ); i++){
 		mpf_init(t->tree_values[i]);
 		mpf_set_ui(t->tree_values[i], -1);
     }
@@ -281,27 +285,27 @@ void sptensor_skbt_maketree(sptensor_t* t, sptensor_t* tensor_coo, int* d_sizes,
 
     /* fill bounds with highs and lows */
     int* bounds = (int*)calloc(t->modes*2, sizeof(int));
-    for(int i = 0; i < t->modes; i++){
+    for(i = 0; i < t->modes; i++){
         bounds[(i*2)+1] = t->d_sizes[i] - 1;
     }
 	
-    sptensor_skbt_add_mid(t, tensor_coo, 0, 0, bounds, 0);
+    sptensor_skbt_add_mid((sptensor_t*)t, (sptensor_t*)tensor_coo, 0, 0, bounds, 0);
 	free(bounds);
 }
 
 /* Iterator functions */
 sptensor_iterator_t* sptensor_skbt_iterator(sptensor_skbt_t* t){
-	return sptensor_index_iterator_alloc((sptensor_t* t) t);
+	return sptensor_index_iterator_alloc((sptensor_t*) t);
 }
 
 /* Non zero iterator functions */
 static int sptensor_skbt_nz_valid(struct sptensor_skbt_nz_iterator* itr){
-	struct sptensor_skbt* t = (struct sptensor_skbt* t) itr->t;
+	struct sptensor_skbt* t = (struct sptensor_skbt*) itr->t;
 
 
-	if(itr->ti >=0 && mpz_tstbit(*(itr->t->tree_bitmap), itr->ti) == 0){
+	if(itr->ti >=0 && mpz_tstbit(*(t->tree_bitmap), itr->ti) == 0){
 		itr->ti++;
-		if(itr->mpz_tstbit(*(itr-t->tree_bitmap), itr->ti) == 0){
+		if(mpz_tstbit(*(t->tree_bitmap), itr->ti) == 0){
 			itr->ti--;
 			return 1;
 		}
@@ -312,7 +316,7 @@ static int sptensor_skbt_nz_valid(struct sptensor_skbt_nz_iterator* itr){
 
 static void sptensor_skbt_nz_load_index(struct sptensor_skbt_nz_iterator* itr){
 	struct sptensor_skbt* t = (struct sptensor_skbt*) itr->t;
-	if(sptensor_coo_nz_valid(itr)) {
+	if(sptensor_skbt_nz_valid(itr)) {
 		/*find how many levels to reach parent*/
 		unsigned int n_levels = 0;
 		int index = itr->ti;
@@ -345,8 +349,8 @@ static void sptensor_skbt_nz_load_index(struct sptensor_skbt_nz_iterator* itr){
 		
 		int dim_no = 0;
 		unsigned int current_index = 0;
-		for(int i = levels-1; i>=0; i++){
-			int temp = mpf_get_d(t->tree_values[current_index]));
+		for(i = n_levels-1; i>=0; i++){
+			int temp = (int) mpf_get_d(t->tree_values[current_index]);
 			constraints[dim_no] = temp;
 			if(path_bottom_to_top[i] == 0){
 				current_index = 2*(current_index) + 1;
@@ -369,7 +373,7 @@ static void sptensor_skbt_nz_free(struct sptensor_skbt_nz_iterator* itr){
 	free(itr);
 }
 
-static void sptensor_skbt_nz_next(struct sptensor_skbt_nz_iterator* itr){
+static int sptensor_skbt_nz_next(struct sptensor_skbt_nz_iterator* itr){
 	if(sptensor_skbt_nz_valid(itr)){
 		itr->ti++;
 	}
@@ -379,7 +383,7 @@ static void sptensor_skbt_nz_next(struct sptensor_skbt_nz_iterator* itr){
 	return sptensor_skbt_nz_valid(itr);
 }
 
-static void sptensor_skbt_nz_prev(struct sptensor_skbt_nz_iterator* itr){
+static int sptensor_skbt_nz_prev(struct sptensor_skbt_nz_iterator* itr){
 	if(sptensor_skbt_nz_valid(itr)){
 		itr->ti--;
 	}
@@ -390,7 +394,7 @@ static void sptensor_skbt_nz_prev(struct sptensor_skbt_nz_iterator* itr){
 }
 
 sptensor_iterator_t*  sptensor_skbt_nz_iterator(sptensor_skbt_t* t){
-	struct sptensor_iterator* itr;
+	struct sptensor_skbt_nz_iterator* itr;
 
 	itr = malloc(sizeof(struct sptensor_skbt_nz_iterator));
 	if(!itr){
