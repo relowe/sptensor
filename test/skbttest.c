@@ -2,6 +2,7 @@
 #include <gmp.h>
 #include <sptensor/sptensor.h>
 #include <sptensor/coo.h>
+#include <sptensor/skbt.h>
 
 void itr_dump(sptensor_iterator_t *itr) 
 {
@@ -46,13 +47,13 @@ int main()
         sptensor_set(t, idx[i], mpfv);
     }
 	
-	st = sptensor_skbt_alloc(modes, 3);
+	sptensor_t* st = sptensor_skbt_alloc(modes, 3);
 
-	sptensor_skbt_make_tree(st, t, 3, modes, 4);
+	sptensor_skbt_maketree(st, t, 3, modes, 4);
 	
     /* display the non-zero tensor */
     printf("non-zero entries\n");
-    itr = sptensor_skbt_nz_iterator(t);
+    itr = sptensor_nz_iterator(st);
     itr_dump(itr);
     sptensor_iterator_free(itr);
     printf("\n");
