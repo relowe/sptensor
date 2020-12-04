@@ -24,6 +24,7 @@
 #include <sptensor/skbt.h>
 #include <sptensor/coo.h>
 #include <sptensor/index_iterator.h>
+#include <sptensor/inzt.h>
 
 /* nonzero iterator */
 /* sptensor iterator (base type) */
