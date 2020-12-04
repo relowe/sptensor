@@ -194,12 +194,28 @@ static bool sptensor_skbt_should_expand(sptensor_t* a, sptensor_t* b, int* bound
         printf("direction should be either 'l' or 'r'");
         return false;
     }
-    /* for(int i = 0; i < num_non_zeros; ){
-    	for(int d  = 0; d < t->modes; d++){
 
-        }
-     }*/
-	return true;  
+	sptensor_iterator_t* itr = sptensor_index_iterator_alloc(b);
+	sptensor_inzt_t* inzt = sptensor_inzt_create(itr);
+
+	sptensor_index_t* min;
+	sptensor_index_t* max;
+	int i;
+	for(i = 0; i < a->modes; i++){
+		min[i] = bounds[i*2];
+	}
+	for(i = 0; i< a->modes; i++){
+		max[i] = bounds[i*2+1];
+	}
+
+	if(sptensor_inzt(inzt, min, max) == 1){
+		return true;
+	}else{
+		return false;
+	}
+
+	sptensor_iterator_free(itr);
+	sptensor_inzt_free(inzt);
 }
 
 
