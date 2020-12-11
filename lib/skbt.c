@@ -198,8 +198,8 @@ static bool sptensor_skbt_should_expand(sptensor_t* a, sptensor_t* b, int* bound
 	sptensor_iterator_t* itr = sptensor_index_iterator_alloc(b);
 	sptensor_inzt_t* inzt = sptensor_inzt_create(itr);
 
-	sptensor_index_t* min;
-	sptensor_index_t* max;
+	sptensor_index_t* min = sptensor_index_alloc(b->modes);
+	sptensor_index_t* max = sptensor_index_alloc(b->modes);
 	int i;
 	for(i = 0; i < a->modes; i++){
 		min[i] = bounds[i*2];
@@ -216,6 +216,8 @@ static bool sptensor_skbt_should_expand(sptensor_t* a, sptensor_t* b, int* bound
 
 	sptensor_iterator_free(itr);
 	sptensor_inzt_free(inzt);
+	sptensor_index_free(min);
+	sptensor_index_free(max);
 }
 
 
@@ -274,7 +276,7 @@ static void sptensor_skbt_add_mid(sptensor_t* a, sptensor_t* b, unsigned int dim
  *  
  * Return:  None
  */
-void sptensor_skbt_maketree(sptensor_t* a, sptensor_t* b, int* d_sizes, int num_non_zeros){
+void sptensor_skbt_maketree(sptensor_t* a, sptensor_t* b, int num_dimensions, int* d_sizes, int num_non_zeros){
 
 	sptensor_skbt_t* t = (sptensor_skbt_t*) a;
 	sptensor_coo_t* tensor_coo = (sptensor_coo_t*) b; 
