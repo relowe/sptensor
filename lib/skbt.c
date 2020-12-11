@@ -53,6 +53,8 @@ sptensor_t* sptensor_skbt_alloc(sptensor_index_t *modes, int nmodes){
 	
 	sptensor_skbt-> get = (sptensor_get_f) sptensor_skbt_get;
 	sptensor_skbt-> set = NULL;
+	sptensor_skbt-> iterator = (sptensor_iterator_f) sptensor_skbt_iterator;
+	sptensor_skbt-> nz_iterator = (sptensor_iterator_f) sptensor_skbt_nz_iterator; 	
 	
 	sptensor_skbt->tree_values = (mpf_t*) malloc(pow(2, nmodes*ceil(log10(10) / log10(2))) *  sizeof(mpf_t));
 	sptensor_skbt->tree_bitmap = (mpz_t*) malloc(sizeof(mpz_t));
