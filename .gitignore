@@ -6,3 +6,4 @@
 build
 test/*test
 compile_commands.json
+.vscode
