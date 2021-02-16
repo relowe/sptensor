@@ -11,7 +11,7 @@ SPTENSOR_LIB_SRCFILES := lib/index.c \
 						 lib/skbt.c\
 						 lib/math.c
 
-SPTENSOR_LIB_OBJFILES := $(patsubst lib/%.c, build/obj/%.o, $(SPTENSOR_LIB_SRCFILES))
+SPTENSOR_LIB_OBJFILES := $(patsubst lib/%.c, ./build/obj/%.o, $(SPTENSOR_LIB_SRCFILES))
 
 SPTENSOR_LIB_TARGETS := build/lib/libsptensor.so \
                         build/lib/libsptensor.a
