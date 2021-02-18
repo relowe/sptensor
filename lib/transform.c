@@ -156,7 +156,7 @@ static void sptensor_unfold_jk(sptensor_index_t *jk, sptensor_index_t *dim, unsi
     for(k=0; k<modes; k++) {
         /* Bring forward the last one */
         if(k != 0) {
-            jk[k] == jk[k-1];
+            jk[k] = jk[k-1];
         }
 
         /* skip mode n */
