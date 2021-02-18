@@ -18,6 +18,7 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+#include <stdio.h>
 #include <sptensor/sptensor.h>
 #include <sptensor/vector.h>
 
@@ -52,5 +53,9 @@ void sptensor_coo_set(sptensor_coo_t * t, sptensor_index_t *i, mpf_t v);
 /* Iterator Functions */
 sptensor_iterator_t* sptensor_coo_iterator(sptensor_coo_t *t);
 sptensor_iterator_t* sptensor_coo_nz_iterator(sptensor_coo_t *t);
+
+/* I/O Functions */
+sptensor_t * sptensor_coo_read(FILE *file);
+void sptensor_coo_write(FILE *file, sptensor_t *tns);
 
 #endif

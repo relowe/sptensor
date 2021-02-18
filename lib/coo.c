@@ -18,6 +18,7 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <sptensor/coo.h>
@@ -251,3 +252,110 @@ sptensor_iterator_t* sptensor_coo_nz_iterator(sptensor_coo_t *t)
     return (sptensor_iterator_t*) itr;
 }
 
+
+/* 
+ * Read a COO tensor from a text file stream. The file stream is
+ * expected to be in the form of:
+ *   nmodes d0 d1 ... dk
+ *   i0 i1 i2 ... ik v1
+ *   i0 i1 i2 ... ik v2
+ *   ...
+ * Where nmodes is the number of modes, d0...dk are the dimensions,
+ * and i0..ik are the indexes and v is the value at that index.
+ * The file is read to the end, or until an unsucessful translation
+ * occurs.
+ *
+ * Parameters: file - The file to read from
+ *             
+ * Return: The newly read and allocated tensor.
+ */
+sptensor_t * sptensor_coo_read(FILE *file)
+{
+    int nmodes;
+    sptensor_index_t *idx;
+    int i;
+    mpf_t val;
+    sptensor_t *tns;
+    int done;
+
+    /* a little bit of mpf allocation */
+    mpf_init(val);
+
+    /* get the dimensions */
+    fscanf(file, "%u", &nmodes);
+    idx = sptensor_index_alloc(nmodes);
+    for(i=0; i<nmodes; i++) {
+	    gmp_fscanf(file, "%u", idx + i);
+    }
+
+    /* allocate the tensor and free the dimension */
+    tns = sptensor_coo_alloc(idx, nmodes);
+
+    i=0;
+    done = 0;
+    while(!done) {
+	    /* read the indexes */
+	    for(i=0; i<nmodes; i++) {
+	        if(gmp_fscanf(file, "%u", idx + i) != 1) {
+		        done = 1;
+		        break;
+	        }
+	    }
+
+	    if(done) continue;
+	    if(gmp_fscanf(file, "%Ff", val) != 1) {
+	        done = 1;
+	        break;
+	    }
+
+	    /* insert into the tensor */
+	    sptensor_set(tns, idx, val);
+    }
+
+    /* cleanup and return! */
+    free(idx);
+    mpf_clear(val);
+
+    return tns;
+}
+
+
+/*
+ * Write a sparse tensor to a stream.  It is written in the format 
+ * described in the sptensor_read function.
+ * 
+ * Parameter: file - The stream to write to.
+ *            tns  - The tensor to write.
+ */ 
+void sptensor_coo_write(FILE *file, sptensor_t *tns)
+{
+    int i;
+    mpf_t val;
+    sptensor_iterator_t *itr;
+
+    /* allocate the value */
+    mpf_init(val);
+    
+    /* print the preamble */
+    gmp_fprintf(file, "%u", tns->modes);
+    for(i = 0; i < tns->modes; i++) {
+	    gmp_fprintf(file, "\t%u", tns->dim[i]);
+    }
+    gmp_fprintf(file, "\n");
+
+    /* print the non-zero values */
+    for(itr=sptensor_nz_iterator(tns); sptensor_iterator_valid(itr); sptensor_iterator_next(itr)) {
+        /* print the index */
+	    for(i = 0; i < tns->modes; i++) {
+	        gmp_fprintf(file, "%u\t", itr->index[i]);
+	    }
+
+        /* print the value */
+        sptensor_get(tns, itr->index, val);
+	    gmp_fprintf(file, "%Ff\n", val);
+    }
+
+    /* cleanup */
+    sptensor_iterator_free(itr);
+    mpf_clear(val);
+}
