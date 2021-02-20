@@ -61,4 +61,5 @@ int main()
 
     /* deallocate the tensor */
     sptensor_free(t);
+    sptensor_free(st);
 }
