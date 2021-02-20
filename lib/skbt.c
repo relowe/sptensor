@@ -42,7 +42,7 @@ struct sptensor_skbt_nz_iterator{
 /* 
  * Allocate memory for all required members in the sptensor_skbt_t struct
  * 
- * Parameter: modes - pointer to the modes field in the sptensor_skbt_t struct
+ * Parameter: modes - the size of each dimension 
  *            nmodes - number of modes(dimensions) as int
  *  
  * Return:  pointer to a sptensor_skbt_t struct with all initialized members
@@ -57,6 +57,13 @@ sptensor_t* sptensor_skbt_alloc(sptensor_index_t *modes, int nmodes){
 	sptensor_skbt-> nz_iterator = (sptensor_iterator_f) sptensor_skbt_nz_iterator; 	
 	
 	sptensor_skbt->tree_values = (mpf_t*) malloc(pow(2, nmodes*ceil(log10(10) / log10(2))) *  sizeof(mpf_t));
+	sptensor_skbt->tree_leaf_values = (mpf_t*) malloc(pow(2, nmodes*ceil(log10(10) / log10(2))) *  sizeof(mpf_t));
+	/* Add a loop that inits each value of tra_leaf_values */
+	int i;
+	for(i = 0; i < nmodes*ceil(log10(10) / log10(2)); i++){
+		mpf_init(sptensor_skbt->tree_values[i]);
+		mpf_init(sptensor_skbt->tree_leaf_values[i]);
+	}
 	sptensor_skbt->tree_bitmap = (mpz_t*) malloc(sizeof(mpz_t));
 	sptensor_skbt->modes = nmodes;
 	sptensor_skbt->d_sizes = (int*) calloc(nmodes* 2, sizeof(int));
@@ -68,23 +75,30 @@ sptensor_t* sptensor_skbt_alloc(sptensor_index_t *modes, int nmodes){
 /* 
  * Deallocate all the memory that was allocated in the sptensor_skbt_alloc method
  * 
- * Parameter: modes - pointer to the modes field in the sptensor_skbt_t struct
+ * Parameter: modes - the size of each dimension
  *            nmodes - number of modes(dimensions) as int
  *  
  * Return:  none
  */
 void sptensor_skbt_free(sptensor_skbt_t* t){
 	free(t->tree_values);
+	free(t->tree_leaf_values);
 	free(t->tree_bitmap);
 	free(t->d_sizes);
 	free(t);
+	int i;
+	for(i = 0; i < t->modes*ceil(log10(10) / log10(2)); i++){
+		mpf_clear(t->tree_values[i]);
+		mpf_clear(t->tree_leaf_values[i]);
+	}
 }
 
 /* 
  * Get the value from the tree at desired index if exists otherwise get 0
  * 
- * Parameter: t - pointer 
- *            nmodes - number of modes(dimensions) as int
+ * Parameter: t - pointer to the sptensor_skbt_t tensor from which the value needs to be gotten
+ *            i - n d array of indices for each dimension where n is the number of dimensions
+ *            v - this is the mpf_t which will receive the value from the tree ath the specified index
  *  
  * Return:  none
  */
@@ -115,13 +129,6 @@ void sptensor_skbt_get(sptensor_skbt_t* t, sptensor_index_t *i, mpf_t v){
 void sptensor_skbt_set(sptensor_skbt_t* t, sptensor_index_t *i, mpf_t v){
 	
 }
-
-
-/*
-	static function prototypes
-*/
-static bool sptensor_skbt_should_expand(sptensor_t* a, sptensor_t* b, int* bounds, char direction, int dim_no);
-static void sptensor_skbt_add_mid(sptensor_t* a, sptensor_t* b, unsigned int dim_no, unsigned int index, int* bounds, unsigned int bit_index);
 
 
 /* 
@@ -222,6 +229,31 @@ static bool sptensor_skbt_should_expand(sptensor_t* a, sptensor_t* b, int* bound
 	sptensor_index_free(max);
 }
 
+/* 
+ * After splitting midpoints, add the values of the coo to the bottom of skbt tree 
+ * 
+ * Parameter: t - pointer to the sptensor_skbt struct that contains all required members
+ *            a - the skbt tensor to add values to 
+ *            b - the coo tensor to add values from
+ *  
+ * Return:  None
+ */
+static void sptensor_skbt_add_values(sptensor_t* a, sptensor_t* b){
+	sptensor_skbt_t* t = (sptensor_skbt_t*) a;
+	sptensor_coo_t* tensor_coo = (sptensor_coo_t*) b;
+	sptensor_iterator_t* itr = sptensor_nz_iterator(b);
+	mpf_t v;
+	mpf_init(v);
+	int i = 0;
+	while(sptensor_iterator_valid(itr)){
+		sptensor_get(itr->t, itr->index, v);
+		mpf_set(t->tree_leaf_values[i], v);
+		i++;
+		sptensor_iterator_next(itr);
+	}
+	mpf_clear(v);
+	sptensor_iterator_free(itr);
+}
 
 /* 
  * Add a midpoint to a desired index in the kdtree (split dimension)
@@ -241,9 +273,17 @@ static void sptensor_skbt_add_mid(sptensor_t* a, sptensor_t* b, unsigned int dim
     /*Calculate high and low and if the next child would be a leaf*/
     int high = bounds[(dim_no*2)+1];
     int low = bounds[(dim_no*2)];
-    if(high == low){
-        return;
-    }
+	int i;
+	bool no_more_range = true;
+	for(i = 0; i < t->modes; i++){
+		if(bounds[2*i] != bounds[1+(2*i)]){
+			no_more_range = false;
+		} 
+	}
+	if(no_more_range == true){
+		sptensor_skbt_add_values(a, b);
+		return;
+	}
 
     /*Add midpoint to current index*/
 	mpf_set_ui(t->tree_values[index], (bounds[(dim_no*2)] + bounds[(dim_no*2)+1]) / 2);

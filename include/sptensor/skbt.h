@@ -34,6 +34,7 @@ typedef struct sptensor_skbt
 
     /* skbt specific fields */
     mpf_t* tree_values;
+    mpf_t* tree_leaf_values;
     mpz_t* tree_bitmap;
 	unsigned int num_dimensions;
 	unsigned int num_non_zeros;
