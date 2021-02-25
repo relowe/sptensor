@@ -10,7 +10,8 @@ SPTENSOR_LIB_SRCFILES := lib/index.c \
 						 lib/inzt.c\
 						 lib/skbt.c\
 						 lib/math.c\
-						 lib/transform.c
+						 lib/transform.c\
+						 lib/hash.c
 
 SPTENSOR_LIB_OBJFILES := $(patsubst lib/%.c, ./build/obj/%.o, $(SPTENSOR_LIB_SRCFILES))
 
