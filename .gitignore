@@ -3,6 +3,7 @@
 *.so
 *.a
 *.swp
+*.sage-chat
 build
 test/*test
 compile_commands.json
