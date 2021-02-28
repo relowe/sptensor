@@ -24,29 +24,7 @@
 #include <sptensor/sptensor.h>
 #include <sptensor/vector.h>
 
-#define NBUCKETS 500
-
-/* to store a data (consisting of key and value) in hash table array */
-typedef struct item 
-{
-    int key;
-    int value;
-};
-
-/* each hash table item has a flag (status) and data (consisting of key and value) */
-typedef struct hashtable_item 
-{
- 
-    int flag;
-    /*
-     * flag = 0 : data does not exist
-     * flag = 1 : data exists
-     * flag = 2 : data existed at least once
-    */
- 
-    struct item *data;
- 
-};
+#define NBUCKETS 128
 
 /* hash storage type */
 typedef struct sptensor_hash
@@ -72,6 +50,7 @@ sptensor_t* sptensor_hash_alloc(sptensor_index_t *modes, int nmodes);
 void sptensor_hash_free(sptensor_hash_t* t);
 
 /* hash element access functions */
+int sptensor_hash_search(sptensor_hash_t *t, sptensor_index_t *idx);
 void sptensor_hash_get(sptensor_hash_t * t, sptensor_index_t *i, mpf_t v);
 void sptensor_hash_set(sptensor_hash_t * t, sptensor_index_t *i, mpf_t v);
 
