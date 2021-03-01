@@ -51,8 +51,7 @@ void sptensor_hash_free(sptensor_hash_t* t);
 
 /* hash element access functions */
 int sptensor_hash_search(sptensor_hash_t *t, sptensor_index_t *idx);
-void sptensor_hash_get(sptensor_hash_t * t, sptensor_index_t *i, mpf_t v);
-void sptensor_hash_set(sptensor_hash_t * t, sptensor_index_t *i, mpf_t v);
+void sptensor_hash_insert(sptensor_hash_t *t, sptensor_index_t *i, mpf_t v);
 
 /* Iterator Functions */
 sptensor_iterator_t* sptensor_hash_iterator(sptensor_hash_t *t);

@@ -31,20 +31,6 @@
 #define OCCUPIED(h) ( (h) | OCCBIT )
 #define NOT_OCCUPIED(h) ( (h) & ~OCCBIT )*/
 
-/* nonzero iterator */
-/* sptensor iterator (base type) */
-/*struct sptensor_hash_nz_iterator
-{
-    sptensor_t *t;
-    sptensor_index_t *index;
-    sptensor_iterator_valid_f valid;
-    sptensor_iterator_next_f next;
-    sptensor_iterator_prev_f prev;
-    sptensor_free_f free;
-
-    int ci;  /* The indx within the COO list 
-};*/
-
 /* each hash table item has a flag (status) and data (consisting of key and value) */
 typedef struct hashtable_item 
 {
@@ -67,7 +53,7 @@ hash_item* create_hashitem() {
 	i->flag = 0;
 	return i;
 }
-/*
+
 hash_item* set_key(hash_item* i, int k) {
 	i->key = k;
 	return i;
@@ -81,7 +67,15 @@ hash_item* set_value(hash_item* i, int v) {
 hash_item* set_flag(hash_item* i, int f) {
 	i->flag = f;
 	return i;
-}*/
+}
+
+int get_key(hash_item* i) {
+	return i->key;
+}
+
+int get_value(hash_item* i) {
+	return i->value;
+}
 
 int get_flag(hash_item* i) {
 	return i->flag;
@@ -141,13 +135,58 @@ void sptensor_hash_free(sptensor_hash_t* t)
 }
 
 
+/* to insert an element in the hash table */
+int sptensor_hash_insert(sptensor_hash_t *t, sptensor_index_t *i, mpf_t v) {
+	int index;
+    
+	/* find the index */
+	index = sptensor_hash_search(t, i);
+
+	if(index == -1) 
+	{
+		mpf_t nv;
+
+		/* not there yet!  If this is zero, we are done */
+		if(mpf_cmp_d(v, 0.0) == 0) {
+			return;
+		}
+
+		/* ok, so we need to init and copy */
+		mpf_init_set(nv, v);
+
+		/* probing through the array until we reach an empty space */
+		/*while (t->hashtable[i].flag == 1) {*/
+		while (get_flag((hash_item*)VPTR(t->hashtable,i)) == 1) {
+
+			if (get_key((hash_item*)VPTR(t->hashtable,i)) == index) {
+
+				/* case where already existing key matches the given key */
+				printf("\n Key already exists, return its index. \n");
+				return i;
+			}
+
+			i = (i + 1) % t->nbuckets;
+
+			if (i == index) {
+				printf("\n Hashtable is full, cannot insert any more item. \n");
+				return -1;
+			}
+		}
+	} else {
+		/* add the key and value into the hash table*/
+		array[i].flag = 1;
+		array[i].data = new_item;
+		t->curr_size = t->dcurr_size+1;
+		printf("\n Key (%d) has been inserted \n", key);
+	}
+}
+
 /* search the tensor for an index.  Return the element number, -1 on failure */
 int sptensor_hash_search(sptensor_hash_t *t, sptensor_index_t *idx)
 {
 	mpz_t morton;
 	int n = t->modes;
 	unsigned int index;
-    unsigned int i = index;
 	
 	/* start with an empty morton code */
 	mpz_init(morton);
@@ -158,17 +197,24 @@ int sptensor_hash_search(sptensor_hash_t *t, sptensor_index_t *idx)
 	/* mod by number of buckets in hash */
 	index = mpz_get_ui(morton) % t->nbuckets;
 	
+	/* just tests...
 	struct hash_item *test = (hash_item*)VPTR(t->hashtable,0);
 	int flag = get_flag(test);
 	printf("%d\n", flag);
+	test = set_flag(test, 1);
+	flag = get_flag(test);
+	printf("%d\n", flag);*/
+
+    int i = index;
 	
 	/* probing through the array until we reach an empty space */
-	/*while (t->hashtable[i].flag == 1) {
+	/*while (t->hashtable[i].flag == 1) {*/
+	while (get_flag((hash_item*)VPTR(t->hashtable,i)) == 1) {
 
-		if (t->hashtable[i].data->key == *idx) {*/
+		if (t->hashtable[i].data->key == *idx) {
 
 			/* case where already existing key matches the given key */
-			/*printf("\n Key already exists, return its index. \n");
+			printf("\n Key already exists, return its index. \n");
 			return i;
 		}
 
@@ -179,7 +225,7 @@ int sptensor_hash_search(sptensor_hash_t *t, sptensor_index_t *idx)
 			return -1;
 		}
 
-	}*/
+	}
 }
 
 /* Retrieve an alement from the hash tensor */
