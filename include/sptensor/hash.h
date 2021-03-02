@@ -41,7 +41,7 @@ typedef struct sptensor_hash
     /* hash specific fields */
     sptensor_vector* hashtable;
 	unsigned int nbuckets;
-	int curr_size;
+	unsigned int curr_size; /*this will grow as items are added to the hash table */
 } sptensor_hash_t;
 
 
