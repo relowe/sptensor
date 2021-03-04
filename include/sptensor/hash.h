@@ -23,6 +23,7 @@
 #include <sptensor/inzt.h>
 #include <sptensor/sptensor.h>
 #include <sptensor/vector.h>
+#include <gmp.h>
 
 #define NBUCKETS 128
 
@@ -50,8 +51,8 @@ sptensor_t* sptensor_hash_alloc(sptensor_index_t *modes, int nmodes);
 void sptensor_hash_free(sptensor_hash_t* t);
 
 /* hash element access functions */
-int sptensor_hash_search(sptensor_hash_t *t, sptensor_index_t *idx);
-void sptensor_hash_insert(sptensor_hash_t *t, sptensor_index_t *i, mpf_t v);
+unsigned int sptensor_hash_search(sptensor_hash_t *t, sptensor_index_t *idx);
+unsigned int sptensor_hash_insert(sptensor_hash_t *t, sptensor_index_t *i, mpf_t v);
 
 /* Iterator Functions */
 sptensor_iterator_t* sptensor_hash_iterator(sptensor_hash_t *t);
