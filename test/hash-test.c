@@ -18,13 +18,16 @@ int main()
     int n=4;
     mpf_t mpfv;
 
-	printf("building tensor\n");
+	printf("building tensor...\n");
     /* build the tensor */
     t = sptensor_hash_alloc(modes, 3);
-    mpf_init(mpfv);
+	printf("finished building tensor.\n");
+	sptensor_hash_search(t, idx[0]);
+	
+    /*mpf_init(mpfv);
     for(i=0; i<4; i++) {
         mpf_set_d(mpfv, v[i]);
-        sptensor_set(t, idx[i], mpfv);
+        sptensor_hash_set(t, idx[i], mpfv);
     }
 
 	sptensor_hash_search(t, idx[0]);

@@ -27,6 +27,13 @@
 
 #define NBUCKETS 128
 
+/* Each hash table item has a key and value) */
+typedef struct hash_item {
+    mpz_t key;
+    mpf_t value;
+	
+} hash_item;
+
 /* hash storage type */
 typedef struct sptensor_hash
 {
@@ -47,15 +54,15 @@ typedef struct sptensor_hash
 
 
 /* sptensor hash allocation functions */
-sptensor_t* sptensor_hash_alloc(sptensor_index_t *modes, int nmodes);
+sptensor_hash_t* sptensor_hash_alloc(sptensor_index_t *modes, int nmodes);
 void sptensor_hash_free(sptensor_hash_t* t);
 
 /* hash element access functions */
 unsigned int sptensor_hash_search(sptensor_hash_t *t, sptensor_index_t *idx);
-unsigned int sptensor_hash_insert(sptensor_hash_t *t, sptensor_index_t *i, mpf_t v);
+void sptensor_hash_set(sptensor_hash_t *t, sptensor_index_t *i, mpf_t v);
 
 /* Iterator Functions */
-sptensor_iterator_t* sptensor_hash_iterator(sptensor_hash_t *t);
-sptensor_iterator_t* sptensor_hash_nz_iterator(sptensor_hash_t *t);
+sptensor_iterator_t* sptensor_hash_iterator(sptensor_t *t);
+sptensor_iterator_t* sptensor_hash_nz_iterator(sptensor_t *t);
 
 #endif
