@@ -58,7 +58,7 @@ sptensor_hash_t* sptensor_hash_alloc(sptensor_index_t *modes, int nmodes);
 void sptensor_hash_free(sptensor_hash_t* t);
 
 /* hash element access functions */
-unsigned int sptensor_hash_search(sptensor_hash_t *t, sptensor_index_t *idx);
+sptensor_index_t* sptensor_hash_search(sptensor_hash_t *t, sptensor_index_t *idx);
 void sptensor_hash_set(sptensor_hash_t *t, sptensor_index_t *i, mpf_t v);
 
 /* Iterator Functions */
