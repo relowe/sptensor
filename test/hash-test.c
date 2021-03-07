@@ -17,12 +17,16 @@ int main()
     int i=0;
     int n=4;
     mpf_t mpfv;
+	mpz_t r;
+	
+	mpz_init(r);
 
 	printf("building tensor...\n");
     /* build the tensor */
     t = sptensor_hash_alloc(modes, 3);
 	printf("finished building tensor.\n");
-	sptensor_hash_search(t, idx[0]);
+	/*sptensor_hash_search(t, idx[0],r);*/
+	sptensor_hash_set(t, idx[0],r,mpfv);
 	
     /*mpf_init(mpfv);
     for(i=0; i<4; i++) {

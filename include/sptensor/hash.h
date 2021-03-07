@@ -57,9 +57,22 @@ typedef struct sptensor_hash
 sptensor_hash_t* sptensor_hash_alloc(sptensor_index_t *modes, int nmodes);
 void sptensor_hash_free(sptensor_hash_t* t);
 
-/* hash element access functions */
-sptensor_index_t* sptensor_hash_search(sptensor_hash_t *t, sptensor_index_t *idx);
-void sptensor_hash_set(sptensor_hash_t *t, sptensor_index_t *i, mpf_t v);
+/* Hash element access functions */
+
+/* Search the tensor for an index. Return the element number, -1 on failure 
+	r - to hold index value upon return 
+*/
+void sptensor_hash_search(sptensor_hash_t *t, sptensor_index_t *idx, mpz_t v);
+
+/* Function to insert an element in the hash table.
+	r - to hold index value upon return (-1 if not found or table is full)
+	v - value to insert 
+*/
+void sptensor_hash_set(sptensor_hash_t *t, sptensor_index_t *i, mpz_t r, mpf_t v);
+
+/* If the hashtable reaches capicity, double the size and rehash all the existing items */
+void sptensor_hash_rehash(sptensor_hash_t *t);
+
 
 /* Iterator Functions */
 sptensor_iterator_t* sptensor_hash_iterator(sptensor_t *t);
