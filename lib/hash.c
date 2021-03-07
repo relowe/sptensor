@@ -25,14 +25,6 @@
 #include <sptensor/hash.h>
 #include <sptensor/inzt.h>
 
-/*static sp_index_t OCCBIT = UINT_MAX ^ (UINT_MAX >> 1);
-
-#define IS_OCCUPIED(h) ((h) & OCCBIT)
-#define OCCUPIED(h) ( (h) | OCCBIT )
-#define NOT_OCCUPIED(h) ( (h) & ~OCCBIT )*/
-
-
-
 struct hash_item* create_hashitem() {
 	struct hash_item *i = malloc(sizeof(hash_item));
 	mpz_init(i->key);
@@ -96,21 +88,21 @@ void sptensor_hash_free(sptensor_hash_t* t)
 
 
 /* Function to insert an element in the hash table.
-	r - to hold index value upon return (-1 if not found or table is full)
+	r - to hold index value
 	v - value to insert 
 */
 void sptensor_hash_set(sptensor_hash_t *t, sptensor_index_t *i, mpz_t r, mpf_t v) {
 
 	struct hash_item *ptr;
-	mpz_t index; /*index to compare to*/
-	mpz_t idx;
+	mpz_t index; /*compressed version of the original index to insert*/
 	mpf_t nv;
 
-	/* find the index */
+	/* Try to find the index, returns r with index value, -1 if it didn't fid it */
 	sptensor_hash_search(t, i, r);
-	mpz_set(index, r);
-
-	if(mpz_cmp_si(index, -1) == 0) {
+	gmp_printf("r =  %Zd\n", r);
+	
+	if(mpz_cmp_si(r, -1) == 0) {
+		printf("Could not find index already existing in table.\n");
 
 		/* not there yet!  If this is zero, we are done */
 		if(mpf_cmp_d(v, 0.0) == 0) {
@@ -120,44 +112,65 @@ void sptensor_hash_set(sptensor_hash_t *t, sptensor_index_t *i, mpz_t r, mpf_t v
 		/* ok, so we need to init and copy */
 		mpf_init_set(nv, v);
 
-		/* Setting up counter to loop thru indexes so we can compare to index */
-		mpz_init(idx);
-		mpz_set(idx, index);
-
 		ptr = malloc(sizeof(struct hash_item));
 		ptr = (struct hash_item*)VPTR(t->hashtable,mpz_get_ui(index));
 
+		gmp_printf("index =  %Zd\n", index);
+		gmp_printf("ptr->key =  %Zd\n", ptr->key);
 
 		/* probing through the array until we reach an empty space */
-		while (mpz_cmp_ui(ptr->key, 1) != 0) {
-			gmp_printf("i = %Zd\n",idx);
+		while (mpz_cmp_ui(ptr->key, 0) != 0) {
+	        gmp_printf("ptr->key =  %Zd\n", ptr->key);
 			
-			if (mpz_cmp(ptr->key,idx) == 0) {
+			if (mpz_cmp(ptr->key,r) == 0) {
 
 				/* case where already existing key matches the given key */
 				printf("\n Key already exists, return its index. \n");
-				mpz_set(r, idx);
+				gmp_printf("\nReturning %Zd, this should be -1.\n", r);
 				return;
 			}
 
-			mpz_add_ui(idx,idx,1);
-			mpz_mod_ui(idx,idx,t->nbuckets);
+			mpz_add_ui(r,r,1);
+			mpz_mod_ui(r,r,t->nbuckets);
 
-			if (mpz_cmp(idx, index) == 0) {
+			if (mpz_cmp(r, index) == 0) {
 				printf("\n Hashtable is full, cannot insert any more item. \n");
 				mpz_set_si(r, -1);
 				/* Will need to resize & rehash table*/
 				return;
 			}
 
-			ptr = (struct hash_item*)VPTR(t->hashtable,mpz_get_ui(idx));
+			ptr = (struct hash_item*)VPTR(t->hashtable,mpz_get_ui(r));
 		}
 
 	}
+	
+	printf("We are good to insert.\n");
+	
+	mpz_init(index);
+	
+	/* Compress idx using the morton encoding */
+	sptensor_inzt_morton(t->modes, i, index);
+	printf("Finished morton encoding...\n");
+	gmp_printf("index: %Zd\n", index);
+	
+	/* mod by number of buckets in hash */
+	mpz_t nbuckets;
+	mpz_init(nbuckets);
+	mpz_set_ui(nbuckets, t->nbuckets);
+	gmp_printf("numbuckets: %Zd\n", nbuckets);
+	mpz_mod(index, index, nbuckets);
+	printf("Finished modding...\n");
+	gmp_printf("modded index: %Zd\n", index);
+
+	
 	/* add the key and value into the hash table*/
 	printf("\n Inserting item... \n");
-	gmp_printf("inserting at key: %Zd\n", idx);
-	mpz_set(ptr->key, idx);
+	gmp_printf("inserting at key: %Zd\n", index);
+	
+	/*TROUBLES HERE*/
+	mpz_set(ptr->key, index);
+	gmp_printf("ptr->key =  %Zd\n", ptr->key);
 	mpf_set(ptr->value, nv);
 	t->curr_size = t->curr_size + 1;
 	printf("\n Key has been inserted \n");
@@ -173,18 +186,15 @@ void sptensor_hash_search(sptensor_hash_t *t, sptensor_index_t *idx, mpz_t r)
     ptr = malloc(sizeof(struct hash_item));
 	mpz_t morton;
 	mpz_t index;
-
-	printf("start w empty moton code...\n");
 	
 	/* start with an empty morton code */
 	mpz_init(morton);
 	mpz_init(index);
 
-	printf("beginning morton encoding..\n");
 	/* Compress idx using the morton encoding */
 	sptensor_inzt_morton(t->modes, idx, morton);
 
-	printf("done encoding...\n");
+	printf("Finished morton encoding...\n");
 	
 	/* mod by number of buckets in hash */
 	mpz_mod_ui(index, morton,t->nbuckets);
@@ -199,20 +209,28 @@ void sptensor_hash_search(sptensor_hash_t *t, sptensor_index_t *idx, mpz_t r)
 	
 	/* probing through the array until we reach an empty space */
 	while (mpz_cmp_ui(ptr->key, 1) != 0) {
-		/*printf("probing for empty slot...\n");*/
-		if (mpz_cmp(ptr->key,i) == 0) {
+		gmp_printf("i =  %Zd\n", i);
+		gmp_printf("index =  %Zd\n", index);
+		
+		printf("mpz_cmp(ptr->key,i) = %d\n",mpz_cmp(ptr->key,index));
+		
+		if (mpz_cmp(ptr->key,index) == 0) {
 			/* case where already existing key matches the given key */
 			printf("\n Key already exists, return its index. \n");
 			mpz_set(r, i);
+			gmp_printf("\nReturning %Zd\n", r);
 			return;
 		}
 
 		mpz_add_ui(i,i,1);
 		mpz_mod_ui(i,i,t->nbuckets);
 		
+		gmp_printf("new i =  %Zd\n", i);
+		
 		if (mpz_cmp(i, index) == 0) {
 			printf("\n Index not found. \n");
 			mpz_set_si(r, -1);
+			gmp_printf("\nReturning %Zd, this should be -1.\n", r);
 			return;
 		}
 		ptr = (struct hash_item*)VPTR(t->hashtable,mpz_get_ui(i));
