@@ -32,6 +32,7 @@ int main()
 	/*sptensor_hash_search(t, idx[0],r);*/
 	sptensor_hash_set(t, idx[0],r,mpfv);
     sptensor_hash_set(t, idx[0],r2,mpfv);
+	sptensor_hash_set(t, idx[1],r,mpfv);
 	
     /*mpf_init(mpfv);
     for(i=0; i<4; i++) {

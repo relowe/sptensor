@@ -31,6 +31,7 @@
 typedef struct hash_item {
     mpz_t key;
     mpf_t value;
+	int flag;
 	
 } hash_item;
 
@@ -69,6 +70,7 @@ void sptensor_hash_search(sptensor_hash_t *t, sptensor_index_t *idx, mpz_t v);
 	v - value to insert 
 */
 void sptensor_hash_set(sptensor_hash_t *t, sptensor_index_t *i, mpz_t r, mpf_t v);
+void sptensor_hash_remove(sptensor_hash_t *t, sptensor_index_t *i);
 
 /* If the hashtable reaches capicity, double the size and rehash all the existing items */
 void sptensor_hash_rehash(sptensor_hash_t *t);
