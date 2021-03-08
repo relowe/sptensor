@@ -18,8 +18,12 @@ int main()
     int n=4;
     mpf_t mpfv;
 	mpz_t r;
+	mpz_t r2;
 	
 	mpz_init(r);
+	mpz_init(r2);
+	mpf_init(mpfv);
+	mpf_set_ui(mpfv, 2.0);
 
 	printf("building tensor...\n");
     /* build the tensor */
@@ -27,7 +31,7 @@ int main()
 	printf("finished building tensor.\n");
 	/*sptensor_hash_search(t, idx[0],r);*/
 	sptensor_hash_set(t, idx[0],r,mpfv);
-    sptensor_hash_set(t, idx[0],r,mpfv);
+    sptensor_hash_set(t, idx[0],r2,mpfv);
 	
     /*mpf_init(mpfv);
     for(i=0; i<4; i++) {
