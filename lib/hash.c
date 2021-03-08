@@ -181,27 +181,24 @@ void sptensor_hash_set(sptensor_hash_t *t, sptensor_index_t *i, mpz_t r, mpf_t v
 void sptensor_hash_search(sptensor_hash_t *t, sptensor_index_t *idx, mpz_t r)
 {
 	struct hash_item *ptr;
-    ptr = malloc(sizeof(struct hash_item));
-	mpz_t morton;
 	mpz_t index;
 	
 	/* start with an empty morton code */
-	mpz_init(morton);
 	mpz_init(index);
-
+	
 	/* Compress idx using the morton encoding */
-	sptensor_inzt_morton(t->modes, idx, morton);
+	sptensor_inzt_morton(t->modes, idx, index);
 
 	/* mod by number of buckets in hash */
-	mpz_mod_ui(index, morton,t->nbuckets);
+	mpz_mod_ui(index, index, t->nbuckets);
 	
 	/* Initialize pointer to that index */
+	ptr = malloc(sizeof(struct hash_item));
 	ptr = (struct hash_item*)VPTR(t->hashtable,mpz_get_ui(index));
 
 	/*initialize counter for loop */
 	mpz_t i;
-	mpz_init(i);
-	mpz_set(i,index);
+	mpz_init_set(i,index);
 		
 	while (1) {
 		/*gmp_printf("i =  %Zd\n", i);
@@ -231,3 +228,32 @@ void sptensor_hash_search(sptensor_hash_t *t, sptensor_index_t *idx, mpz_t r)
 		ptr = (struct hash_item*)VPTR(t->hashtable,mpz_get_ui(i));
 	}
 }
+
+/* Remove element from t's hash table at index i */
+void sptensor_hash_remove(sptensor_hash_t *t, sptensor_index_t *i) 
+{
+	struct hash_item *ptr;
+	mpz_t index; /*compressed version of the original index to insert*/	
+	
+	/* start with an empty morton code */
+	mpz_init(index);
+
+	/* Compress i using the morton encoding */
+	sptensor_inzt_morton(t->modes, i, index);
+
+	/* mod by number of buckets in hash */
+	mpz_mod_ui(index,index,t->nbuckets);
+	
+	/* Initialize pointer to index */
+	ptr = malloc(sizeof(struct hash_item));
+	ptr = (struct hash_item*)VPTR(t->hashtable,mpz_get_ui(index));
+
+	gmp_printf("Removing key %Zd... \n", ptr->key);
+	mpz_init(ptr->key);
+	mpf_init(ptr->value);
+	ptr->flag = 0;
+	t->curr_size = t->curr_size - 1;
+	printf("Key has been removed. \n");
+}
+
+
