@@ -30,15 +30,13 @@ struct hash_item* create_hashitem() {
 	mpz_init(i->key);
 	mpf_init(i->value);
 	i->flag = 0;
-	/*gmp_printf("%Zd\n",i->key);
-	gmp_printf("%Ff\n",i->value);
-	printf("%d\n",i->flag);*/
+	i->idx = NULL;
 	
 	return i;
 }
 
 /* hash allocation functions */
-sptensor_hash_t* sptensor_hash_alloc(sptensor_index_t *modes, int nmodes)
+sptensor_hash_t* sptensor_hash_alloc(sptensor_index_t *modes, int nmodes, int nbuckets)
 {
     sptensor_hash_t *result;
 
@@ -58,8 +56,9 @@ sptensor_hash_t* sptensor_hash_alloc(sptensor_index_t *modes, int nmodes)
     memcpy(result->dim, modes, nmodes * sizeof(sptensor_index_t));
 
     /* populate the fields */
+	result->modes_arr = modes;
     result->modes = nmodes;
-	result->nbuckets = NBUCKETS;
+	result->nbuckets = nbuckets;
 	result->hash_curr_size = 0;
     result->free = (sptensor_free_f) sptensor_hash_free;
     /*result->iterator = (sptensor_iterator_f) sptensor_hash_iterator;
@@ -88,21 +87,19 @@ void sptensor_hash_free(sptensor_hash_t* t)
     if(t->hashtable) free(t->hashtable);
 }
 
-void set_hashitem(struct hash_item* ptr, mpz_t morton, mpz_t key, mpf_t v) {
+void set_hashitem(struct hash_item* ptr, mpz_t morton, mpz_t key, mpf_t v, sptensor_index_t *idx) {
 	
 	mpz_set(ptr->morton, morton);
 	mpz_set(ptr->key, key);
 	mpf_set(ptr->value, v);
+	ptr->idx = idx;
 
 	ptr->flag = 1;
 	gmp_printf("Key %Zd has been inserted with value %Ff. \n", ptr->key, ptr->value);
 }
 
 /* Function to insert an element in the hash table.
-	r - to hold compressed Morton index value
-	v - value to insert 
-	
-	EDIT: we probably need to ditch r
+	v- value to insert
 */
 void sptensor_hash_set(sptensor_hash_t *t, sptensor_index_t *i, mpf_t v) {
 
@@ -124,10 +121,7 @@ void sptensor_hash_set(sptensor_hash_t *t, sptensor_index_t *i, mpf_t v) {
 	If not found, it returns a pointer to a hash_item, with morton and index fields filled but value = 0.
 	*/
 	ptr = sptensor_hash_search(t, i);
-
 	
-	printf("testing if pointer->value != 0...\n");
-	gmp_printf("ptr->value = %Ff\n", ptr->value);
 	
 	if(mpf_cmp_ui(ptr->value,0) != 0) { return; }
 
@@ -143,18 +137,10 @@ void sptensor_hash_set(sptensor_hash_t *t, sptensor_index_t *i, mpf_t v) {
 		/*probe for empty bucket */
 
 		while (ptr->flag == 1) {
-			printf("probing for empty space in table...\n");
+			/*printf("probing for empty space in table...\n");*/
 
 			mpz_add_ui(index,index,1);
 			mpz_mod_ui(index,index,t->nbuckets);
-
-			/*We shouldn't ever get here due to rehashing when we reach capacity....
-			if (mpz_cmp(r, index) == 0) {
-				printf("\nHashtable is full, cannot insert any more item. \n");
-				mpz_set_si(r, -1);
-				/* Will need to resize & rehash table
-				return;
-			}*/
 
 			ptr = (struct hash_item*)VPTR(t->hashtable,mpz_get_ui(index));
 		}	
@@ -162,22 +148,25 @@ void sptensor_hash_set(sptensor_hash_t *t, sptensor_index_t *i, mpf_t v) {
 
 	/* If we get here, we found an empty bucket */
 
-	/*Before inserting, check if we have reached 80% capacity */
-	/*if((t->hash_curr_size/t->nbuckets) > 0.8 ) {
-			sptensor_hash_rehash();
-		}*/
-
 	gmp_printf("inserting at key: %Zd\n", index);
 
 	/* add the key and value into the hash table */
-	set_hashitem(ptr, morton, index, v);
+	set_hashitem(ptr, morton, index, v, i);
 	t->hash_curr_size = t->hash_curr_size + 1;
 	gmp_printf("new item key: %Zd\n", ptr->key);
 	gmp_printf("new item morton value: %Zd\n", ptr->morton);
 	gmp_printf("new item value: %Ff\n", ptr->value);
+	
+	
+	/*Before leaving, check if we have reached 80% capacity */
+	/*if((t->hash_curr_size/t->nbuckets) > 0.8 ) {
+		sptensor_hash_rehash(t);
+	}*/
+	
 	return;
 
 }
+
 
 /* Search the tensor for an index. Return pointer to the item if found, or a hash_item pointer where value=0 if not found.
 */
@@ -230,57 +219,38 @@ struct hash_item* sptensor_hash_search(sptensor_hash_t *t, sptensor_index_t *idx
 	}
 }
 
-void sptensor_hash_rehash(sptensor_hash_t *t) {
+/*For now we're just doing it the cheaty way */
+sptensor_hash_t* sptensor_hash_rehash(sptensor_hash_t *t) {
 	
-	/*struct hash_item *ptr;
-	sptensor_vector* new_hash;
-	mpz_t new_index;
-	mpz_t new_morton;
-	mpf_t nv;
-	int new_size;
-	
-	/* Init new index and new value*/
-	/*mpz_init(new_morton);
-	mpz_init(new_index);
-	mpf_init(new_nv);
+	struct hash_item *ptr;
+	sptensor_hash_t *nt;
+	int new_hash_size;
 	
 	/* Double the size of buckets, plus make it a power of 2*/
-	/*new_size = t->nbuckets * 2;
+	new_hash_size = t->nbuckets * 2;
 
-	/* Initialize new hash table array */	
-	/*int i;
-	
-    for (i = 0; i < new_size; i++) {
-		sptensor_vector_push_back(new_hash, create_hashitem());
-	}
+	/* Allocate new tensor */
+	nt = sptensor_hash_alloc(t->modes_arr, t->modes, new_hash_size);
 	
 	/* Allocate memory for the pointer*/
-	/*ptr = malloc(sizeof(struct hash_item));
+	ptr = malloc(sizeof(struct hash_item));
 	
 	/* Rehash all existing items in t's hashtable to the new table */
-	/*for (i=0; i < t->nbuckets; i++) {
-		ptr = (struct hash_item*)VPTR(t->hashtable,mpz_get_ui(i));
+	int i;
+	for (i=0; i < t->nbuckets; i++) {
+		ptr = (struct hash_item*)VPTR(t->hashtable,i);
 		
 		/*If occupied, we need to copy it to the other table! */
-		/*if(ptr->flag == 1) {
-			
-			/*Mod existing morton code for new placement in table */
-			/*mpz_mod_ui(new_index, ptr->morton, t->new_size);
-			
-			/*copy existing value */
-			/*mpf_set(nv, ptr->value);
-			
+		if(ptr->flag == 1) {
+			sptensor_hash_set(nt, ptr->idx, ptr->value);
 		}
-		
-	}*/
-	
-	
-	
-	
-	
-	/*t->nbuckets = new_size*/
-	
+	}
 
+	/* Free the old tensor!*/
+	sptensor_hash_free(t);
+	
+	printf("\n Done rehashing.\n");
+	return nt;
 }
 
 
@@ -305,7 +275,9 @@ void sptensor_hash_remove(sptensor_hash_t *t, sptensor_index_t *i)
 
 	gmp_printf("Removing key %Zd... \n", ptr->key);
 	mpz_init(ptr->key);
+	mpz_init(ptr->morton);
 	mpf_init(ptr->value);
+	ptr->idx = NULL;
 	ptr->flag = 0;
 	t->hash_curr_size = t->hash_curr_size - 1;
 	printf("Key has been removed. \n");

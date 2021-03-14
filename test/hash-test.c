@@ -13,9 +13,11 @@ int main()
                                    {3, 2, 2}};
     double v [4] = {99.0, 44.0, 100.0, 1.0};
     sptensor_hash_t *t;
+	sptensor_hash_t *nt;
     sptensor_iterator_t *itr;
     int i=0;
     int n=4;
+	int hash_table_sz = 128;
     mpf_t mpfv;
 
 	mpf_init(mpfv);
@@ -23,7 +25,7 @@ int main()
 
 	printf("building tensor...\n");
     /* build the tensor */
-    t = sptensor_hash_alloc(modes, 3);
+    t = sptensor_hash_alloc(modes, 3,hash_table_sz);
 	printf("finished building tensor.\n");
 	
 	sptensor_hash_set(t, idx[0],mpfv);
@@ -31,6 +33,12 @@ int main()
 	sptensor_hash_set(t, idx[1],mpfv);
 	sptensor_hash_remove(t, idx[1]);
 	sptensor_hash_search(t, idx[1]);
+	
+	/* t gets freed in this function */
+	nt = sptensor_hash_rehash(t);
+	
+	sptensor_hash_search(nt, idx[3]);
+	sptensor_hash_set(nt, idx[0],mpfv);
 	
     /*mpf_init(mpfv);
     for(i=0; i<4; i++) {
@@ -41,5 +49,6 @@ int main()
 	sptensor_hash_search(t, idx[0]);
 		
     /* deallocate the tensor */
-    sptensor_hash_free(t);
+    sptensor_hash_free(nt);
+	
 }

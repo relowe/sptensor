@@ -32,6 +32,7 @@ typedef struct hash_item {
 	mpz_t morton; /*Morton encoding of item's index*/
     mpz_t key;
     mpf_t value;
+	sptensor_index_t *idx;
 	int flag;	/*1 for occupied, 0 for unnocupied */
 	
 } hash_item;
@@ -47,6 +48,9 @@ typedef struct sptensor_hash
     sptensor_iterator_f iterator;
     sptensor_iterator_f nz_iterator;
     sptensor_free_f free;
+	
+	/*had to add this one..*/
+	sptensor_index_t *modes_arr;
 
     /* hash specific fields */
     sptensor_vector* hashtable;
@@ -56,30 +60,29 @@ typedef struct sptensor_hash
 
 
 /* sptensor hash allocation functions */
-sptensor_hash_t* sptensor_hash_alloc(sptensor_index_t *modes, int nmodes);
+sptensor_hash_t* sptensor_hash_alloc(sptensor_index_t *modes, int nmodes,int nbuckets);
 void sptensor_hash_free(sptensor_hash_t* t);
 
 /* Hash element access functions */
 
-/* Search the tensor for an index. Return pointer to the item if found, or a hash_item pointer with v = 0 if not found.
+/* Search the tensor for an index. Return pointer to the item if found, or a hash_item pointer with v = 0 if not found. 
 */
 struct hash_item* sptensor_hash_search(sptensor_hash_t *t, sptensor_index_t *idx);
 
 /* Function to insert an element in the hash table.
-	r - to hold index value upon return (-1 if not found or table is full)
 	v - value to insert 
 */
 void sptensor_hash_set(sptensor_hash_t *t, sptensor_index_t *i, mpf_t v);
 
 /* Function to populate all the fields in a hash_item pointer 
-	key - modded morton code
+	key - index where item is located in table (modded morton code) 
 */
-void set_hashitem(struct hash_item* ptr, mpz_t morton, mpz_t key, mpf_t v);
+void set_hashitem(struct hash_item* ptr, mpz_t morton, mpz_t key, mpf_t v, sptensor_index_t *idx);
 
 void sptensor_hash_remove(sptensor_hash_t *t, sptensor_index_t *i);
 
 /* If the hashtable reaches capicity, double the size and rehash all the existing items */
-void sptensor_hash_rehash(sptensor_hash_t *t);
+sptensor_hash_t* sptensor_hash_rehash(sptensor_hash_t *t);
 
 /* Iterator Functions */
 sptensor_iterator_t* sptensor_hash_iterator(sptensor_t *t);
