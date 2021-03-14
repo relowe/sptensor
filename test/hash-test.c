@@ -17,11 +17,7 @@ int main()
     int i=0;
     int n=4;
     mpf_t mpfv;
-	mpz_t r;
-	mpz_t r2;
-	
-	mpz_init(r);
-	mpz_init(r2);
+
 	mpf_init(mpfv);
 	mpf_set_ui(mpfv, 2.0);
 
@@ -30,11 +26,11 @@ int main()
     t = sptensor_hash_alloc(modes, 3);
 	printf("finished building tensor.\n");
 	
-	sptensor_hash_set(t, idx[0],r,mpfv);
-    sptensor_hash_set(t, idx[0],r2,mpfv);
-	sptensor_hash_set(t, idx[1],r,mpfv);
+	sptensor_hash_set(t, idx[0],mpfv);
+    sptensor_hash_set(t, idx[0],mpfv);
+	sptensor_hash_set(t, idx[1],mpfv);
 	sptensor_hash_remove(t, idx[1]);
-	sptensor_hash_search(t, idx[1], r);
+	sptensor_hash_search(t, idx[1]);
 	
     /*mpf_init(mpfv);
     for(i=0; i<4; i++) {

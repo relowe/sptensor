@@ -29,9 +29,10 @@
 
 /* Each hash table item has a key and value) */
 typedef struct hash_item {
+	mpz_t morton; /*Morton encoding of item's index*/
     mpz_t key;
     mpf_t value;
-	int flag;
+	int flag;	/*1 for occupied, 0 for unnocupied */
 	
 } hash_item;
 
@@ -50,7 +51,7 @@ typedef struct sptensor_hash
     /* hash specific fields */
     sptensor_vector* hashtable;
 	unsigned int nbuckets;
-	unsigned int curr_size; /*this will grow as items are added to the hash table */
+	unsigned int hash_curr_size; /*Count of how many items are in the hash table */
 } sptensor_hash_t;
 
 
@@ -60,21 +61,25 @@ void sptensor_hash_free(sptensor_hash_t* t);
 
 /* Hash element access functions */
 
-/* Search the tensor for an index. Return the element number, -1 on failure 
-	r - to hold index value upon return 
+/* Search the tensor for an index. Return pointer to the item if found, or a hash_item pointer with v = 0 if not found.
 */
-void sptensor_hash_search(sptensor_hash_t *t, sptensor_index_t *idx, mpz_t v);
+struct hash_item* sptensor_hash_search(sptensor_hash_t *t, sptensor_index_t *idx);
 
 /* Function to insert an element in the hash table.
 	r - to hold index value upon return (-1 if not found or table is full)
 	v - value to insert 
 */
-void sptensor_hash_set(sptensor_hash_t *t, sptensor_index_t *i, mpz_t r, mpf_t v);
+void sptensor_hash_set(sptensor_hash_t *t, sptensor_index_t *i, mpf_t v);
+
+/* Function to populate all the fields in a hash_item pointer 
+	key - modded morton code
+*/
+void set_hashitem(struct hash_item* ptr, mpz_t morton, mpz_t key, mpf_t v);
+
 void sptensor_hash_remove(sptensor_hash_t *t, sptensor_index_t *i);
 
 /* If the hashtable reaches capicity, double the size and rehash all the existing items */
 void sptensor_hash_rehash(sptensor_hash_t *t);
-
 
 /* Iterator Functions */
 sptensor_iterator_t* sptensor_hash_iterator(sptensor_t *t);
