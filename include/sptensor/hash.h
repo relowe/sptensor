@@ -25,8 +25,6 @@
 #include <sptensor/vector.h>
 #include <gmp.h>
 
-#define NBUCKETS 128
-
 /* Each hash table item has a key and value) */
 typedef struct hash_item {
 	mpz_t morton; /*Morton encoding of item's index*/
@@ -49,7 +47,7 @@ typedef struct sptensor_hash
     sptensor_iterator_f nz_iterator;
     sptensor_free_f free;
 	
-	/*had to add this one..*/
+	/*had to add this one until we have a monton-decoding method..*/
 	sptensor_index_t *modes_arr;
 
     /* hash specific fields */
@@ -67,12 +65,16 @@ void sptensor_hash_free(sptensor_hash_t* t);
 
 /* Search the tensor for an index. Return pointer to the item if found, or a hash_item pointer with v = 0 if not found. 
 */
-struct hash_item* sptensor_hash_search(sptensor_hash_t *t, sptensor_index_t *idx);
+struct hash_item* sptensor_hash_search(sptensor_vector* hashtable, sptensor_index_t *idx, int nbuckets, int modes);
 
 /* Function to insert an element in the hash table.
 	v - value to insert 
 */
 void sptensor_hash_set(sptensor_hash_t *t, sptensor_index_t *i, mpf_t v);
+
+/*Helper function for sptensor_hash_set. So we can rehash!*/
+int sptensor_hash_set_helper(sptensor_vector* hashtable, sptensor_index_t *i, mpf_t v, int nbuckets, int modes);
+
 
 /* Function to populate all the fields in a hash_item pointer 
 	key - index where item is located in table (modded morton code) 
@@ -82,7 +84,7 @@ void set_hashitem(struct hash_item* ptr, mpz_t morton, mpz_t key, mpf_t v, spten
 void sptensor_hash_remove(sptensor_hash_t *t, sptensor_index_t *i);
 
 /* If the hashtable reaches capicity, double the size and rehash all the existing items */
-sptensor_hash_t* sptensor_hash_rehash(sptensor_hash_t *t);
+void sptensor_hash_rehash(sptensor_hash_t *t);
 
 /* Iterator Functions */
 sptensor_iterator_t* sptensor_hash_iterator(sptensor_t *t);
