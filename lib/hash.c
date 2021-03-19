@@ -35,8 +35,14 @@ struct hash_item* create_hashitem() {
 	return i;
 }
 
+void free_hashitem(struct hash_item *ptr) {
+	mpz_clear(ptr->key);
+	mpf_clear(ptr->value);
+	free(ptr->idx);
+}
+
 /* hash allocation functions */
-sptensor_hash_t* sptensor_hash_alloc(sptensor_index_t *modes, int nmodes, int nbuckets) {
+sptensor_hash_t* sptensor_hash_alloc(sptensor_index_t *modes, int nmodes) {
 	
     sptensor_hash_t *result;
 
@@ -58,7 +64,7 @@ sptensor_hash_t* sptensor_hash_alloc(sptensor_index_t *modes, int nmodes, int nb
     /* populate the fields */
 	result->modes_arr = modes;
     result->modes = nmodes;
-	result->nbuckets = nbuckets;
+	result->nbuckets = NBUCKETS;
 	result->hash_curr_size = 0;
     result->free = (sptensor_free_f) sptensor_hash_free;
     /*result->iterator = (sptensor_iterator_f) sptensor_hash_iterator;
@@ -110,7 +116,7 @@ void sptensor_hash_set(sptensor_hash_t *t, sptensor_index_t *i, mpf_t v) {
 
 		printf("Current capacity at: %f\n", (double)t->hash_curr_size/t->nbuckets);
 		/*Before leaving, check if we have reached 80% capacity */
-		if((double)t->hash_curr_size/t->nbuckets > 0.01 ) {
+		if((double)t->hash_curr_size/t->nbuckets > 0.8 ) {
 			printf("Preparing to rehash...\n");
 			sptensor_hash_rehash(t);
 			printf("finished rehashing.\n");
@@ -127,7 +133,7 @@ void sptensor_hash_set(sptensor_hash_t *t, sptensor_index_t *i, mpf_t v) {
 /*Helper function for sptensor_hash_set. So we can rehash!
 	-returns 1 on success, 0 if item was not inserted.
 */
-int sptensor_hash_set_helper(sptensor_vector* hashtable, sptensor_index_t *i, mpf_t v, int nbuckets, int modes) 
+static int sptensor_hash_set_helper(sptensor_vector* hashtable, sptensor_index_t *i, mpf_t v, int nbuckets, int modes) 
 {
 	struct hash_item *ptr;
 	mpz_t index; /*modded morton encoding of the original index to insert*/
@@ -145,10 +151,11 @@ int sptensor_hash_set_helper(sptensor_vector* hashtable, sptensor_index_t *i, mp
 	If found, it returns a pointer to the existing item
 	If not found, it returns a pointer to a hash_item, with morton and index fields filled but value = 0.
 	*/
-	ptr = sptensor_hash_search(hashtable, i, nbuckets, modes);
+	ptr = sptensor_hash_search(hashtable, i, v, nbuckets, modes);
 	
 	if(mpf_cmp_ui(ptr->value,0) != 0) { 
 		printf("item was found already in table.\n");
+		/*free_hashitem(ptr);*/
 		return 0; 
 	}
 
@@ -157,7 +164,7 @@ int sptensor_hash_set_helper(sptensor_vector* hashtable, sptensor_index_t *i, mp
 		/* mod by number of buckets in hash */
 		mpz_init_set(morton, ptr->morton);
 		mpz_init_set(index, ptr->key);
-		
+
 		/*point to proper slot in table */
 		ptr = (struct hash_item*)VPTR(hashtable,mpz_get_ui(index));
 		
@@ -170,7 +177,7 @@ int sptensor_hash_set_helper(sptensor_vector* hashtable, sptensor_index_t *i, mp
 			mpz_mod_ui(index,index,nbuckets);
 
 			ptr = (struct hash_item*)VPTR(hashtable,mpz_get_ui(index));
-		}	
+		}
 	}
 
 	/* If we get here, we found an empty bucket */
@@ -178,12 +185,14 @@ int sptensor_hash_set_helper(sptensor_vector* hashtable, sptensor_index_t *i, mp
 
 	/* add the key and value into the hash table */
 	set_hashitem(ptr, morton, index, v, i);
+	/*free_hashitem(ptr);*/
+
 	return 1;
 }
 
 /* Search the tensor for an index. Return pointer to the item if found, or a hash_item pointer where value=0 if not found.
 */
-struct hash_item* sptensor_hash_search(sptensor_vector* hashtable, sptensor_index_t *idx, int nbuckets, int modes)
+struct hash_item* sptensor_hash_search(sptensor_vector* hashtable, sptensor_index_t *idx, mpf_t v, int nbuckets, int modes)
 {
 	struct hash_item *ptr;
 	mpz_t index;
@@ -209,26 +218,26 @@ struct hash_item* sptensor_hash_search(sptensor_vector* hashtable, sptensor_inde
 	/*initialize counter for loop */
 	mpz_init_set(i,index);
 		
-	gmp_printf("\n Searching for Key %d.\n", index);
+	gmp_printf("\n Searching for Key %Zd.\n", index);
 	while (1) {
-		/*gmp_printf("attempting to find key %Zd in table\n", ptr->key);*/
+		
 		if (mpz_cmp(ptr->key,index) == 0) {
-			/* case where already existing key matches the given key */
-			/*Do I need to check if values are the same?*/
-			gmp_printf("Key %Zd already exists. \n", ptr->key);
-
-			return ptr;
+			/*Check if values are the same*/
+			if (mpf_cmp(ptr->value,v) == 0) {
+				gmp_printf("Key %Zd with value %Ff already exists. \n", ptr->key, ptr->value);
+				return ptr;
+			}
 		}
 
 		mpz_add_ui(i,i,1);
 		mpz_mod_ui(i,i,nbuckets);
 		
 		if (mpz_cmp(i, index) == 0) {
-			printf("Index not found. \n");
-			struct hash_item *empty_hash = create_hashitem();
-			mpz_set(empty_hash->morton,morton);
-			mpz_set(empty_hash->key,index);
-			return empty_hash;
+			printf("Index + value pair not found. \n");
+			struct hash_item *empty_item = create_hashitem();
+			mpz_set(empty_item->morton,morton);
+			mpz_set(empty_item->key,index);
+			return empty_item;
 		}
 		ptr = (struct hash_item*)VPTR(hashtable,mpz_get_ui(i));
 	}
@@ -236,16 +245,15 @@ struct hash_item* sptensor_hash_search(sptensor_vector* hashtable, sptensor_inde
 
 /*Retry to rehash properly */
 void sptensor_hash_rehash(sptensor_hash_t *t) {
+	printf("hello\n");
 	struct hash_item *ptr;
 	sptensor_vector *new_hashtable;
 	int new_hash_size;
 	
-	/* Double the size of buckets*/
+	printf("entered rehash function.");
+	/* Double the number of buckets*/
 	new_hash_size = t->nbuckets * 2;
-
-	/*plus make it a power of 2*/
-	/*NOT IMPLEMENTED YET*/
-		
+	
 	/* Allocate the vectors */
     new_hashtable = sptensor_vector_alloc(sizeof(hash_item)*new_hash_size,
 											  SPTENSOR_VECTOR_DEFAULT_CAPACITY);
@@ -275,6 +283,9 @@ void sptensor_hash_rehash(sptensor_hash_t *t) {
 
 	printf("values successfuly copied over.\n");
 	
+	/*Free the temporary pointer */
+	free_hashitem(ptr);
+	
 	/* Free the old tensor!*/
 	free(t->hashtable);
 	
@@ -284,18 +295,17 @@ void sptensor_hash_rehash(sptensor_hash_t *t) {
 	
 	/*Update the number of buckets*/
 	t->nbuckets = new_hash_size;
-
 }
 
-/* Remove element from t's hash table at index i */
-void sptensor_hash_remove(sptensor_hash_t *t, sptensor_index_t *i) 
+/* Remove element from t's hash table at index i with value v*/
+void sptensor_hash_remove(sptensor_hash_t *t, sptensor_index_t *i, mpf_t v) 
 {
 	struct hash_item *ptr;
 	
 	/* Allocate pointer*/
 	ptr = malloc(sizeof(struct hash_item));
 	
-	ptr = sptensor_hash_search(t->hashtable, i,t->nbuckets,t->modes);
+	ptr = sptensor_hash_search(t->hashtable, i, v, t->nbuckets,t->modes);
 	
 	if(ptr->flag == 1) {
 
@@ -310,6 +320,76 @@ void sptensor_hash_remove(sptensor_hash_t *t, sptensor_index_t *i)
 	} else {
 		printf("Key is not in table, so it was not removed. \n");
 	}
+	free_hashitem(ptr);
 }
 
+/* 
+ * Read a HASH tensor from a text file stream. The file stream is
+ * expected to be in the form of:
+ *   nmodes d0 d1 ... dk
+ *   i0 i1 i2 ... ik v1
+ *   i0 i1 i2 ... ik v2
+ *   ...
+ * Where nmodes is the number of modes, d0...dk are the dimensions,
+ * and i0..ik are the indexes and v is the value at that index.
+ * The file is read to the end, or until an unsucessful translation
+ * occurs.
+ *
+ * Parameters: file - The file to read from
+ *             
+ * Return: The newly read and allocated tensor.
+ */
+sptensor_hash_t * sptensor_hash_read(FILE *file) 
+{
+    int nmodes;
+    sptensor_index_t *idx;
+    int i;
+    mpf_t val;
+    sptensor_hash_t *tns;
+    int done;
 
+    /* a little bit of mpf allocation */
+    mpf_init(val);
+
+    /* get the dimensions */
+    fscanf(file, "%u", &nmodes);
+    idx = sptensor_index_alloc(nmodes);
+    for(i=0; i<nmodes; i++) {
+	    gmp_fscanf(file, "%u", idx + i);
+    }
+
+    /* allocate the tensor and free the dimension */
+    tns = sptensor_hash_alloc(idx, nmodes);
+
+    i=0;
+    done = 0;
+    while(!done) {
+	    /* read the indexes */
+	    for(i=0; i<nmodes; i++) {
+	        if(gmp_fscanf(file, "%u", idx + i) != 1) {
+		        done = 1;
+		        break;
+	        }
+	    }
+
+	    if(done) continue;
+	    if(gmp_fscanf(file, "%Ff", val) != 1) {
+	        done = 1;
+	        break;
+	    }
+
+	    /* insert into the tensor */
+	    sptensor_hash_set(tns, idx, val);
+    }
+
+    /* cleanup and return! */
+    free(idx);
+    mpf_clear(val);
+
+    return tns;
+}
+
+void sptensor_hash_write(FILE *file, sptensor_hash_t *tns) 
+{
+	
+}

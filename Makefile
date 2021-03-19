@@ -25,7 +25,8 @@ SPTENSOR_TEST_SRCFILES := test/indextest.c\
 						  test/skbttest.c\
 						  test/math-test.c\
 						  test/coo-io-test.c\
-						  test/hash-test.c
+						  test/hash-test.c \
+						  test/hash-io-test.c
 
 SPTENSOR_TEST_TARGETS := $(patsubst test/%.c,  build/test/%, $(SPTENSOR_TEST_SRCFILES))
 
