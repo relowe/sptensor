@@ -28,6 +28,7 @@
 struct hash_item* create_hashitem() {
 	struct hash_item *i = malloc(sizeof(hash_item));
 	mpz_init(i->key);
+	mpz_init(i->morton);
 	mpf_init(i->value);
 	i->flag = 0;
 	i->idx = NULL;
@@ -36,6 +37,7 @@ struct hash_item* create_hashitem() {
 }
 
 void free_hashitem(struct hash_item *ptr) {
+	mpz_clear(ptr->morton);
 	mpz_clear(ptr->key);
 	mpf_clear(ptr->value);
 	free(ptr->idx);
@@ -71,8 +73,7 @@ sptensor_hash_t* sptensor_hash_alloc(sptensor_index_t *modes, int nmodes) {
     result->nz_iterator = (sptensor_iterator_f) sptensor_hash_nz_iterator;*/
 	
 	/* Allocate the vectors */
-    result->hashtable = sptensor_vector_alloc(sizeof(hash_item)*result->nbuckets,
-											  SPTENSOR_VECTOR_DEFAULT_CAPACITY);
+    result->hashtable = sptensor_vector_alloc(sizeof(struct hash_item),result->nbuckets);
 	
 	/* initializing hash table array */	
 	int i;
@@ -245,25 +246,27 @@ struct hash_item* sptensor_hash_search(sptensor_vector* hashtable, sptensor_inde
 
 /*Retry to rehash properly */
 void sptensor_hash_rehash(sptensor_hash_t *t) {
-	printf("hello\n");
+	
 	struct hash_item *ptr;
-	sptensor_vector *new_hashtable;
+	sptensor_vector* new_hashtable;
 	int new_hash_size;
 	
-	printf("entered rehash function.");
+	/*printf("entered rehash function.\n");*/
 	/* Double the number of buckets*/
 	new_hash_size = t->nbuckets * 2;
+	printf("new hash size = %d\n",new_hash_size);
+	
 	
 	/* Allocate the vectors */
-    new_hashtable = sptensor_vector_alloc(sizeof(hash_item)*new_hash_size,
-											  SPTENSOR_VECTOR_DEFAULT_CAPACITY);
-	
+    new_hashtable = sptensor_vector_alloc(sizeof(struct hash_item), new_hash_size);
 	/* initialize new hash table array */	
 	int i;
 	
     for (i = 0; i < new_hash_size; i++) { 
+		/*printf("i = %d\n", i);*/
 		sptensor_vector_push_back(new_hashtable, create_hashitem()); 
 	}
+	
 	
 	/* Allocate memory for the pointer*/
 	ptr = malloc(sizeof(struct hash_item));
@@ -284,7 +287,7 @@ void sptensor_hash_rehash(sptensor_hash_t *t) {
 	printf("values successfuly copied over.\n");
 	
 	/*Free the temporary pointer */
-	free_hashitem(ptr);
+	/*free_hashitem(ptr);*/
 	
 	/* Free the old tensor!*/
 	free(t->hashtable);
