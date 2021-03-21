@@ -182,7 +182,7 @@ static int sptensor_hash_set_helper(sptensor_vector* hashtable, sptensor_index_t
 	}
 
 	/* If we get here, we found an empty bucket */
-	gmp_printf("inserting at key: %Zd\n", index);
+	/*gmp_printf("inserting at key: %Zd\n", index);*/
 
 	/* add the key and value into the hash table */
 	set_hashitem(ptr, morton, index, v, i);
@@ -200,9 +200,8 @@ struct hash_item* sptensor_hash_search(sptensor_vector* hashtable, sptensor_inde
 	mpz_t i;
 	mpz_t morton;
 	
+	/* Init */
 	mpz_init(index);
-	
-	/* start with an empty morton code */
 	mpz_init(morton);
 	
 	/* Compress idx using the morton encoding */
@@ -211,7 +210,6 @@ struct hash_item* sptensor_hash_search(sptensor_vector* hashtable, sptensor_inde
 	/* mod by number of buckets in hash */
 	mpz_mod_ui(index, morton, nbuckets);
 
-	
 	/* Initialize pointer to that index */
 	ptr = malloc(sizeof(struct hash_item));
 	ptr = (struct hash_item*)VPTR(hashtable,mpz_get_ui(index));
@@ -219,7 +217,7 @@ struct hash_item* sptensor_hash_search(sptensor_vector* hashtable, sptensor_inde
 	/*initialize counter for loop */
 	mpz_init_set(i,index);
 		
-	gmp_printf("\n Searching for Key %Zd.\n", index);
+	/*gmp_printf("\n Searching for Key %Zd.\n", index);*/
 	while (1) {
 		
 		if (mpz_cmp(ptr->key,index) == 0) {
@@ -234,7 +232,7 @@ struct hash_item* sptensor_hash_search(sptensor_vector* hashtable, sptensor_inde
 		mpz_mod_ui(i,i,nbuckets);
 		
 		if (mpz_cmp(i, index) == 0) {
-			printf("Index + value pair not found. \n");
+			/*printf("Index + value pair not found. \n");*/
 			struct hash_item *empty_item = create_hashitem();
 			mpz_set(empty_item->morton,morton);
 			mpz_set(empty_item->key,index);

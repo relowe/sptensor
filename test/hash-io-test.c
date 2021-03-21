@@ -1,11 +1,15 @@
 #include <stdio.h>
 #include <sptensor/sptensor.h>
 #include <sptensor/hash.h>
+#include <time.h>
 
 int main(int argc, char **argv) 
 {
     FILE *file;
     sptensor_hash_t *t;
+	
+	clock_t start, end;
+    double cpu_time_used;
 
     /* evaluate the command line */
     if(argc != 2) {
@@ -20,9 +24,15 @@ int main(int argc, char **argv)
         return -2;
     }
 
+	start = clock();
+	
     /* read the tensor, and then write it to stdout */
     t = sptensor_hash_read(file);
-    sptensor_hash_write(stdout, t);
+	end = clock();
+    cpu_time_used = ((double) (end - start)) / CLOCKS_PER_SEC;
+	printf("time used = %f\n", cpu_time_used);
+	
+    /*sptensor_hash_write(stdout, t);*/
 
     /* cleanup */
     sptensor_hash_free(t);
