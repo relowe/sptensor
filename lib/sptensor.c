@@ -40,13 +40,10 @@ void sptensor_fprintf(FILE *file, const char *fmt, sptensor_t *t)
             gmp_fprintf(file, fmt, v);
 
             /* end rows */
-            if(t->modes > 1 && itr->index[1] == t->dim[1]) {
+            if(t->modes < 2 || itr->index[1] == t->dim[1]) {
                 fprintf(file, "\n");
             }
     }
-
-    /* finish the last row */
-    fprintf(file, "\n");
 
     /* cleanup */
     mpf_clear(v);
