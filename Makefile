@@ -11,7 +11,9 @@ SPTENSOR_LIB_SRCFILES := lib/index.c \
 						 lib/skbt.c\
 						 lib/math.c\
 						 lib/transform.c\
-						 lib/hash.c
+						 lib/hash.c\
+						 lib/constant.c\
+						 lib/identity.c
 
 SPTENSOR_LIB_OBJFILES := $(patsubst lib/%.c, ./build/obj/%.o, $(SPTENSOR_LIB_SRCFILES))
 
@@ -27,7 +29,8 @@ SPTENSOR_TEST_SRCFILES := test/indextest.c\
 						  test/coo-io-test.c\
 						  test/coo-print-test.c\
 						  test/hash-test.c\
-						  test/hash-io-test.c
+						  test/hash-io-test.c\
+						  test/constant-test.c
 
 SPTENSOR_TEST_TARGETS := $(patsubst test/%.c,  build/test/%, $(SPTENSOR_TEST_SRCFILES))
 
