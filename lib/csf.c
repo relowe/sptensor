@@ -42,6 +42,8 @@ struct sptensor_csf_nz_iterator
 /* CSF allocation functions */
 sptensor_t* sptensor_csf_alloc(sptensor_index_t *modes, int nmodes)
 {
+    int i;
+
     sptensor_csf_t *result;
 
     /* allocate result */
@@ -62,8 +64,26 @@ sptensor_t* sptensor_csf_alloc(sptensor_index_t *modes, int nmodes)
     /* copy the dimensions */
     memcpy(result->dim, modes, nmodes * sizeof(sptensor_index_t));
 
-    /* allocate the fptr and fids */
-    
+    /* allocate the fids */
+    result->fids = malloc(nmodes*sizeof(int*));
+    for(i = 0; i < nmodes; i++){
+        /*allocate fid for each dimension */
+        result->fids[i] = malloc(modes[i]); /* wrong length */
+    }
+
+    /* allocate the fptr */
+    result->fptr = malloc((nmodes-1)*sizeof(int*));
+    for(i = 0; i < nmodes - 1; i++){
+        /* allocate fptr for each dimension */
+        result->fptr[i] = malloc(modes[i]); /* wrong length */
+    }
+
+    /* allocate values array */
+    result->values = malloc(<num_non_zeros>*sizeof(mpf_t));
+    /* mpf_init each value */
+    for(i = 0; i < <num_non_zeros>; i++){ /* need to know num_non_zeros*/
+        mpf_init(result->values[i]);
+    }
 
     /* populate the fields */
     result->modes = nmodes;
@@ -80,15 +100,30 @@ sptensor_t* sptensor_csf_alloc(sptensor_index_t *modes, int nmodes)
 /* free the memory associated with any fields */
 void sptensor_csf_free(sptensor_csf_t* t)
 {
+    int j;
     /* free the non-zero pointers */
     if(t->dim) free(t->dim);
     if(t->fids){
         /* nested for loops and free each */
-
-    } free(t->data);
-    if(t->fptrs){
+        for(i = 0; i < t->modes; i++){
+            /*free fids for each dimension */
+            free(result->fids[i]);
+        }
+        free(result->fids);
+    }
+    if(t->fptr){
         /* nested for loops and free each */
-
+        for(i = 0; i < t->modes - 1; i++){
+            /*free fptr for each dimension */
+            free(result->fptr[i]);
+        }
+        free(t->fptr);
+    }
+    if(t->values){
+        /* for loop */
+        for(i = 0; i < <num_non_zeros>; i++){ /* need to know num_non_zeros */
+            mpf_clear(t->values[i]);
+        }
     }
 }
 
