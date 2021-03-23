@@ -19,6 +19,7 @@
  */
 #include <limits.h>
 #include <stdio.h>
+#include <stdlib.h> /*for system()*/
 #include <string.h>
 #include <gmp.h>
 #include <sptensor/index_iterator.h>
@@ -100,7 +101,7 @@ void set_hashitem(struct hash_item* ptr, mpz_t morton, mpz_t key, mpf_t v, spten
 	mpf_set(ptr->value, v);
 	ptr->idx = idx;
 	ptr->flag = 1;
-	gmp_printf("Key %Zd has been inserted with value %Ff. \n", ptr->key, ptr->value);
+	/*gmp_printf("Key %Zd has been inserted with value %Ff. \n", ptr->key, ptr->value);*/
 }
 
 /* Function to insert an element in the hash table.
@@ -115,18 +116,18 @@ void sptensor_hash_set(sptensor_hash_t *t, sptensor_index_t *i, mpf_t v) {
 		t->hash_curr_size = t->hash_curr_size + 1;
 
 
-		printf("Current capacity at: %f\n", (double)t->hash_curr_size/t->nbuckets);
+		/*printf("Current capacity at: %f\n", (double)t->hash_curr_size/t->nbuckets);*/
 		/*Before leaving, check if we have reached 80% capacity */
 		if((double)t->hash_curr_size/t->nbuckets > 0.8 ) {
-			printf("Preparing to rehash...\n");
+			/*printf("Preparing to rehash...\n");*/
 			sptensor_hash_rehash(t);
-			printf("finished rehashing.\n");
+			/*printf("finished rehashing.\n");*/
 		}
 		
 		return;
 	}
 	
-	printf("Did not insert index.\n");
+	/*printf("Did not insert index.\n");*/
 	return;
 
 }
@@ -155,8 +156,7 @@ static int sptensor_hash_set_helper(sptensor_vector* hashtable, sptensor_index_t
 	ptr = sptensor_hash_search(hashtable, i, v, nbuckets, modes);
 	
 	if(mpf_cmp_ui(ptr->value,0) != 0) { 
-		printf("item was found already in table.\n");
-		/*free_hashitem(ptr);*/
+		/*printf("item was found already in table.\n");*/
 		return 0; 
 	}
 
@@ -186,7 +186,6 @@ static int sptensor_hash_set_helper(sptensor_vector* hashtable, sptensor_index_t
 
 	/* add the key and value into the hash table */
 	set_hashitem(ptr, morton, index, v, i);
-	/*free_hashitem(ptr);*/
 
 	return 1;
 }
@@ -221,11 +220,10 @@ struct hash_item* sptensor_hash_search(sptensor_vector* hashtable, sptensor_inde
 	while (1) {
 		
 		if (mpz_cmp(ptr->key,index) == 0) {
-			/*Check if values are the same*/
-			if (mpf_cmp(ptr->value,v) == 0) {
-				gmp_printf("Key %Zd with value %Ff already exists. \n", ptr->key, ptr->value);
-				return ptr;
-			}
+			/*Overwirte existing value*/
+			/*gmp_printf("Overwriting Key %Zd with value %Ff. \n", ptr->key, ptr->value);*/
+			mpf_set(ptr->value,v);
+			return ptr;
 		}
 
 		mpz_add_ui(i,i,1);
@@ -248,12 +246,9 @@ void sptensor_hash_rehash(sptensor_hash_t *t) {
 	struct hash_item *ptr;
 	sptensor_vector* new_hashtable;
 	int new_hash_size;
-	
-	/*printf("entered rehash function.\n");*/
+
 	/* Double the number of buckets*/
 	new_hash_size = t->nbuckets * 2;
-	printf("new hash size = %d\n",new_hash_size);
-	
 	
 	/* Allocate the vectors */
     new_hashtable = sptensor_vector_alloc(sizeof(struct hash_item), new_hash_size);
@@ -261,7 +256,6 @@ void sptensor_hash_rehash(sptensor_hash_t *t) {
 	int i;
 	
     for (i = 0; i < new_hash_size; i++) { 
-		/*printf("i = %d\n", i);*/
 		sptensor_vector_push_back(new_hashtable, create_hashitem()); 
 	}
 	
@@ -269,7 +263,7 @@ void sptensor_hash_rehash(sptensor_hash_t *t) {
 	/* Allocate memory for the pointer*/
 	ptr = malloc(sizeof(struct hash_item));
 	
-	printf("copying old values to new tensor...\n");
+	/*printf("copying old values to new tensor...\n");*/
 	
 	/* Rehash all existing items in t's hashtable to the new table */
 	for (i=0; i < t->nbuckets; i++) {
@@ -278,21 +272,18 @@ void sptensor_hash_rehash(sptensor_hash_t *t) {
 		/*If occupied, we need to copy it to the other table! */
 		if(ptr->flag == 1) {
 			sptensor_hash_set_helper(new_hashtable, ptr->idx, ptr->value, new_hash_size, t->modes);
-			printf("inserted item into new hashtable.\n");
+			/*printf("inserted item into new hashtable.\n");*/
 		}
 	}
 
-	printf("values successfuly copied over.\n");
-	
-	/*Free the temporary pointer */
-	/*free_hashitem(ptr);*/
+	/*printf("values successfuly copied over.\n");*/
 	
 	/* Free the old tensor!*/
 	free(t->hashtable);
 	
 	/*set it to the new one*/
 	t->hashtable = new_hashtable;
-	printf("new hashtable assigned to tensor.\n");
+	/*printf("new hashtable assigned to tensor.\n");*/
 	
 	/*Update the number of buckets*/
 	t->nbuckets = new_hash_size;
@@ -321,7 +312,6 @@ void sptensor_hash_remove(sptensor_hash_t *t, sptensor_index_t *i, mpf_t v)
 	} else {
 		printf("Key is not in table, so it was not removed. \n");
 	}
-	free_hashitem(ptr);
 }
 
 /* 
@@ -348,6 +338,9 @@ sptensor_hash_t * sptensor_hash_read(FILE *file)
     mpf_t val;
     sptensor_hash_t *tns;
     int done;
+	
+	/*Extra to help know our progress of reading in the tensor*/
+	int count = 0;
 
     /* a little bit of mpf allocation */
     mpf_init(val);
@@ -381,6 +374,9 @@ sptensor_hash_t * sptensor_hash_read(FILE *file)
 
 	    /* insert into the tensor */
 	    sptensor_hash_set(tns, idx, val);
+		count = count + 1;
+		printf("number of items inserted = %d\n", count);
+		system("clear"); /*clear output screen*/
     }
 
     /* cleanup and return! */
