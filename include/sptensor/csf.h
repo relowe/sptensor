@@ -37,7 +37,7 @@ typedef struct sptensor_csf
     sptensor_free_f free;
 
     /* csf specific fields */
-    gmp_f* values;
+    mpf_t* values;
     int** fids;
     int** fptr;
 } sptensor_csf_t;
