@@ -25,6 +25,7 @@ SPTENSOR_TEST_SRCFILES := test/indextest.c\
 						  test/skbttest.c\
 						  test/math-test.c\
 						  test/coo-io-test.c\
+						  test/coo-print-test.c\
 						  test/hash-test.c\
 						  test/hash-io-test.c
 

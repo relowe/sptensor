@@ -19,6 +19,7 @@
 
  */
 #include <gmp.h>
+#include <stdio.h>
 #include <sptensor/index.h>
 
 /* General tensor framework */
@@ -77,4 +78,10 @@ int sptensor_iterator_next(struct sptensor_iterator* itr);
 int sptensor_iterator_prev(struct sptensor_iterator* itr);
 int sptensor_iterator_valid(struct sptensor_iterator* itr);
 void sptensor_iterator_free(sptensor_iterator_t* t);
+
+/* perform formatted printing of sptensors using the format string specifier for each value */
+void sptensor_fprintf(FILE *file, const char *fmt, sptensor_t *t);
+
+/* print the sptensor with a default format string to stdout */
+void sptensor_print(sptensor_t *t);
 #endif
