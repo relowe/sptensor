@@ -20,6 +20,7 @@
  */
 #include <stdio.h>
 #include <sptensor/sptensor.h>
+#include <sptensor/vector.h>
 
 #ifndef SPTENSOR_CSF_H
 #define SPTENSOR_CSF_H
@@ -37,9 +38,9 @@ typedef struct sptensor_csf
     sptensor_free_f free;
 
     /* csf specific fields */
-    mpf_t* values;
-    int** fids;
-    int** fptr;
+    sptensor_vector* values;
+    sptensor_vector* fids;
+    sptensor_vector* fptr;
 } sptensor_csf_t;
 
 /* CSF allocation functions */
