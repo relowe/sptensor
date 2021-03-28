@@ -30,7 +30,8 @@ SPTENSOR_TEST_SRCFILES := test/indextest.c\
 						  test/coo-print-test.c\
 						  test/hash-test.c\
 						  test/hash-io-test.c\
-						  test/constant-test.c
+						  test/constant-test.c\
+						  test/transform-test.c
 
 SPTENSOR_TEST_TARGETS := $(patsubst test/%.c,  build/test/%, $(SPTENSOR_TEST_SRCFILES))
 
