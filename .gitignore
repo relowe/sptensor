@@ -8,3 +8,9 @@ build
 test/*test
 compile_commands.json
 .vscode
+Makefile
+config.log
+config.status
+output.0
+requests
+traces.0
