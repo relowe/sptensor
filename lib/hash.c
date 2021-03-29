@@ -153,10 +153,12 @@ static int sptensor_hash_set_helper(sptensor_vector* hashtable, sptensor_index_t
 	If found, it returns a pointer to the existing item
 	If not found, it returns a pointer to a hash_item, with morton and index fields filled but value = 0.
 	*/
-	ptr = sptensor_hash_search(hashtable, i, v, nbuckets, modes);
+	ptr = sptensor_hash_search(hashtable, i, nbuckets,modes);
 	
 	if(mpf_cmp_ui(ptr->value,0) != 0) { 
 		/*printf("item was found already in table.\n");*/
+		/*overwrite with new value*/
+		mpf_set(ptr->value, v);
 		return 0; 
 	}
 
@@ -192,7 +194,7 @@ static int sptensor_hash_set_helper(sptensor_vector* hashtable, sptensor_index_t
 
 /* Search the tensor for an index. Return pointer to the item if found, or a hash_item pointer where value=0 if not found.
 */
-struct hash_item* sptensor_hash_search(sptensor_vector* hashtable, sptensor_index_t *idx, mpf_t v, int nbuckets, int modes)
+struct hash_item* sptensor_hash_search(sptensor_vector *hashtable, sptensor_index_t *idx,int nbuckets, int modes)
 {
 	struct hash_item *ptr;
 	mpz_t index;
@@ -220,9 +222,8 @@ struct hash_item* sptensor_hash_search(sptensor_vector* hashtable, sptensor_inde
 	while (1) {
 		
 		if (mpz_cmp(ptr->key,index) == 0) {
-			/*Overwirte existing value*/
-			/*gmp_printf("Overwriting Key %Zd with value %Ff. \n", ptr->key, ptr->value);*/
-			mpf_set(ptr->value,v);
+			/*Index exists, return pointer to it */
+			printf("Index already exists.\n");
 			return ptr;
 		}
 
@@ -230,7 +231,7 @@ struct hash_item* sptensor_hash_search(sptensor_vector* hashtable, sptensor_inde
 		mpz_mod_ui(i,i,nbuckets);
 		
 		if (mpz_cmp(i, index) == 0) {
-			/*printf("Index + value pair not found. \n");*/
+			/*printf("Index not found. \n");*/
 			struct hash_item *empty_item = create_hashitem();
 			mpz_set(empty_item->morton,morton);
 			mpz_set(empty_item->key,index);
@@ -297,7 +298,7 @@ void sptensor_hash_remove(sptensor_hash_t *t, sptensor_index_t *i, mpf_t v)
 	/* Allocate pointer*/
 	ptr = malloc(sizeof(struct hash_item));
 	
-	ptr = sptensor_hash_search(t->hashtable, i, v, t->nbuckets,t->modes);
+	ptr = sptensor_hash_search(t->hashtable, i, t->nbuckets,t->modes);
 	
 	if(ptr->flag == 1) {
 
@@ -376,7 +377,6 @@ sptensor_hash_t * sptensor_hash_read(FILE *file)
 	    sptensor_hash_set(tns, idx, val);
 		count = count + 1;
 		printf("number of items inserted = %d\n", count);
-		system("clear"); /*clear output screen*/
     }
 
     /* cleanup and return! */

@@ -67,7 +67,7 @@ void sptensor_hash_free(sptensor_hash_t* t);
 
 /* Search the tensor for an index. Return pointer to the item if found, or a hash_item pointer with v = 0 if not found. 
 */
-struct hash_item* sptensor_hash_search(sptensor_vector* hashtable, sptensor_index_t *idx, mpf_t v, int nbuckets, int modes);
+struct hash_item* sptensor_hash_search(sptensor_vector *hashtable, sptensor_index_t *idx, int nbuckets, int modes);
 
 /* Function to insert an element in the hash table.
 	i - index to insert 

@@ -26,14 +26,14 @@ int main()
     /* build the tensor */
     t = sptensor_hash_alloc(modes, 3);
 	printf("finished building tensor.\n");
-	
+    /*	
 	sptensor_hash_set(t, idx[0],mpfv);
     sptensor_hash_set(t, idx[0],mpfv);
 	sptensor_hash_set(t, idx[1],mpfv);
 
 	sptensor_hash_remove(t, idx[1], mpfv);
-	sptensor_hash_search(t->hashtable, idx[1],mpfv,t->nbuckets, t->modes);
-	
+	sptensor_hash_search(t->hashtable, idx[1],t->nbuckets, t->modes);
+	*/
     /*mpf_init(mpfv);
     for(i=0; i<4; i++) {
         mpf_set_d(mpfv, v[i]);
