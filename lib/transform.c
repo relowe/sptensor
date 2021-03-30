@@ -242,6 +242,7 @@ sptensor_shape_t* sptensor_slice_shape(sptensor_t *t, sptensor_index_t *spec)
     result = sptensor_shape_alloc(fm);
 
     /* copy the free mode dimensions */
+    fm=0;
     for(i=0; i<t->modes; i++) {
         if(spec[i] == 0) {
             result->dim[fm] = t->dim[fm];
