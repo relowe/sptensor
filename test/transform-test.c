@@ -52,7 +52,7 @@ void unfold_test(sptensor_t *t, unsigned int n)
     sptensor_unfold(result, t, n);
 
     /* show the result */
-    sprintf(buf, "Unfold %u, %u", n);
+    sprintf(buf, "Unfold %u", n);
     printout(buf, result);
 
     /* cleanup */
