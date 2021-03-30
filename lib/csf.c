@@ -22,6 +22,8 @@
 #include <stdlib.h>
 #include <string.h>
 #include <sptensor/csf.h>
+#include <sptensor/coo.h>
+#include <sptensor/vector.h>
 #include <sptensor/index_iterator.h>
 
 /* nonzero iterator */
@@ -107,7 +109,7 @@ void sptensor_csf_free(sptensor_csf_t* t)
         sptensor_vector_free(t->fptr);
     }
     if(t->values){
-        sptensor_vector_clear(t->values);
+        sptensor_vector_free(t->values);
     }
 }
 
@@ -127,54 +129,97 @@ static int sptensor_csf_search(sptensor_csf_t *t, sptensor_index_t *idx)
 /* Retrieve an alement from the csf tensor */
 void sptensor_csf_get(sptensor_csf_t * t, sptensor_index_t *i, mpf_t v)
 {
-    int index;
 
-    /* find the index */
-    index = sptensor_csf_search(t, i);
-
-    /* return the value */
-    if(index == -1) {
-        mpf_set_d(v, 0.0);
-    } else {
-        mpf_set(v, VVAL(mpf_t, t->values, index));
-    }
 }
 
 
 /* set the element with the csf tensor  */
 void sptensor_csf_set(sptensor_csf_t * t, sptensor_index_t *i, mpf_t v)
 {
-    int index;
-    
-    /* find the index */
-    index = sptensor_csf_search(t, i);
-
-    if(index == -1) 
-    {
-        mpf_t nv;
-
-        /* not there yet!  If this is zero, we are done */
-        if(mpf_cmp_d(v, 0.0) == 0) {
-            return;
-        }
-
-        /* ok, so we need to init and copy */
-        mpf_init_set(nv, v);
-
-        /* and then we add it to the fptr and fids */
-        
-    } else {
-        /* if we are changing an existing element */
-        if(mpf_cmp_d(v, 0.0) == 0) {
-            /* remove the zero */
-            
-        } else {
-            /* set the element */
-            mpf_set(VVAL(mpf_t, t->data, index), v);
-        }
-    }
+   
 }
 
+/**
+ * @brief Generate a csf format tensor from a coo format tensor
+ * 
+ * @param coo The sptensor_coo_t format tensor
+ * @return sptensor_t* The sptensor_csf_t format tensor
+ */
+sptensor_csf_t* sptensor_csf_from_coo(sptensor_coo_t* coo){
+    int i, j = 0;
+    sptensor_iterator_t* itr = sptensor_nz_iterator(coo);
+    sptensor_csf_t* result = sptensor_csf_alloc(coo->dim, coo->modes);
+
+    mpf_t temp;
+    mpf_init(temp);
+    sptensor_vector* fids = sptensor_vector_alloc(sizeof(int), SPTENSOR_VECTOR_DEFAULT_CAPACITY);
+
+    while(sptensor_iterator_valid(itr)){ 
+
+        /* Get the value and add it to the value array */
+        sptensor_get(itr->t, itr->index, temp);
+        sptensor_vector_push_back(result->values, temp);
+
+        /* Insert the last dimension's indices in fids[last] */
+        sptensor_vector_push_back(fids, itr->index[itr->t->modes]);
+
+        sptensor_iterator_next(itr);
+    }
+    mpf_clear(temp);
+    sptensor_iterator_free(itr);
+
+    /*  Insert the fids at fids[modes] */
+     
+
+    /* Then clear the vector */
+    sptensor_vector_free(fids);
+
+    /* See how to slice each dimension and insert into fids and fptrs*/
+    for(i = itr->t->modes-1; i <= 0; i--){
+        sptensor_iterator_t* itr = sptensor_nz_iterator(coo);
+        sptensor_vector* fids = sptensor_vector_alloc(sizeof(int), SPTENSOR_VECTOR_DEFAULT_CAPACITY);
+        sptensor_vector* fptr = sptensor_vector_alloc(sizeof(int), SPTENSOR_VECTOR_DEFAULT_CAPACITY);
+        
+        /* This will store the every index other than the current dimension */
+        sptensor_index_t* previous_lower_indices = NULL;
+                
+        while(sptensor_iterator_valid(itr)){ 
+            /* If just started, load the first valid index in the placeholder indices */
+            if(previous_lower_indices == NULL){
+                previous_lower_indices = malloc(sizeof(sptensor_index_t) * i);
+
+                /* Copy the indices now */
+                sptensor_index_cpy(i, previous_lower_indices, itr->index);
+            }
+
+            /* If index changed, add values to fids vector and fptr vector */
+            if(sptensor_index_cmp(i-1, itr->index, previous_lower_indices) != 0){
+                sptensor_vector_push_back(fids, itr->index[i]);
+                sptensor_vector_push_back(fptr, );
+
+
+                /* Then update the previous_lower_indices */
+                sptensor_index_cpy(i, previous_lower_indices, itr->index);
+            }
+
+            sptensor_iterator_next(itr);
+        }
+        sptensor_iterator_free(itr);
+        sptensor_index_free(previous_lower_indices);
+
+        /* Insert fids vector at fids[i-1] */
+
+
+        /* Insert fptr vector at fptr[i-1] */
+
+
+        /* Then clear the vectores */
+        sptensor_vector_free(fids);
+        sptensor_vector_free(fptr);
+    }
+
+    return result;
+}
 
 /* Iterator Functions */
 sptensor_iterator_t* sptensor_csf_iterator(sptensor_csf_t *t) 
@@ -192,18 +237,6 @@ static int sptensor_csf_nz_valid(struct sptensor_csf_nz_iterator *itr)
     /* Return 1 if valid, 0 if not */
     
 }
-
-
-
-static void sptensor_csf_nz_load_index(struct sptensor_csf_nz_iterator* itr) 
-{
-    struct sptensor_csf *t = (struct sptensor_csf*) itr->t;
-
-    if(sptensor_csf_nz_valid(itr)) {
-        sptensor_index_cpy(t->modes, itr->index, VPTR(t->csf, itr->csfi));
-    }
-}
-
 
 
 static void sptensor_csf_nz_free(struct sptensor_csf_nz_iterator *itr)
@@ -254,7 +287,7 @@ sptensor_iterator_t* sptensor_csf_nz_iterator(sptensor_csf_t *t)
     }
 
     /* populate the initial index */
-    itr->ci = 0;
+    itr->csfi = 0;
 
     /* populate the fields */
     itr->valid = (sptensor_iterator_valid_f) sptensor_csf_nz_valid;
