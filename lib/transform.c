@@ -150,18 +150,15 @@ sptensor_shape_t* sptensor_unfold_shape(sptensor_t *t, unsigned int n)
 static void sptensor_unfold_jk(sptensor_index_t *jk, sptensor_index_t *dim, unsigned int modes, unsigned int n)
 {
     unsigned int k;
+    sptensor_index_t product=1;
 
     /* compute each JK coeffecient */
-    jk[0] = 1;
     for(k=0; k<modes; k++) {
-        /* Bring forward the last one */
-        if(k != 0) {
-            jk[k] = jk[k-1];
-        }
+        jk[k] = product;
 
-        /* skip mode n */
-        if(k!=n) {
-            jk[k] *= dim[k];
+        /* multiply in this dimension (if it is not n) */
+        if(k != n) {
+            product *= dim[k];
         }
     }
 }
