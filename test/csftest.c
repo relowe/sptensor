@@ -49,7 +49,7 @@ int main()
     }
 
     /* build the csf from coo */
-    t2 = (sptensor_csf_t*)sptensor_csf_from_coo((sptensor_coo_t*)t);
+    t2 = (sptensor_t*)sptensor_csf_from_coo((sptensor_coo_t*)t);
 
     /* display the non-zero tensor */
     printf("non-zero entries\n");
