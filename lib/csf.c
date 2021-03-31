@@ -147,14 +147,21 @@ void sptensor_csf_set(sptensor_csf_t * t, sptensor_index_t *i, mpf_t v)
  */
 sptensor_csf_t* sptensor_csf_from_coo(sptensor_coo_t* coo){
     int i, j = 0;
-    int* reversedFidVectors;
-    int* reversedFptVector;
-    sptensor_iterator_t* itr = sptensor_nz_iterator(coo);
-    sptensor_csf_t* result = sptensor_csf_alloc(coo->dim, coo->modes);
+
+    /* These vectors will be pushed to the fids in reversed order */
+    sptensor_vector** fidsVectors = malloc((coo->modes));
+
+    /* These vectors will be pushed to the fptrs in reversed order */
+    sptensor_vector** fptrVectors = malloc((coo->modes)-1);
+
+    sptensor_iterator_t* itr = sptensor_nz_iterator((sptensor_t*)coo);
+    sptensor_csf_t* result = (sptensor_csf_t*) sptensor_csf_alloc(coo->dim, coo->modes);
 
     mpf_t temp;
     mpf_init(temp);
-    sptensor_vector* fids = sptensor_vector_alloc(sizeof(int), SPTENSOR_VECTOR_DEFAULT_CAPACITY);
+
+    /* The last index of fids (last dimension indices) */
+    fidsVectors[coo->modes]  = sptensor_vector_alloc(sizeof(int), SPTENSOR_VECTOR_DEFAULT_CAPACITY);
 
     while(sptensor_iterator_valid(itr)){ 
 
@@ -163,27 +170,18 @@ sptensor_csf_t* sptensor_csf_from_coo(sptensor_coo_t* coo){
         sptensor_vector_push_back(result->values, temp);
 
         /* Insert the last dimension's indices in fids[last] */
-        sptensor_vector_push_back(fids, &(itr->index[itr->t->modes]));
+        sptensor_vector_push_back(fidsVectors[coo->modes], &((itr->index)[itr->t->modes]));
 
         sptensor_iterator_next(itr);
     }
     mpf_clear(temp);
     sptensor_iterator_free(itr);
 
-    /*  Insert the fids at fids[modes] */
-    /*sptensor_vector_insert(result->fids, result->modes-1, fids);*/
-    sptensor_vector** temp = VPTR(result->fids, result->modes);
-    *temp = fids;
-
-
-    /* Then clear the vector */
-    sptensor_vector_free(fids);
-
     /* See how to slice each dimension and insert into fids and fptrs*/
     for(i = itr->t->modes-1; i <= 0; i--){
-        sptensor_iterator_t* itr = sptensor_nz_iterator(coo);
-        sptensor_vector* fids = sptensor_vector_alloc(sizeof(int), SPTENSOR_VECTOR_DEFAULT_CAPACITY);
-        sptensor_vector* fptr = sptensor_vector_alloc(sizeof(int), SPTENSOR_VECTOR_DEFAULT_CAPACITY);
+        sptensor_iterator_t* itr = sptensor_nz_iterator((sptensor_t*)coo);
+        fidsVectors[i] = sptensor_vector_alloc(sizeof(int), SPTENSOR_VECTOR_DEFAULT_CAPACITY);
+        fptrVectors[i] = sptensor_vector_alloc(sizeof(int), SPTENSOR_VECTOR_DEFAULT_CAPACITY);
         
         /* This will store the every index other than the current dimension */
         sptensor_index_t* previous_lower_indices = NULL;
@@ -199,8 +197,8 @@ sptensor_csf_t* sptensor_csf_from_coo(sptensor_coo_t* coo){
 
             /* If index changed, add values to fids vector and fptr vector */
             if(sptensor_index_cmp(i-1, itr->index, previous_lower_indices) != 0){
-                sptensor_vector_push_back(fids, &(itr->index[i]));
-                sptensor_vector_push_back(fptr, );
+                sptensor_vector_push_back(fidsVectors[i], &(itr->index[i]));
+                sptensor_vector_push_back(fptrVectors[i-1], );
 
 
                 /* Then update the previous_lower_indices */
@@ -211,16 +209,36 @@ sptensor_csf_t* sptensor_csf_from_coo(sptensor_coo_t* coo){
         }
         sptensor_iterator_free(itr);
         sptensor_index_free(previous_lower_indices);
-
-        /* Insert fids vector at fids[i-1] */
-        // sptensor_vector_insert(t->fids, )
-
-        /* Insert fptr vector at fptr[i-1] */
+    }
 
 
-        /* Then clear the vectores */
-        sptensor_vector_free(fids);
-        sptensor_vector_free(fptr);
+    /* push_back fids */
+    for(i = 0; i < coo->modes; i++){
+        sptensor_vector_push_back(result->fids, fidsVectors[i]);
+    }
+
+    /* push_back fptrs */
+    for(i = 0; i < (coo->modes)-1; i++){
+        sptensor_vector_push_back(result->fptr, fptrVectors[i]);
+    }
+
+    /* clear fidsVectors */
+    for(i = 0; i < coo->modes; i++){
+        /* recursively clear vector for each dimension */
+        for(j = 0; j < fidsVectors[i]->size; j++){
+            sptensor_vector_free(fidsVectors[i]);
+        }
+
+        sptensor_vector_free(fidsVectors[i]);
+    }
+
+    /* clear fptrVectors */
+    for(i = 0; i < (coo->modes)-1; i++){
+        /*recursievely clear vector for (each dimension -1)  */
+        for(j = 0; j < fidsVectors[i]->size; j++){
+            sptensor_vector_free(fptrVectors[i]);
+        }
+        sptensor_vector_free(fptrVectors[i]);
     }
 
     return result;
