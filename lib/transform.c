@@ -245,7 +245,7 @@ sptensor_shape_t* sptensor_slice_shape(sptensor_t *t, sptensor_index_t *spec)
     fm=0;
     for(i=0; i<t->modes; i++) {
         if(spec[i] == 0) {
-            result->dim[fm] = t->dim[fm];
+            result->dim[fm] = t->dim[i];
             fm++;
         }
     }
