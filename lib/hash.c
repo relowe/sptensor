@@ -181,6 +181,7 @@ static int sptensor_hash_set_helper(sptensor_vector* hashtable, sptensor_index_t
 		while (ptr->flag == 1) {
 			start = clock();
 			/*printf("probing for empty space in table...\n");*/
+			printf("collision!\n");
 			mpz_add_ui(num_collisions, num_collisions, 1);
 			mpz_add_ui(index,index,1);
 			mpz_mod_ui(index,index,nbuckets);
@@ -232,7 +233,7 @@ struct hash_item* sptensor_hash_search(sptensor_vector *hashtable, sptensor_inde
 		
 		if (mpz_cmp(ptr->key,index) == 0) {
 			/*Index exists, return pointer to it */
-			printf("Index already exists.\n");
+			/*printf("Index already exists.\n");*/
 			return ptr;
 		}
 
@@ -350,7 +351,7 @@ sptensor_hash_t * sptensor_hash_read(FILE *file)
     int done;
 	
 	/*Extra to help know our progress of reading in the tensor*/
-	int count = 0;
+	/*int count = 0;*/
 
     /* a little bit of mpf allocation */
     mpf_init(val);
@@ -384,8 +385,8 @@ sptensor_hash_t * sptensor_hash_read(FILE *file)
 
 	    /* insert into the tensor */
 	    sptensor_hash_set(tns, idx, val);
-		count = count + 1;
-		printf("number of items inserted = %d\n", count);
+		/*count = count + 1;
+		printf("number of items inserted = %d\n", count);*/
     }
 
     /* cleanup and return! */
