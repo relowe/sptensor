@@ -66,10 +66,11 @@ sptensor_hash_t* sptensor_hash_alloc(sptensor_index_t *modes, int nmodes) {
 
     /* populate the fields */
 	result->modes_arr = modes;
-    result->modes = nmodes;
+    	result->modes = nmodes;
 	result->nbuckets = NBUCKETS;
 	result->hash_curr_size = 0;
-    result->free = (sptensor_free_f) sptensor_hash_free;
+	result->num_collisions = 0;
+    	result->free = (sptensor_free_f) sptensor_hash_free;
     /*result->iterator = (sptensor_iterator_f) sptensor_hash_iterator;
     result->nz_iterator = (sptensor_iterator_f) sptensor_hash_nz_iterator;*/
 	
