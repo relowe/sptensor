@@ -20,6 +20,7 @@
  */
 #include <stdio.h>
 #include <sptensor/sptensor.h>
+#include <sptensor/coo.h>
 #include <sptensor/vector.h>
 
 #ifndef SPTENSOR_CSF_H
@@ -50,6 +51,14 @@ void sptensor_csf_free(sptensor_csf_t* t);
 /* CSF element access functions */
 void sptensor_csf_get(sptensor_csf_t * t, sptensor_index_t *i, mpf_t v);
 void sptensor_csf_set(sptensor_csf_t * t, sptensor_index_t *i, mpf_t v);
+
+/**
+ * @brief Generate a csf format tensor from a coo format tensor
+ * 
+ * @param coo The sptensor_coo_t format tensor
+ * @return sptensor_t* The sptensor_csf_t format tensor
+ */
+sptensor_csf_t* sptensor_csf_from_coo(sptensor_coo_t* coo);
 
 /* Iterator Functions */
 sptensor_iterator_t* sptensor_csf_iterator(sptensor_csf_t *t);
