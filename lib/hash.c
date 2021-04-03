@@ -19,8 +19,9 @@
  */
 #include <limits.h>
 #include <stdio.h>
-#include <stdlib.h> /*for system()*/
+/*#include <stdlib.h> /*for system()*/
 #include <string.h>
+#include <time.h>
 #include <gmp.h>
 #include <sptensor/index_iterator.h>
 #include <sptensor/hash.h>
@@ -68,7 +69,8 @@ sptensor_hash_t* sptensor_hash_alloc(sptensor_index_t *modes, int nmodes) {
 	result->modes_arr = modes;
     result->modes = nmodes;
 	result->nbuckets = NBUCKETS;
-	result->hash_curr_size = 0;
+	mpz_init(result->num_collisions);
+	mpf_init(result->probe_time);
     result->free = (sptensor_free_f) sptensor_hash_free;
     /*result->iterator = (sptensor_iterator_f) sptensor_hash_iterator;
     result->nz_iterator = (sptensor_iterator_f) sptensor_hash_nz_iterator;*/
@@ -110,7 +112,7 @@ void sptensor_hash_set(sptensor_hash_t *t, sptensor_index_t *i, mpf_t v) {
 
 	int insert_success = 0;
 	
-	insert_success = sptensor_hash_set_helper(t->hashtable, i, v, t->nbuckets, t->modes);
+	insert_success = sptensor_hash_set_helper(t->hashtable, i, v, t->nbuckets, t->modes, t->num_collisions,t->probe_time);
 
 	if(insert_success) {
 		t->hash_curr_size = t->hash_curr_size + 1;
@@ -135,12 +137,14 @@ void sptensor_hash_set(sptensor_hash_t *t, sptensor_index_t *i, mpf_t v) {
 /*Helper function for sptensor_hash_set. So we can rehash!
 	-returns 1 on success, 0 if item was not inserted.
 */
-static int sptensor_hash_set_helper(sptensor_vector* hashtable, sptensor_index_t *i, mpf_t v, int nbuckets, int modes) 
+static int sptensor_hash_set_helper(sptensor_vector* hashtable, sptensor_index_t *i, mpf_t v, int nbuckets, int modes, mpz_t num_collisions,mpf_t probe_time) 
 {
 	struct hash_item *ptr;
 	mpz_t index; /*modded morton encoding of the original index to insert*/
 	mpz_t morton;
 	mpz_t key;
+	clock_t start, end;
+    double cpu_time_used;
 	
 	/* If this is zero, we are done */
 	if(mpf_cmp_d(v, 0.0) == 0) { return 0; }
@@ -165,6 +169,7 @@ static int sptensor_hash_set_helper(sptensor_vector* hashtable, sptensor_index_t
 	else {
 		/*If we get back an empty pointer, extract values and point to the correct place in table */
 		/* mod by number of buckets in hash */
+		
 		mpz_init_set(morton, ptr->morton);
 		mpz_init_set(index, ptr->key);
 
@@ -174,12 +179,17 @@ static int sptensor_hash_set_helper(sptensor_vector* hashtable, sptensor_index_t
 		/*probe for empty bucket */
 
 		while (ptr->flag == 1) {
+			start = clock();
 			/*printf("probing for empty space in table...\n");*/
-
+			printf("collision!\n");
+			mpz_add_ui(num_collisions, num_collisions, 1);
 			mpz_add_ui(index,index,1);
 			mpz_mod_ui(index,index,nbuckets);
 
 			ptr = (struct hash_item*)VPTR(hashtable,mpz_get_ui(index));
+			end = clock();
+    		cpu_time_used = ((double) (end - start)) / CLOCKS_PER_SEC;
+			mpf_add_ui(probe_time, probe_time, (int)cpu_time_used);
 		}
 	}
 
@@ -223,7 +233,7 @@ struct hash_item* sptensor_hash_search(sptensor_vector *hashtable, sptensor_inde
 		
 		if (mpz_cmp(ptr->key,index) == 0) {
 			/*Index exists, return pointer to it */
-			printf("Index already exists.\n");
+			/*printf("Index already exists.\n");*/
 			return ptr;
 		}
 
@@ -272,7 +282,7 @@ void sptensor_hash_rehash(sptensor_hash_t *t) {
 		
 		/*If occupied, we need to copy it to the other table! */
 		if(ptr->flag == 1) {
-			sptensor_hash_set_helper(new_hashtable, ptr->idx, ptr->value, new_hash_size, t->modes);
+			sptensor_hash_set_helper(new_hashtable, ptr->idx, ptr->value, new_hash_size, t->modes,t->num_collisions,t->probe_time);
 			/*printf("inserted item into new hashtable.\n");*/
 		}
 	}
@@ -341,7 +351,7 @@ sptensor_hash_t * sptensor_hash_read(FILE *file)
     int done;
 	
 	/*Extra to help know our progress of reading in the tensor*/
-	int count = 0;
+	/*int count = 0;*/
 
     /* a little bit of mpf allocation */
     mpf_init(val);
@@ -375,8 +385,8 @@ sptensor_hash_t * sptensor_hash_read(FILE *file)
 
 	    /* insert into the tensor */
 	    sptensor_hash_set(tns, idx, val);
-		count = count + 1;
-		printf("number of items inserted = %d\n", count);
+		/*count = count + 1;
+		printf("number of items inserted = %d\n", count);*/
     }
 
     /* cleanup and return! */

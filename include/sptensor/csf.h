@@ -58,15 +58,19 @@ void sptensor_csf_set(sptensor_csf_t * t, sptensor_index_t *i, mpf_t v);
  * @param coo The sptensor_coo_t format tensor
  * @return sptensor_t* The sptensor_csf_t format tensor
  */
-sptensor_csf_t* sptensor_csf_from_coo(sptensor_coo_t* coo){
-    
-}
+sptensor_csf_t* sptensor_csf_from_coo(sptensor_coo_t* coo);
 
 /* Iterator Functions */
 sptensor_iterator_t* sptensor_csf_iterator(sptensor_csf_t *t);
 sptensor_iterator_t* sptensor_csf_nz_iterator(sptensor_csf_t *t);
 
 /* I/O Functions */
+/**
+ * @brief Print the fptrs, fids and the values of the csf object
+ * 
+ * @param tns The tensor to print
+ */
+void sptensor_csf_print(sptensor_t* tns);
 sptensor_t * sptensor_csf_read(FILE *file);
 void sptensor_csf_write(FILE *file, sptensor_t *tns);
 

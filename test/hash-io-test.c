@@ -31,9 +31,10 @@ int main(int argc, char **argv)
 	end = clock();
     cpu_time_used = ((double) (end - start)) / CLOCKS_PER_SEC;
 	printf("time used = %f\n", cpu_time_used);
-	
+	gmp_printf("num of collisions = %Zd\n", t->num_collisions);
+	gmp_printf("cumulative time spent probing = %Ff\n", t->probe_time);
     /*sptensor_hash_write(stdout, t);*/
-    sptensor_index_t idx[][3] = { {1,1,1},
+    /*sptensor_index_t idx[][3] = { {1,1,1},
 	    			  {2,3,1},
 				  {2,4,4},
 				  {3,2,2}};
@@ -41,13 +42,13 @@ int main(int argc, char **argv)
     int j;
     start = clock();
     for(i = 0;i<1000000;i++) {
-	for(j=0;j<3;j++) {
-   		sptensor_hash_search(t->hashtable, idx[j], t->nbuckets,t->modes); 
-	}
+		for(j=0;j<3;j++) {
+   			sptensor_hash_search(t->hashtable, idx[j], t->nbuckets,t->modes); 
+		}
     }
     end = clock();
     cpu_time_used = ((double) (end - start)) / CLOCKS_PER_SEC;
-    printf("time used = %f\n", cpu_time_used);
+    printf("time used = %f\n", cpu_time_used);*/
     
     /* cleanup */
     sptensor_hash_free(t);

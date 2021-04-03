@@ -56,6 +56,8 @@ typedef struct sptensor_hash
     sptensor_vector* hashtable;
 	unsigned int nbuckets;
 	unsigned int hash_curr_size; /*Count of how many items are in the hash table */
+	mpz_t num_collisions;
+	mpf_t probe_time; /* cumulative time spent probing */
 } sptensor_hash_t;
 
 
@@ -76,7 +78,7 @@ struct hash_item* sptensor_hash_search(sptensor_vector *hashtable, sptensor_inde
 void sptensor_hash_set(sptensor_hash_t *t, sptensor_index_t *i, mpf_t v);
 
 /*Helper function for sptensor_hash_set. So we can rehash!*/
-static int sptensor_hash_set_helper(sptensor_vector* hashtable, sptensor_index_t *i, mpf_t v, int nbuckets, int modes);
+static int sptensor_hash_set_helper(sptensor_vector* hashtable, sptensor_index_t *i, mpf_t v, int nbuckets, int modes, mpz_t num_collisions, mpf_t probe_time);
 
 
 /* Function to populate all the fields in a hash_item pointer 
