@@ -209,3 +209,46 @@ void sptensor_outer_product(sptensor_t *rop, sptensor_t *op1, sptensor_t *op2)
     sptensor_iterator_free(itr1);
     mpf_clears(rval, val1, val2, NULL);
 }
+
+
+/* Shape of the Hadamard product */
+sptensor_shape_t *sptensor_hadamard_product_shape(sptensor_t *op1, sptensor_t *op2)
+{
+    sptensor_shape_t *result;
+
+    /* create the result */
+    result = sptensor_shape_alloc(op1->modes);
+    sptensor_index_cpy(result->modes, result->dim, op1->dim);
+
+    return result;
+}
+
+
+/* Compute the Hadamard product */
+void sptensor_hadamard_product(sptensor_t *rop, sptensor_t *op1, sptensor_t *op2)
+{
+    sptensor_iterator_t *itr;
+    mpf_t rval, val1, val2;
+
+    /* initialize things */
+    mpf_inits(rval, val1, val2, NULL);
+
+    /* go through the non-zeros and multiply by their counter parts. */
+    itr = sptensor_nz_iterator(op1);
+    while(sptensor_iterator_valid(itr)) {
+        /* retrieve the operands and multiply */
+        sptensor_get(op1, itr->index, val1);
+        sptensor_get(op2, itr->index, val2);
+        mpf_mul(rval, val1, val2);
+
+        /* store the result */
+        sptensor_set(rop, itr->index, rval);
+
+        /* go to the next item */
+        sptensor_iterator_next(itr);
+    }
+
+    /* cleanup */
+    sptensor_iterator_free(itr);
+    mpf_clears(rval, val1, val2, NULL);
+}

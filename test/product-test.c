@@ -196,9 +196,51 @@ static void outer_test()
     sptensor_free(c);
 }
 
+static void hadamard_test()
+{
+    sptensor_t *result, *t;
+    sptensor_index_t data[] = { 1, 1, 1,
+                                1, 2, 4,
+                                1, 3, 7,
+                                1, 4, 10,
+                                2, 1, 2,
+                                2, 2, 5,
+                                2, 3, 8,
+                                2, 4, 11,
+                                3, 1, 3,
+                                3, 2, 6,
+                                3, 3, 9,
+                                3, 4, 12};
+    sptensor_index_t dim[] = {3, 4};
+    sptensor_shape_t *shape;
+
+    /* make the tensors */
+    t = sptensor_coo_alloc(dim, 2);
+    fill_tensor(t, data, 12);
+    shape = sptensor_hadamard_product_shape(t, t);
+    result = sptensor_coo_alloc(shape->dim, shape->modes);
+    sptensor_shape_free(shape);
+
+    /* compute the product */
+    sptensor_hadamard_product(result, t, t);
+
+    /* print the results */
+    printf("Hadamard Product Test\n");
+    printf("==========================================\n");
+    printf("T=\n");
+    sptensor_print(t);
+    printf("T *h T=\n");
+    sptensor_print(result);
+
+    /* cleanup */
+    sptensor_free(t);
+    sptensor_free(result);
+}
+
 int main()
 {
     matrix_test();
     nmode_test();
     outer_test();
+    hadamard_test();
 }

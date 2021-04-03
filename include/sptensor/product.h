@@ -41,4 +41,10 @@ sptensor_shape_t *sptensor_outer_product_shape(sptensor_t *op1, sptensor_t *op2)
 
 /* Compute the outer tensor product */
 void sptensor_outer_product(sptensor_t *rop, sptensor_t *op1, sptensor_t *op2);
+
+/* Shape of the Hadamard product */
+sptensor_shape_t *sptensor_hadamard_product_shape(sptensor_t *op1, sptensor_t *op2);
+
+/* Compute the Hadamard product */
+void sptensor_hadamard_product(sptensor_t *rop, sptensor_t *op1, sptensor_t *op2);
 #endif
