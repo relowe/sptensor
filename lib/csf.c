@@ -258,22 +258,22 @@ sptensor_csf_t* sptensor_csf_from_coo(sptensor_coo_t* coo){
 
 
     /* push_back fids */
-    for(i = 0; i < coo->modes; i++){
+    for(i = 0; i < coo->modes-1; i++){
         sptensor_vector_push_back(result->fids, fidsVectors[i]);
     }
 
     /* push_back fptrs */
-    for(i = 0; i < (coo->modes)-1; i++){
+    for(i = 0; i < (coo->modes)-2; i++){
         sptensor_vector_push_back(result->fptr, fptrVectors[i]);
     }
 
     /* clear fidsVectors */
-    for(i = 0; i < coo->modes; i++){
+    for(i = 0; i < coo->modes-1; i++){
         sptensor_vector_free(fidsVectors[i]);
     }
 
     /* clear fptrVectors */
-    for(i = 0; i < (coo->modes)-1; i++){
+    for(i = 0; i < (coo->modes)-2; i++){
         sptensor_vector_free(fptrVectors[i]);
     }
 
@@ -482,26 +482,32 @@ void sptensor_csf_write(FILE *file, sptensor_t *tns)
 void sptensor_csf_print(sptensor_t* tns){ 
     int i;
     int j;
+
+    /* Typcaset generic to csf_t */
     sptensor_csf_t* c = (sptensor_csf_t*) tns;
 
+    printf("printing size of %dth vector %d", i, (VVAL(sptensor_vector*, c->fptr, i))->size);
 
     /* print fids */
+    printf("\n\nfids:\n");
     for(i = 0; i < c->fids->size; i++){
-        printf("fids[%d]: ", i);
-        for(j = 0; j < ((sptensor_vector*)VPTR(c->fids, i))->size; j++){
-            printf("%d ", VVAL(int, (sptensor_vector*)VPTR(c->fids, i), j));
+        printf("fids[%d]: \n", i);
+        for(j = 0; j <  (VVAL(sptensor_vector*, c->fids, i))->size; j++){
+            printf("%d ", VVAL(int, VVAL(sptensor_vector*, c->fids, i), j));
         }
     }
 
     /*print fptrs */
+    printf("\n\nfptrs:\n");
     for(i = 0; i < c->fptr->size; i++){
-        printf("fptr[%d]: ", i);
-        for(j = 0; j < ((sptensor_vector*)VPTR(c->fptr, i))->size; j++){
-            printf("%d ", VVAL(int, (sptensor_vector*)VPTR(c->fptr, i), j));
+        printf("fptr[%d]:\n", i);
+        for(j = 0; j < (VVAL(sptensor_vector*, c->fptr, i))->size; j++){
+            printf("%d ", VVAL(int, VVAL(sptensor_vector*, c->fptr, i), j));
         }
     }
 
     /*print values */
+    printf("\n\nvalues:\n");
     for(i = 0; i < c->values->size; i++){
         gmp_printf("%.Ff", 4, VVAL(mpf_t, c->values, i));
     }
