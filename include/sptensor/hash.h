@@ -28,14 +28,14 @@
 #define NBUCKETS 128
 
 /* Each hash table item has a key and value) */
-typedef struct hash_item {
+typedef struct sptensor_hash_item {
 	mpz_t morton; /*Morton encoding of item's index*/
     mpz_t key;
     mpf_t value;
 	sptensor_index_t *idx;
 	int flag;	/*1 for occupied, 0 for unnocupied */
 	
-} hash_item;
+} sptensor_hash_item_t;
 
 /* hash storage type */
 typedef struct sptensor_hash
@@ -53,7 +53,7 @@ typedef struct sptensor_hash
 	sptensor_index_t *modes_arr;
 
     /* hash specific fields */
-    sptensor_vector* hashtable;
+    sptensor_hash_item_t* hashtable;
 	unsigned int nbuckets;
 	unsigned int hash_curr_size; /*Count of how many items are in the hash table */
 	mpz_t num_collisions;
@@ -62,14 +62,9 @@ typedef struct sptensor_hash
 
 
 /* sptensor hash allocation functions */
-sptensor_hash_t* sptensor_hash_alloc(sptensor_index_t *modes, int nmodes);
+sptensor_t* sptensor_hash_alloc(sptensor_index_t *modes, int nmodes);
 void sptensor_hash_free(sptensor_hash_t* t);
 
-/* Hash element access functions */
-
-/* Search the tensor for an index. Return pointer to the item if found, or a hash_item pointer with v = 0 if not found. 
-*/
-struct hash_item* sptensor_hash_search(sptensor_vector *hashtable, sptensor_index_t *idx, int nbuckets, int modes);
 
 /* Function to insert an element in the hash table.
 	i - index to insert 
@@ -77,25 +72,10 @@ struct hash_item* sptensor_hash_search(sptensor_vector *hashtable, sptensor_inde
 */
 void sptensor_hash_set(sptensor_hash_t *t, sptensor_index_t *i, mpf_t v);
 
-/*Helper function for sptensor_hash_set. So we can rehash!*/
-static int sptensor_hash_set_helper(sptensor_vector* hashtable, sptensor_index_t *i, mpf_t v, int nbuckets, int modes, mpz_t num_collisions, mpf_t probe_time);
 
+/* Function to retrieve an element in the hash table. */
+void sptensor_hash_get(sptensor_hash_t *t, sptensor_index_t *i, mpf_t v);
 
-/* Function to populate all the fields in a hash_item pointer 
-	morton - morton encoding
-	key - index where item is located in table (modded morton code)
-	v - value
-	idx - index
-*/
-void set_hashitem(struct hash_item* ptr, mpz_t morton, mpz_t key, mpf_t v, sptensor_index_t *idx);
-/*Function to deallocate hash item pointer */
-void free_hashitem(struct hash_item *ptr);
-	
-void sptensor_hash_remove(sptensor_hash_t *t, sptensor_index_t *i, mpf_t v);
-
-/* If the hashtable reaches 80% capacity, double the size of the tensor's hashtable and rehash all the existing items
-*/
-void sptensor_hash_rehash(sptensor_hash_t *t);
 
 /* I/O Functions */
 sptensor_hash_t * sptensor_hash_read(FILE *file);

@@ -24,7 +24,7 @@ int main()
 	mpf_set_ui(mpfv, 2.0);
 
     /* build the tensor */
-    t = sptensor_hash_alloc(modes, 3);
+    t = (sptensor_hash_t*) sptensor_hash_alloc(modes, 3);
     itr = sptensor_index_iterator_alloc((sptensor_t*)t);
 	
 	 // Use current time as seed for random generator

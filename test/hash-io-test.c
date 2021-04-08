@@ -28,6 +28,7 @@ int main(int argc, char **argv)
 	
     /* read the tensor, and then write it to stdout */
     t = sptensor_hash_read(file);
+    sptensor_print((sptensor_t*)t);
 	end = clock();
     cpu_time_used = ((double) (end - start)) / CLOCKS_PER_SEC;
 	printf("time used = %f\n", cpu_time_used);
