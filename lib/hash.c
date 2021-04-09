@@ -19,7 +19,6 @@
  */
 #include <limits.h>
 #include <stdio.h>
-/*#include <stdlib.h> /*for system()*/
 #include <string.h>
 #include <time.h>
 #include <gmp.h>
@@ -166,6 +165,11 @@ void sptensor_hash_get(sptensor_hash_t *t, sptensor_index_t *i, mpf_t v)
 */
 static struct sptensor_hash_item* sptensor_hash_search(sptensor_hash_t *t, sptensor_index_t *idx)
 {
+	
+	/*To measure probe time*/
+	clock_t start, end;
+    double cpu_time_used;
+	
 	struct sptensor_hash_item *ptr;
 	mpz_t index;
 	unsigned int i;
@@ -184,9 +188,10 @@ static struct sptensor_hash_item* sptensor_hash_search(sptensor_hash_t *t, spten
 	/* count the accesses */
 	mpz_add_ui(t->num_accesses, t->num_accesses, 1);
 
-
-	/*gmp_printf("\n Searching for Key %Zd.\n", index);*/
+	start = clock();
+	
 	while (1) {
+
 		/* set pointer to that index */
 		ptr = t->hashtable + i;
 		
@@ -211,6 +216,10 @@ static struct sptensor_hash_item* sptensor_hash_search(sptensor_hash_t *t, spten
 		i = (i+1) % t->nbuckets;
 	}
 
+	end = clock();
+	cpu_time_used = ((double) (end - start)) / CLOCKS_PER_SEC;
+	mpf_add_ui(t->probe_time, t->probe_time, cpu_time_used);
+	
 	/* cleanup */
 	mpz_clears(morton, index, NULL);
 
