@@ -33,6 +33,7 @@ int main(int argc, char **argv)
     cpu_time_used = ((double) (end - start)) / CLOCKS_PER_SEC;
 	printf("time used = %f\n", cpu_time_used);
 	gmp_printf("num of collisions = %Zd\n", t->num_collisions);
+	gmp_printf("num of accesses= %Zd\n", t->num_accesses);
 	gmp_printf("cumulative time spent probing = %Ff\n", t->probe_time);
     /*sptensor_hash_write(stdout, t);*/
     /*sptensor_index_t idx[][3] = { {1,1,1},

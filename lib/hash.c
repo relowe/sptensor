@@ -28,7 +28,7 @@
 #include <sptensor/inzt.h>
 
 /* Static Helper Functions */
-static struct sptensor_hash_item* sptensor_hash_search(sptensor_hash_item_t *hashtable, sptensor_index_t *idx, int nbuckets, int modes);
+static struct sptensor_hash_item* sptensor_hash_search(sptensor_hash_t *t, sptensor_index_t *idx);
 static void sptensor_hash_remove(sptensor_hash_t *t, sptensor_hash_item_t *ptr);
 static void sptensor_hash_rehash(sptensor_hash_t *t);
 
@@ -94,6 +94,7 @@ sptensor_t* sptensor_hash_alloc(sptensor_index_t *modes, int nmodes) {
     result->modes = nmodes;
 	result->nbuckets = NBUCKETS;
 	mpz_init(result->num_collisions);
+	mpz_init(result->num_accesses);
 	mpf_init(result->probe_time);
 	result->set = (sptensor_set_f) sptensor_hash_set;
 	result->get = (sptensor_get_f) sptensor_hash_get;
@@ -125,7 +126,7 @@ void sptensor_hash_set(sptensor_hash_t *t, sptensor_index_t *i, mpf_t v) {
 	sptensor_hash_item_t *item;
 
 	/* get the hash item */
-	item = sptensor_hash_search(t->hashtable, i, t->nbuckets, t->modes);
+	item = sptensor_hash_search(t, i);
 
 	/* either set or clear the item */
 	if(mpf_cmp_ui(v, 0) != 0) {
@@ -150,7 +151,7 @@ void sptensor_hash_get(sptensor_hash_t *t, sptensor_index_t *i, mpf_t v)
 	sptensor_hash_item_t *item;
 
 	/* get the hash item */
-	item = sptensor_hash_search(t->hashtable, i, t->nbuckets, t->modes);
+	item = sptensor_hash_search(t, i);
 
 	/* set the value */
 	if(item->flag) {
@@ -163,7 +164,7 @@ void sptensor_hash_get(sptensor_hash_t *t, sptensor_index_t *i, mpf_t v)
 
 /* Search the tensor for an index. Return pointer to the item if found, or a hash_item pointer where value=0 if not found.
 */
-static struct sptensor_hash_item* sptensor_hash_search(sptensor_hash_item_t *hashtable, sptensor_index_t *idx,int nbuckets, int modes)
+static struct sptensor_hash_item* sptensor_hash_search(sptensor_hash_t *t, sptensor_index_t *idx)
 {
 	struct sptensor_hash_item *ptr;
 	mpz_t index;
@@ -174,17 +175,20 @@ static struct sptensor_hash_item* sptensor_hash_search(sptensor_hash_item_t *has
 	mpz_inits(index, morton, NULL);
 	
 	/* Compress idx using the morton encoding */
-	sptensor_inzt_morton(modes, idx, morton);
+	sptensor_inzt_morton(t->modes, idx, morton);
 
 	/* mod by number of buckets in hash and get the index */
-	mpz_mod_ui(index, morton, nbuckets);
+	mpz_mod_ui(index, morton, t->nbuckets);
 	i = mpz_get_ui(index);
+
+	/* count the accesses */
+	mpz_add_ui(t->num_accesses, t->num_accesses, 1);
 
 
 	/*gmp_printf("\n Searching for Key %Zd.\n", index);*/
 	while (1) {
 		/* set pointer to that index */
-		ptr = hashtable + i;
+		ptr = t->hashtable + i;
 		
 		/* we have found the index in the table */
 		if (mpz_cmp(ptr->morton,morton) == 0) {
@@ -198,12 +202,13 @@ static struct sptensor_hash_item* sptensor_hash_search(sptensor_hash_item_t *has
 			/*printf("Index not found. \n");*/
 			mpz_set(ptr->morton,morton);
 			mpz_set_ui(ptr->key, i);
-			sptensor_index_cpy(modes, ptr->idx, idx);
+			sptensor_index_cpy(t->modes, ptr->idx, idx);
 			break;
 		}
 
 		/* do linear probing */
-		i = (i+1) % nbuckets;
+		mpz_add_ui(t->num_collisions, t->num_collisions, 1);
+		i = (i+1) % t->nbuckets;
 	}
 
 	/* cleanup */

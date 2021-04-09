@@ -57,6 +57,7 @@ typedef struct sptensor_hash
 	unsigned int nbuckets;
 	unsigned int hash_curr_size; /*Count of how many items are in the hash table */
 	mpz_t num_collisions;
+    mpz_t num_accesses;
 	mpf_t probe_time; /* cumulative time spent probing */
 } sptensor_hash_t;
 
