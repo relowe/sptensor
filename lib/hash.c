@@ -114,7 +114,6 @@ void sptensor_hash_free(sptensor_hash_t* t) {
     if(t->dim) free(t->dim);
     if(t->hashtable) {
 		free_hashtable(t->hashtable, t->nbuckets);
-		free(t->hashtable);
 	}
 }
 
