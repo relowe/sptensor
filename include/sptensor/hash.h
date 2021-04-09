@@ -82,7 +82,7 @@ sptensor_hash_t * sptensor_hash_read(FILE *file);
 void sptensor_hash_write(FILE *file, sptensor_hash_t *tns);
 
 /* Iterator Functions */
-sptensor_iterator_t* sptensor_hash_iterator(sptensor_t *t);
-sptensor_iterator_t* sptensor_hash_nz_iterator(sptensor_t *t);
+sptensor_iterator_t* sptensor_hash_iterator(sptensor_hash_t *t);
+sptensor_iterator_t* sptensor_hash_nz_iterator(sptensor_hash_t *t);
 
 #endif
