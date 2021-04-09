@@ -374,13 +374,108 @@ void sptensor_hash_write(FILE *file, sptensor_hash_t *tns)
 }
 
 /* create the index iterator */
-sptensor_iterator_t* sptensor_hash_iterator(sptensor_t *t)
+sptensor_iterator_t* sptensor_hash_iterator(sptensor_hash_t *t)
 {
 	return sptensor_index_iterator_alloc(t);
 }
 
-/* create a non-zero iterator */
-sptensor_iterator_t* sptensor_hash_nz_iterator(sptensor_t *t)
+
+/* sptensor iterator (base type) */
+struct sptensor_hash_nz_iterator
 {
-	return NULL;
+	/* iterator fields */
+    sptensor_t *t;
+    sptensor_index_t *index;
+    sptensor_iterator_valid_f valid;
+    sptensor_iterator_next_f next;
+    sptensor_iterator_prev_f prev;
+    sptensor_free_f free;
+
+	/* my one special field */
+	int i;
+};
+
+
+static void hash_nz_seek_forward(struct sptensor_hash_nz_iterator *itr)
+{
+	sptensor_hash_t *t = (sptensor_hash_t*) itr->t;
+
+	/* find the filled slot, or let it blow up */
+	while(itr->i < t->nbuckets && t->hashtable[itr->i].flag == 0) {
+		itr->i++;
+	}
+
+	if(itr->i < t->nbuckets) {
+		sptensor_index_cpy(t->modes, itr->index, t->hashtable[itr->i].idx);
+	}
+}
+
+
+static void hash_nz_seek_backward(struct sptensor_hash_nz_iterator *itr)
+{
+	sptensor_hash_t *t = (sptensor_hash_t*) itr->t;
+
+	/* find the filled slot, or let it blow up */
+	while(itr->i > 0 && t->hashtable[itr->i].flag == 0) {
+		itr->i--;
+	}
+
+	if(itr->i > 0) {
+		sptensor_index_cpy(t->modes, itr->index, t->hashtable[itr->i].idx);
+	}
+}
+
+
+static int hash_nz_next(struct sptensor_hash_nz_iterator* itr)
+{
+	/* increment and then find the next filled spot */
+	itr->i++;
+	hash_nz_seek_forward(itr);
+	return sptensor_iterator_valid((sptensor_iterator_t*) itr);
+}
+
+
+static int hash_nz_prev(struct sptensor_hash_nz_iterator* itr)
+{
+	/* decrement and then find the next filled spot */
+	itr->i--;
+	hash_nz_seek_backward(itr);
+	return sptensor_iterator_valid(itr);
+}
+
+
+static int hash_nz_valid(struct sptensor_hash_nz_iterator* itr)
+{
+	return itr->i >= 0 && itr->i < ((sptensor_hash_t*)itr->t)->nbuckets;
+}
+
+
+/* create a non-zero iterator */
+sptensor_iterator_t* sptensor_hash_nz_iterator(sptensor_hash_t *t)
+{
+	struct sptensor_hash_nz_iterator *itr;
+
+	/* allocate the iterator */
+	itr = malloc(sizeof(struct sptensor_hash_nz_iterator));
+	if(!itr) return NULL;
+
+	/* allocate the index */
+	itr->index = sptensor_index_alloc(t->modes);
+	if(!itr->index) {
+		sptensor_index_iterator_free((sptensor_iterator_t*) itr);
+		return NULL;
+	}
+
+	/* populate the fields */
+	itr->t = (sptensor_t *) t;
+	itr->free = (sptensor_free_f) sptensor_index_iterator_free;
+	itr->next = (sptensor_iterator_next_f) hash_nz_next;
+	itr->prev = (sptensor_iterator_prev_f) hash_nz_prev;
+	itr->valid = (sptensor_iterator_valid_f) hash_nz_valid;
+
+	/* get to the first position */
+	itr->i=0;
+	hash_nz_seek_forward(itr);
+
+	return (sptensor_iterator_t*) itr;
 }
