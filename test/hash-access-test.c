@@ -15,7 +15,7 @@ void access_test(sptensor_hash_t *t, int num_elements) {
 	start = clock();
 	
 	for(i=0; i < num_elements;i++) {
-		for(j=0;i<3;j++) {
+		for(j=0;j<3;j++) {
 			idx[j] = rand();
 		}
 		sptensor_hash_search(t, idx);
