@@ -381,9 +381,44 @@ sptensor_hash_t * sptensor_hash_read(FILE *file)
     return tns;
 }
 
-void sptensor_hash_write(FILE *file, sptensor_hash_t *tns) 
+/*
+ * Write a sparse tensor to a stream.  It is written in the format 
+ * described in the sptensor_read function.
+ * 
+ * Parameter: file - The stream to write to.
+ *            tns  - The tensor to write.
+ */ 
+void sptensor_hash_write(FILE *file, sptensor_hash_t *tns)
 {
-	
+    int i;
+    mpf_t val;
+    sptensor_iterator_t *itr;
+
+    /* allocate the value */
+    mpf_init(val);
+    
+    /* print the preamble */
+    gmp_fprintf(file, "%u", tns->modes);
+    for(i = 0; i < tns->modes; i++) {
+	    gmp_fprintf(file, "\t%u", tns->dim[i]);
+    }
+    gmp_fprintf(file, "\n");
+
+    /* print the non-zero values */
+    for(itr=sptensor_nz_iterator(tns); sptensor_iterator_valid(itr); sptensor_iterator_next(itr)) {
+        /* print the index */
+	    for(i = 0; i < tns->modes; i++) {
+	        gmp_fprintf(file, "%u\t", itr->index[i]);
+	    }
+
+        /* print the value */
+        sptensor_get(tns, itr->index, val);
+	    gmp_fprintf(file, "%Ff\n", val);
+    }
+
+    /* cleanup */
+    sptensor_iterator_free(itr);
+    mpf_clear(val);
 }
 
 /* create the index iterator */
