@@ -8,7 +8,10 @@ void access_test(sptensor_hash_t *t, int num_elements) {
 	int j;
 	
 	clock_t start, end;
-    double cpu_time_used;
+   	double cpu_time_used;
+	
+	mpf_t v;
+	mpf_init_set_ui(v, 2.0);
 	
 	sptensor_index_t idx[3];
 	
@@ -18,7 +21,7 @@ void access_test(sptensor_hash_t *t, int num_elements) {
 		for(j=0;j<3;j++) {
 			idx[j] = rand();
 		}
-		sptensor_hash_search(t, idx);
+		sptensor_get_search(t, idx, v);
 	}
 	
 	end = clock();
