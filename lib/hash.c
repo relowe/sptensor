@@ -19,7 +19,6 @@
  */
 #include <limits.h>
 #include <stdio.h>
-/*#include <stdlib.h> /*for system()*/
 #include <string.h>
 #include <time.h>
 #include <gmp.h>
@@ -135,12 +134,19 @@ void sptensor_hash_set(sptensor_hash_t *t, sptensor_index_t *i, mpf_t v) {
 
 		/* copy the value */
 		mpf_set(item->value, v);
+
+		/* Increase hashtable count */
+		t->hash_curr_size = t->hash_curr_size + 1;
 	} else {
 		/* remove it from the table */
 		sptensor_hash_remove(t, item);
 	}
+	
+	/* Check if we need to rehash */
+	if((t->hash_curr_size/t->nbuckets) > 0.8) {
+		sptensor_hash_rehash(t);
+	}
 
-	/*printf("Did not insert index.\n");*/
 	return;
 }
 
@@ -166,6 +172,11 @@ void sptensor_hash_get(sptensor_hash_t *t, sptensor_index_t *i, mpf_t v)
 */
 static struct sptensor_hash_item* sptensor_hash_search(sptensor_hash_t *t, sptensor_index_t *idx)
 {
+	
+	/*To measure probe time*/
+	clock_t start, end;
+    double cpu_time_used;
+	
 	struct sptensor_hash_item *ptr;
 	mpz_t index;
 	unsigned int i;
@@ -184,9 +195,10 @@ static struct sptensor_hash_item* sptensor_hash_search(sptensor_hash_t *t, spten
 	/* count the accesses */
 	mpz_add_ui(t->num_accesses, t->num_accesses, 1);
 
-
-	/*gmp_printf("\n Searching for Key %Zd.\n", index);*/
+	start = clock();
+	
 	while (1) {
+
 		/* set pointer to that index */
 		ptr = t->hashtable + i;
 		
@@ -211,6 +223,10 @@ static struct sptensor_hash_item* sptensor_hash_search(sptensor_hash_t *t, spten
 		i = (i+1) % t->nbuckets;
 	}
 
+	end = clock();
+	cpu_time_used = ((double) (end - start)) / CLOCKS_PER_SEC;
+	mpf_add_ui(t->probe_time, t->probe_time, cpu_time_used);
+	
 	/* cleanup */
 	mpz_clears(morton, index, NULL);
 
@@ -327,7 +343,7 @@ sptensor_hash_t * sptensor_hash_read(FILE *file)
     int done;
 	
 	/*Extra to help know our progress of reading in the tensor*/
-	/*int count = 0;*/
+	/*int count = 0;
 
     /* a little bit of mpf allocation */
     mpf_init(val);
@@ -361,8 +377,10 @@ sptensor_hash_t * sptensor_hash_read(FILE *file)
 
 	    /* insert into the tensor */
 	    sptensor_hash_set(tns, idx, val);
-		/*count = count + 1;
-		printf("number of items inserted = %d\n", count);*/
+	    /*count = count + 1;
+	    if(count%1000000==0) {
+	    printf("number of items inserted = %d\n", count); }
+	    /*if(count == 3000) {break;}*/
     }
 
     /* cleanup and return! */
@@ -372,9 +390,44 @@ sptensor_hash_t * sptensor_hash_read(FILE *file)
     return tns;
 }
 
-void sptensor_hash_write(FILE *file, sptensor_hash_t *tns) 
+/*
+ * Write a sparse tensor to a stream.  It is written in the format 
+ * described in the sptensor_read function.
+ * 
+ * Parameter: file - The stream to write to.
+ *            tns  - The tensor to write.
+ */ 
+void sptensor_hash_write(FILE *file, sptensor_hash_t *tns)
 {
-	
+    int i;
+    mpf_t val;
+    sptensor_iterator_t *itr;
+
+    /* allocate the value */
+    mpf_init(val);
+    
+    /* print the preamble */
+    gmp_fprintf(file, "%u", tns->modes);
+    for(i = 0; i < tns->modes; i++) {
+	    gmp_fprintf(file, "\t%u", tns->dim[i]);
+    }
+    gmp_fprintf(file, "\n");
+
+    /* print the non-zero values */
+    for(itr=sptensor_nz_iterator(tns); sptensor_iterator_valid(itr); sptensor_iterator_next(itr)) {
+        /* print the index */
+	    for(i = 0; i < tns->modes; i++) {
+	        gmp_fprintf(file, "%u\t", itr->index[i]);
+	    }
+
+        /* print the value */
+        sptensor_get(tns, itr->index, val);
+	    gmp_fprintf(file, "%Ff\n", val);
+    }
+
+    /* cleanup */
+    sptensor_iterator_free(itr);
+    mpf_clear(val);
 }
 
 /* create the index iterator */
