@@ -134,12 +134,19 @@ void sptensor_hash_set(sptensor_hash_t *t, sptensor_index_t *i, mpf_t v) {
 
 		/* copy the value */
 		mpf_set(item->value, v);
+
+		/* Increase hashtable count */
+		t->hash_curr_size = t->hash_curr_size + 1;
 	} else {
 		/* remove it from the table */
 		sptensor_hash_remove(t, item);
 	}
+	
+	/* Check if we need to rehash */
+	if((t->hash_curr_size/t->nbuckets) > 0.8) {
+		sptensor_hash_rehash(t);
+	}
 
-	/*printf("Did not insert index.\n");*/
 	return;
 }
 
@@ -336,7 +343,7 @@ sptensor_hash_t * sptensor_hash_read(FILE *file)
     int done;
 	
 	/*Extra to help know our progress of reading in the tensor*/
-	/*int count = 0;*/
+	int count = 0;
 
     /* a little bit of mpf allocation */
     mpf_init(val);
@@ -370,8 +377,10 @@ sptensor_hash_t * sptensor_hash_read(FILE *file)
 
 	    /* insert into the tensor */
 	    sptensor_hash_set(tns, idx, val);
-		/*count = count + 1;
-		printf("number of items inserted = %d\n", count);*/
+	    count = count + 1;
+	    if(count%100000==0) {
+	    printf("number of items inserted = %d\n", count); }
+	    /*if(count == 3000) {break;}*/
     }
 
     /* cleanup and return! */
