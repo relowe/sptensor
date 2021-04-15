@@ -58,7 +58,7 @@ int main(int argc, char **argv)
 	access_test(t, 10000);
 	access_test(t, 100000);
 	access_test(t, 1000000);
-	access_test(t, 1000000000);
+	access_test(t, 10000000);
     
     /* cleanup */
     sptensor_hash_free(t);
