@@ -258,34 +258,16 @@ sptensor_csf_t* sptensor_csf_from_coo(sptensor_coo_t* coo){
 
     /* push_back fids */
     for(i = 0; i < coo->modes; i++){
-        sptensor_vector_push_back(result->fids, fidsVectors[i]);
+        sptensor_vector_push_back(result->fids, &fidsVectors[i]);
     }
 
     /* push_back fptrs */
     for(i = 0; i < (coo->modes)-1; i++){
-        sptensor_vector_push_back(result->fptr, fptrVectors[i]);
+        sptensor_vector_push_back(result->fptr, &fptrVectors[i]);
     }
 
-     /* print fids */
-    printf("\n\nfids:\n");
-    for(i = 0; i < result->fids->size; i++){
-        printf("fids[%d]: \n", i);
-        for(j = 0; j <  (VVAL(sptensor_vector*, result->fids, i))->size; j++){
-            printf("%d ", VVAL(int, VVAL(sptensor_vector*, result->fids, i), j));
-        }
-    }
-
-    /*print fptrs */
-    printf("\n\nfptrs:\n");
-    for(i = 0; i < result->fptr->size; i++){
-        printf("fptr[%d]:\n", i);
-        for(j = 0; j < (VVAL(sptensor_vector*, result->fptr, i))->size; j++){
-            printf("%d ", VVAL(int, VVAL(sptensor_vector*, result->fptr, i), j));
-        }
-    }
-
-    // free(fptrVectors);
-    // free(fidsVectors);
+    free(fptrVectors);
+    free(fidsVectors);
     return result;
 }
 
