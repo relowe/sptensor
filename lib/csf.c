@@ -241,21 +241,6 @@ sptensor_csf_t* sptensor_csf_from_coo(sptensor_coo_t* coo){
         sptensor_index_free(previous_even_lower_indices);
     }
 
-    /* print the vectors for debugging */
-     for(i = 0; i < coo->modes; i++){
-         printf("fidsVectors[%d]: ",i);
-         for(j = 0; j < fidsVectors[i]->size; j++){
-            printf("%d ", VVAL(int, fidsVectors[i], j));
-         }printf("\n");
-    }
-
-    for(i = 0; i < (coo->modes)-1; i++){
-         printf("fptrVectors[%d]: ",i);
-        for(j = 0; j < fptrVectors[i]->size; j++){
-            printf("%d ", VVAL(int, fptrVectors[i], j));
-        }printf("\n");
-    }
-
     /* push_back fids */
     for(i = 0; i < coo->modes; i++){
         sptensor_vector_push_back(result->fids, &fidsVectors[i]);
@@ -477,29 +462,28 @@ void sptensor_csf_print(sptensor_t* tns){
     /* Typcaset generic to csf_t */
     sptensor_csf_t* c = (sptensor_csf_t*) tns;
 
-    printf("printing size of %dth vector %d", i, (VVAL(sptensor_vector*, c->fptr, i))->size);
-
-    /* print fids */
     printf("\n\nfids:\n");
     for(i = 0; i < c->fids->size; i++){
-        printf("fids[%d]: \n", i);
+        printf("fids[%d]:", i);
         for(j = 0; j <  (VVAL(sptensor_vector*, c->fids, i))->size; j++){
             printf("%d ", VVAL(int, VVAL(sptensor_vector*, c->fids, i), j));
         }
+        printf("\n");
     }
 
     /*print fptrs */
     printf("\n\nfptrs:\n");
     for(i = 0; i < c->fptr->size; i++){
-        printf("fptr[%d]:\n", i);
+        printf("fptr[%d]:", i);
         for(j = 0; j < (VVAL(sptensor_vector*, c->fptr, i))->size; j++){
             printf("%d ", VVAL(int, VVAL(sptensor_vector*, c->fptr, i), j));
         }
+        printf("\n");
     }
 
     /*print values */
     printf("\n\nvalues:\n");
     for(i = 0; i < c->values->size; i++){
-        gmp_printf("%.Ff", 4, VVAL(mpf_t, c->values, i));
+        gmp_printf("%.Ff\n", VVAL(mpf_t, c->values, i));
     }
 }
