@@ -166,8 +166,8 @@ sptensor_csf_t* sptensor_csf_from_coo(sptensor_coo_t* coo){
     while(sptensor_iterator_valid(itr)){ 
         /* Get the value and add it to the value array */
         sptensor_get(itr->t, itr->index, temp);
-        gmp_printf("%Ff", temp);
-        sptensor_vector_push_back(result->values, &temp);
+        gmp_printf("%Ff\n", temp);
+        sptensor_vector_push_back(result->values, temp);
 
         /* Insert the last dimension's indices in fids[last] */
         sptensor_vector_push_back(fidsVectors[(coo->modes)-1], &(itr->index[coo->modes-1]));
