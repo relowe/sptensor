@@ -95,7 +95,7 @@ void sptensor_csf_free(sptensor_csf_t* t)
     if(t->fids){
         /* free each vector in the vector */
         for(i = 0; i < t->fids->size; i++){
-            sptensor_vector_free(VPTR(t->fids, i));
+            sptensor_vector_free(VVAL(sptensor_vector*, t->fids, i));
         }
         /* then free the vector */
         sptensor_vector_free(t->fids);
@@ -103,7 +103,7 @@ void sptensor_csf_free(sptensor_csf_t* t)
     if(t->fptr){
         /* free each vector in the vector */
         for(i = 0; i < t->fptr->size; i++){
-            sptensor_vector_free(VPTR(t->fptr, i));
+            sptensor_vector_free(VVAL(sptensor_vector*, t->fptr, i));
         }
         /* then free the vector */
         sptensor_vector_free(t->fptr);
@@ -166,7 +166,8 @@ sptensor_csf_t* sptensor_csf_from_coo(sptensor_coo_t* coo){
     while(sptensor_iterator_valid(itr)){ 
         /* Get the value and add it to the value array */
         sptensor_get(itr->t, itr->index, temp);
-        sptensor_vector_push_back(result->values, temp);
+        gmp_printf("%Ff", temp);
+        sptensor_vector_push_back(result->values, &temp);
 
         /* Insert the last dimension's indices in fids[last] */
         sptensor_vector_push_back(fidsVectors[(coo->modes)-1], &(itr->index[coo->modes-1]));
@@ -223,14 +224,6 @@ sptensor_csf_t* sptensor_csf_from_coo(sptensor_coo_t* coo){
                 sptensor_index_cpy((i+1), previous_even_lower_indices, itr->index);
                 k++;
             }
-
-            /* Print the current index */
-            /* 
-            for (j = 0; j < coo->modes; j++)
-            {
-                printf("[%d]", itr->index[j]);
-            }printf("\n");
-            */
 
             sptensor_iterator_next(itr);
         }
@@ -484,6 +477,6 @@ void sptensor_csf_print(sptensor_t* tns){
     /*print values */
     printf("\n\nvalues:\n");
     for(i = 0; i < c->values->size; i++){
-        gmp_printf("%.Ff\n", VVAL(mpf_t, c->values, i));
+        gmp_printf("%Ff\n", VVAL(mpf_t, c->values, i));
     }
 }
