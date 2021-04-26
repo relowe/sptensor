@@ -97,7 +97,7 @@ void test2(){
         mpf_set_d(mpfv, v[i]);
         sptensor_set(t, idx[i], mpfv);
     }
-
+    mpf_clear(mpfv);
     /* build the csf from coo */
     t2 = (sptensor_t*)sptensor_csf_from_coo((sptensor_coo_t*)t);
 
