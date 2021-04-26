@@ -134,12 +134,14 @@ void sptensor_hash_set(sptensor_hash_t *t, sptensor_index_t *i, mpf_t v) {
 
 		/* copy the value */
 		mpf_set(item->value, v);
-
+		
 		/* Increase hashtable count */
 		t->hash_curr_size = t->hash_curr_size + 1;
 	} else {
 		/* remove it from the table */
-		sptensor_hash_remove(t, item);
+		/*printf("do nothing \n");*/
+		/*if(item->flag) { sptensor_hash_remove(t, item); }*/
+		
 	}
 	
 	/* Check if we need to rehash */
@@ -204,7 +206,6 @@ static struct sptensor_hash_item* sptensor_hash_search(sptensor_hash_t *t, spten
 		
 		/* we have found the index in the table */
 		if (mpz_cmp(ptr->morton,morton) == 0) {
-			/*Index exists, return pointer to it */
 			/*printf("Index already exists.\n");*/
 			break;
 		}
@@ -317,6 +318,22 @@ static void sptensor_hash_remove(sptensor_hash_t *t, sptensor_hash_item_t *ptr)
 	} while(!done);
 }
 
+void sptensor_hash_clear(sptensor_hash_t *t) {
+	
+	struct sptensor_hash_item *ptr;
+	int i;
+	
+	for(i=0;i<t->nbuckets;i++) {
+		ptr = t->hashtable + i;
+		ptr->flag = 0;
+	}
+	
+}
+
+unsigned int sptensor_hash_nnz(sptensor_hash_t *t) {
+	return t->hash_curr_size;
+}
+
 /* 
  * Read a HASH tensor from a text file stream. The file stream is
  * expected to be in the form of:
@@ -341,6 +358,7 @@ sptensor_hash_t * sptensor_hash_read(FILE *file)
     mpf_t val;
     sptensor_hash_t *tns;
     int done;
+	char buf[32];
 	
 	/*Extra to help know our progress of reading in the tensor*/
 	/*int count = 0;
@@ -368,7 +386,7 @@ sptensor_hash_t * sptensor_hash_read(FILE *file)
 		        break;
 	        }
 	    }
-
+		
 	    if(done) continue;
 	    if(gmp_fscanf(file, "%Ff", val) != 1) {
 	        done = 1;
