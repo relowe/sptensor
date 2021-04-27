@@ -33,6 +33,8 @@ struct sptensor_coo_nz_iterator
     sptensor_iterator_valid_f valid;
     sptensor_iterator_next_f next;
     sptensor_iterator_prev_f prev;
+    sptensor_iterator_get_f get;
+    sptensor_iterator_set_f set;
     sptensor_free_f free;
 
     int ci;  /* The indx within the COO list */
@@ -169,6 +171,25 @@ sptensor_iterator_t* sptensor_coo_iterator(sptensor_coo_t *t)
 }
 
 
+/* Retrieve value from nz iterator*/
+static void sptensor_coo_nz_iterator_get(struct sptensor_coo_nz_iterator *itr, mpf_t v) 
+{
+    sptensor_coo_t *t = (sptensor_coo_t*) itr->t;
+
+    mpf_set(v, VVAL(mpf_t, t->data, itr->ci));
+}
+
+
+/* Write value from nz iterator*/
+static void sptensor_coo_nz_iterator_set(struct sptensor_coo_nz_iterator *itr, mpf_t v) 
+{
+    sptensor_coo_t *t = (sptensor_coo_t*) itr->t;
+
+    mpf_set(VVAL(mpf_t, t->data, itr->ci), v);
+}
+
+
+
 
 /* non-zero iterator methods */
 static int sptensor_coo_nz_valid(struct sptensor_coo_nz_iterator *itr)
@@ -245,6 +266,8 @@ sptensor_iterator_t* sptensor_coo_nz_iterator(sptensor_coo_t *t)
     itr->valid = (sptensor_iterator_valid_f) sptensor_coo_nz_valid;
     itr->next = (sptensor_iterator_next_f) sptensor_coo_nz_next;
     itr->prev = (sptensor_iterator_prev_f) sptensor_coo_nz_prev;
+    itr->get = (sptensor_iterator_get_f) sptensor_coo_nz_iterator_get;
+    itr->set = (sptensor_iterator_set_f) sptensor_coo_nz_iterator_set;
     itr->free = (sptensor_free_f) sptensor_coo_nz_free;
     itr->t = (sptensor_t *) t;
     sptensor_coo_nz_load_index(itr);

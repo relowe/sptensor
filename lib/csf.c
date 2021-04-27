@@ -35,6 +35,8 @@ struct sptensor_csf_nz_iterator
     sptensor_iterator_valid_f valid;
     sptensor_iterator_next_f next;
     sptensor_iterator_prev_f prev;
+    sptensor_iterator_get_f get;
+    sptensor_iterator_set_f set;
     sptensor_free_f free;
 
     int csfi;  /* The indx within the Csf list */
@@ -331,6 +333,11 @@ sptensor_iterator_t* sptensor_csf_nz_iterator(sptensor_csf_t *t)
     itr->prev = (sptensor_iterator_prev_f) sptensor_csf_nz_prev;
     itr->free = (sptensor_free_f) sptensor_csf_nz_free;
     itr->t = (sptensor_t *) t;
+
+    /* TODO: Make an effecient CSF version of these */
+    itr->get = sptensor_index_iterator_get;
+    itr->set = sptensor_index_iterator_set;
+
     sptensor_csf_nz_load_index(itr);
 
     return (sptensor_iterator_t*) itr;

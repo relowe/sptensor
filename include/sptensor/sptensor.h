@@ -40,6 +40,8 @@ typedef void (*sptensor_free_f)(void*);
 typedef int (*sptensor_iterator_next_f)(struct sptensor_iterator*);
 typedef int (*sptensor_iterator_prev_f)(struct sptensor_iterator*);
 typedef int (*sptensor_iterator_valid_f)(struct sptensor_iterator*);
+typedef void (*sptensor_iterator_get_f)(struct sptensor_iterator*, mpf_t);
+typedef void (*sptensor_iterator_set_f)(struct sptensor_iterator*, mpf_t);
 
 /* sptensor type (base type) */
 struct sptensor
@@ -62,6 +64,8 @@ struct sptensor_iterator
     sptensor_iterator_valid_f valid;
     sptensor_iterator_next_f next;
     sptensor_iterator_prev_f prev;
+    sptensor_iterator_get_f get;
+    sptensor_iterator_set_f set;
     sptensor_free_f free;
 };
 
@@ -77,6 +81,8 @@ void sptensor_free(sptensor_t* t);
 int sptensor_iterator_next(struct sptensor_iterator* itr);
 int sptensor_iterator_prev(struct sptensor_iterator* itr);
 int sptensor_iterator_valid(struct sptensor_iterator* itr);
+void sptensor_iterator_get(struct sptensor_iterator* itr, mpf_t v);
+void sptensor_iterator_set(struct sptensor_iterator* itr, mpf_t v);
 void sptensor_iterator_free(sptensor_iterator_t* t);
 
 /* perform formatted printing of sptensors using the format string specifier for each value */

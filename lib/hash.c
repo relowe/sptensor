@@ -464,6 +464,8 @@ struct sptensor_hash_nz_iterator
     sptensor_iterator_valid_f valid;
     sptensor_iterator_next_f next;
     sptensor_iterator_prev_f prev;
+    sptensor_iterator_get_f get;
+    sptensor_iterator_set_f set;
     sptensor_free_f free;
 
 	/* my one special field */
@@ -547,6 +549,10 @@ sptensor_iterator_t* sptensor_hash_nz_iterator(sptensor_hash_t *t)
 	itr->next = (sptensor_iterator_next_f) hash_nz_next;
 	itr->prev = (sptensor_iterator_prev_f) hash_nz_prev;
 	itr->valid = (sptensor_iterator_valid_f) hash_nz_valid;
+
+    /* TODO: Make an effecient hash version of these */
+    itr->get = sptensor_index_iterator_get;
+    itr->set = sptensor_index_iterator_set;
 
 	/* get to the first position */
 	itr->i=0;

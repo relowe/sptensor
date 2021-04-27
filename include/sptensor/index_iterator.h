@@ -37,4 +37,10 @@ int sptensor_index_iterator_prev(sptensor_iterator_t *itr);
 
 /* Check that the iterator is valid */
 int sptensor_index_iterator_valid(sptensor_iterator_t *itr);
+
+/* Perform an index based get */
+void sptensor_index_iterator_get(sptensor_iterator_t *itr, mpf_t v);
+
+/* Perform an index based set */
+void sptensor_index_iterator_set(sptensor_iterator_t *itr, mpf_t v);
 #endif

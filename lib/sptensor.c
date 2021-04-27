@@ -11,6 +11,8 @@ void sptensor_free(sptensor_t* t){ t->free(t); }
 int sptensor_iterator_next(struct sptensor_iterator* itr) { return itr->next(itr); }
 int sptensor_iterator_prev(struct sptensor_iterator* itr) { return itr->prev(itr); }
 int sptensor_iterator_valid(struct sptensor_iterator* itr) { return itr->valid(itr); }
+void sptensor_iterator_get(struct sptensor_iterator* itr, mpf_t v) { itr->get(itr, v); }
+void sptensor_iterator_set(struct sptensor_iterator* itr, mpf_t v) { itr->set(itr, v); }
 void sptensor_iterator_free(sptensor_iterator_t* t){ t->free(t); }
 
 

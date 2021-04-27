@@ -56,6 +56,8 @@ sptensor_iterator_t* sptensor_index_iterator_alloc(sptensor_t *t)
     itr->next = sptensor_index_iterator_next;
     itr->prev = sptensor_index_iterator_prev;
     itr->free = (sptensor_free_f) sptensor_index_iterator_free;
+    itr->get = sptensor_index_iterator_get;
+    itr->set = sptensor_index_iterator_set;
 }
 
 
@@ -108,4 +110,18 @@ int sptensor_index_iterator_valid(sptensor_iterator_t *itr)
 
     /* if we make it this far, all is well */
     return 1;
+}
+
+
+/* Perform an index based get */
+void sptensor_index_iterator_get(sptensor_iterator_t *itr, mpf_t v)
+{
+    sptensor_get(itr->t, itr->index, v);
+}
+
+
+/* Perform an index based set */
+void sptensor_index_iterator_set(sptensor_iterator_t *itr, mpf_t v)
+{
+    sptensor_set(itr->t, itr->index, v);
 }
