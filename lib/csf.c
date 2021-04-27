@@ -160,13 +160,13 @@ sptensor_csf_t* sptensor_csf_from_coo(sptensor_coo_t* coo){
     sptensor_csf_t* result = (sptensor_csf_t*) sptensor_csf_alloc(coo->dim, coo->modes);
 
     mpf_t temp;
-    mpf_init(temp);
 
     /* The last index of fids (last dimension indices) */
     fidsVectors[coo->modes-1]  = sptensor_vector_alloc(sizeof(int), SPTENSOR_VECTOR_DEFAULT_CAPACITY);
 
     while(sptensor_iterator_valid(itr)){ 
         /* Get the value and add it to the value array */
+        mpf_init(temp);
         sptensor_get(itr->t, itr->index, temp);
         gmp_printf("%Ff\n", temp);
         sptensor_vector_push_back(result->values, temp);
