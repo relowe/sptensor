@@ -41,7 +41,8 @@ SPTENSOR_TEST_SRCFILES := test/indextest.c\
 						  test/transform-test.c\
 						  test/product-test.c\
 						  test/matrix-test.c\
-						  test/csftest.c
+						  test/csftest.c\
+						  test/gmp-read-test.c
 
 SPTENSOR_TEST_TARGETS := $(patsubst test/%.c,  build/test/%, $(SPTENSOR_TEST_SRCFILES))
 
