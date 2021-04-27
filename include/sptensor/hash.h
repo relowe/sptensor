@@ -77,6 +77,11 @@ void sptensor_hash_set(sptensor_hash_t *t, sptensor_index_t *i, mpf_t v);
 /* Function to retrieve an element in the hash table. */
 void sptensor_hash_get(sptensor_hash_t *t, sptensor_index_t *i, mpf_t v);
 
+/*Completely reset a tensor's hashtable */
+void sptensor_hash_clear(sptensor_hash_t *t);
+
+/* Get the number of non-zeroesi in a tensor's hash table*/
+unsigned int sptensor_hash_nnz(sptensor_hash_t *t);
 
 /* I/O Functions */
 sptensor_hash_t * sptensor_hash_read(FILE *file);
