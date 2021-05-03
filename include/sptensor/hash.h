@@ -25,7 +25,7 @@
 #include <sptensor/vector.h>
 #include <gmp.h>
 
-#define NBUCKETS 128
+#define NBUCKETS 65536	
 
 /* Each hash table item has a key and value) */
 typedef struct sptensor_hash_item {

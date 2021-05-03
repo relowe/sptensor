@@ -126,7 +126,7 @@ void sptensor_hash_set(sptensor_hash_t *t, sptensor_index_t *i, mpf_t v) {
 
 	/* get the hash item */
 	item = sptensor_hash_search(t, i);
-
+	
 	/* either set or clear the item */
 	if(mpf_cmp_ui(v, 0) != 0) {
 		/* mark as present */
@@ -138,10 +138,12 @@ void sptensor_hash_set(sptensor_hash_t *t, sptensor_index_t *i, mpf_t v) {
 		/* Increase hashtable count */
 		t->hash_curr_size = t->hash_curr_size + 1;
 	} else {
-		/* remove it from the table */
-		/*printf("do nothing \n");*/
-		/*if(item->flag) { sptensor_hash_remove(t, item); }*/
 		
+		/* check if item is present in the table */
+		if(item->flag) { 	
+		    /* remove it from the table */
+			sptensor_hash_remove(t, item); 
+		}
 	}
 	
 	/* Check if we need to rehash */
@@ -206,13 +208,11 @@ static struct sptensor_hash_item* sptensor_hash_search(sptensor_hash_t *t, spten
 		
 		/* we have found the index in the table */
 		if (mpz_cmp(ptr->morton,morton) == 0) {
-			/*printf("Index already exists.\n");*/
 			break;
 		}
 
 		/* this is an empty position */
 		if (ptr->flag == 0) {
-			/*printf("Index not found. \n");*/
 			mpz_set(ptr->morton,morton);
 			mpz_set_ui(ptr->key, i);
 			sptensor_index_cpy(t->modes, ptr->idx, idx);
@@ -250,9 +250,6 @@ static void sptensor_hash_rehash(sptensor_hash_t *t) {
 	
 	/* Allocate the new table */
     new_hashtable = create_hashtable(new_hash_size, t->modes);
-	/* initialize new hash table array */	
-	
-	/*printf("copying old values to new tensor...\n");*/
 
 	/* save the old hash table */
 	old_hash_size = t->nbuckets;
@@ -269,11 +266,8 @@ static void sptensor_hash_rehash(sptensor_hash_t *t) {
 		/*If occupied, we need to copy it to the other table! */
 		if(ptr->flag == 1) {
 			sptensor_hash_set(t, ptr->idx, ptr->value);
-			/*printf("inserted item into new hashtable.\n");*/
 		}
 	}
-
-	/*printf("values successfuly copied over.\n");*/
 	
 	/* Free the old hash table!*/
 	free_hashtable(old_hashtable, old_hash_size);
@@ -284,26 +278,27 @@ static void sptensor_hash_remove(sptensor_hash_t *t, sptensor_hash_item_t *ptr)
 {
 	int i, j;
 	int done;
-
+	
 	/* get the index */
 	i = ptr - t->hashtable;
+	j = i+1;
 
 	/* slide back as needed */
 	do {
 		/* assume we are done */
 		done=1;
-
+		
 		/* mark as not present */
 		t->hashtable[i].flag = 0;
 
 		/* go to the next probe slot */
 		j = (i+1)%j;
-
+		
 		/* check to see if we need to slide back */
 		if(t->hashtable[j].flag == 0) {
 			continue;
 		}
-
+		
 		/* check to see if this one should be pushed back */
 		if(mpz_cmp(t->hashtable[i].key, t->hashtable[j].key) == 0) {
 			done = 0;
@@ -361,7 +356,7 @@ sptensor_hash_t * sptensor_hash_read(FILE *file)
 	char buf[32];
 	
 	/*Extra to help know our progress of reading in the tensor*/
-	/*int count = 0;
+	int count = 0;
 
     /* a little bit of mpf allocation */
     mpf_init(val);
@@ -395,7 +390,7 @@ sptensor_hash_t * sptensor_hash_read(FILE *file)
 
 	    /* insert into the tensor */
 	    sptensor_hash_set(tns, idx, val);
-	    /*count = count + 1;
+	    count = count + 1;
 	    if(count%1000000==0) {
 	    printf("number of items inserted = %d\n", count); }
 	    /*if(count == 3000) {break;}*/
