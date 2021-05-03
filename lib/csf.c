@@ -35,6 +35,8 @@ struct sptensor_csf_nz_iterator
     sptensor_iterator_valid_f valid;
     sptensor_iterator_next_f next;
     sptensor_iterator_prev_f prev;
+    sptensor_iterator_get_f get;
+    sptensor_iterator_set_f set;
     sptensor_free_f free;
 
     int csfi;  /* The indx within the Csf list */
@@ -158,13 +160,13 @@ sptensor_csf_t* sptensor_csf_from_coo(sptensor_coo_t* coo){
     sptensor_csf_t* result = (sptensor_csf_t*) sptensor_csf_alloc(coo->dim, coo->modes);
 
     mpf_t temp;
-    mpf_init(temp);
 
     /* The last index of fids (last dimension indices) */
     fidsVectors[coo->modes-1]  = sptensor_vector_alloc(sizeof(int), SPTENSOR_VECTOR_DEFAULT_CAPACITY);
 
     while(sptensor_iterator_valid(itr)){ 
         /* Get the value and add it to the value array */
+        mpf_init(temp);
         sptensor_get(itr->t, itr->index, temp);
         gmp_printf("%Ff\n", temp);
         sptensor_vector_push_back(result->values, temp);
@@ -331,6 +333,11 @@ sptensor_iterator_t* sptensor_csf_nz_iterator(sptensor_csf_t *t)
     itr->prev = (sptensor_iterator_prev_f) sptensor_csf_nz_prev;
     itr->free = (sptensor_free_f) sptensor_csf_nz_free;
     itr->t = (sptensor_t *) t;
+
+    /* TODO: Make an effecient CSF version of these */
+    itr->get = sptensor_index_iterator_get;
+    itr->set = sptensor_index_iterator_set;
+
     sptensor_csf_nz_load_index(itr);
 
     return (sptensor_iterator_t*) itr;
