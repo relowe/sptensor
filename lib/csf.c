@@ -168,7 +168,6 @@ sptensor_csf_t* sptensor_csf_from_coo(sptensor_coo_t* coo){
         /* Get the value and add it to the value array */
         mpf_init(temp);
         sptensor_get(itr->t, itr->index, temp);
-        gmp_printf("%Ff\n", temp);
         sptensor_vector_push_back(result->values, temp);
 
         /* Insert the last dimension's indices in fids[last] */
@@ -177,7 +176,6 @@ sptensor_csf_t* sptensor_csf_from_coo(sptensor_coo_t* coo){
 
         sptensor_iterator_next(itr);
     }
-    mpf_clear(temp);
     sptensor_iterator_free(itr);
 
 
@@ -462,7 +460,7 @@ void sptensor_csf_print(sptensor_t* tns){
     /* Typcaset generic to csf_t */
     sptensor_csf_t* c = (sptensor_csf_t*) tns;
 
-    printf("\n\nfids:\n");
+    printf("fids:\n");
     for(i = 0; i < c->fids->size; i++){
         printf("fids[%d]:", i);
         for(j = 0; j <  (VVAL(sptensor_vector*, c->fids, i))->size; j++){
@@ -472,7 +470,7 @@ void sptensor_csf_print(sptensor_t* tns){
     }
 
     /*print fptrs */
-    printf("\n\nfptrs:\n");
+    printf("\nfptrs:\n");
     for(i = 0; i < c->fptr->size; i++){
         printf("fptr[%d]:", i);
         for(j = 0; j < (VVAL(sptensor_vector*, c->fptr, i))->size; j++){
@@ -482,7 +480,7 @@ void sptensor_csf_print(sptensor_t* tns){
     }
 
     /*print values */
-    printf("\n\nvalues:\n");
+    printf("\nvalues:\n");
     for(i = 0; i < c->values->size; i++){
         gmp_printf("%Ff\n", VVAL(mpf_t, c->values, i));
     }
