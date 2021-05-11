@@ -21,14 +21,14 @@
 #include <string.h>
 #include <stdbool.h>
 #include <gmp.h>
-#include <sptensor/skbt.h>
+#include <sptensor/sktb.h>
 #include <sptensor/coo.h>
 #include <sptensor/index_iterator.h>
 #include <sptensor/inzt.h>
 
 /* nonzero iterator */
 /* sptensor iterator (base type) */
-struct sptensor_skbt_nz_iterator{
+struct sptensor_sktb_nz_iterator{
 	sptensor_t* t;
 	sptensor_index_t* index;
 	sptensor_iterator_valid_f valid;
@@ -42,47 +42,47 @@ struct sptensor_skbt_nz_iterator{
 };
 
 /* 
- * Allocate memory for all required members in the sptensor_skbt_t struct
+ * Allocate memory for all required members in the sptensor_sktb_t struct
  * 
  * Parameter: modes - the size of each dimension 
  *            nmodes - number of modes(dimensions) as int
  *  
- * Return:  pointer to a sptensor_skbt_t struct with all initialized members
+ * Return:  pointer to a sptensor_sktb_t struct with all initialized members
  */
-sptensor_t* sptensor_skbt_alloc(sptensor_index_t *modes, int nmodes){
-	sptensor_skbt_t* sptensor_skbt;
-	sptensor_skbt = malloc(sizeof(sptensor_skbt_t));
+sptensor_t* sptensor_sktb_alloc(sptensor_index_t *modes, int nmodes){
+	sptensor_sktb_t* sptensor_sktb;
+	sptensor_sktb = malloc(sizeof(sptensor_sktb_t));
 	
-	sptensor_skbt-> get = (sptensor_get_f) sptensor_skbt_get;
-	sptensor_skbt-> set = NULL;
-	sptensor_skbt-> iterator = (sptensor_iterator_f) sptensor_skbt_iterator;
-	sptensor_skbt-> nz_iterator = (sptensor_iterator_f) sptensor_skbt_nz_iterator; 	
+	sptensor_sktb-> get = (sptensor_get_f) sptensor_sktb_get;
+	sptensor_sktb-> set = NULL;
+	sptensor_sktb-> iterator = (sptensor_iterator_f) sptensor_sktb_iterator;
+	sptensor_sktb-> nz_iterator = (sptensor_iterator_f) sptensor_sktb_nz_iterator; 	
 	
-	sptensor_skbt->tree_values = (mpf_t*) malloc(pow(2, nmodes*ceil(log10(10) / log10(2))) *  sizeof(mpf_t));
-	sptensor_skbt->tree_leaf_values = (mpf_t*) malloc(pow(2, nmodes*ceil(log10(10) / log10(2))) *  sizeof(mpf_t));
+	sptensor_sktb->tree_values = (mpf_t*) malloc(pow(2, nmodes*ceil(log10(10) / log10(2))) *  sizeof(mpf_t));
+	sptensor_sktb->tree_leaf_values = (mpf_t*) malloc(pow(2, nmodes*ceil(log10(10) / log10(2))) *  sizeof(mpf_t));
 	/* Add a loop that inits each value of tra_leaf_values */
 	int i;
 	for(i = 0; i < nmodes*ceil(log10(10) / log10(2)); i++){
-		mpf_init(sptensor_skbt->tree_values[i]);
-		mpf_init(sptensor_skbt->tree_leaf_values[i]);
+		mpf_init(sptensor_sktb->tree_values[i]);
+		mpf_init(sptensor_sktb->tree_leaf_values[i]);
 	}
-	sptensor_skbt->tree_bitmap = (mpz_t*) malloc(sizeof(mpz_t));
-	sptensor_skbt->modes = nmodes;
-	sptensor_skbt->d_sizes = (int*) calloc(nmodes* 2, sizeof(int));
+	sptensor_sktb->tree_bitmap = (mpz_t*) malloc(sizeof(mpz_t));
+	sptensor_sktb->modes = nmodes;
+	sptensor_sktb->d_sizes = (int*) calloc(nmodes* 2, sizeof(int));
 		
-	return (sptensor_t*) sptensor_skbt;
+	return (sptensor_t*) sptensor_sktb;
 }
 
 
 /* 
- * Deallocate all the memory that was allocated in the sptensor_skbt_alloc method
+ * Deallocate all the memory that was allocated in the sptensor_sktb_alloc method
  * 
  * Parameter: modes - the size of each dimension
  *            nmodes - number of modes(dimensions) as int
  *  
  * Return:  none
  */
-void sptensor_skbt_free(sptensor_skbt_t* t){
+void sptensor_sktb_free(sptensor_sktb_t* t){
 	free(t->tree_values);
 	free(t->tree_leaf_values);
 	free(t->tree_bitmap);
@@ -98,13 +98,13 @@ void sptensor_skbt_free(sptensor_skbt_t* t){
 /* 
  * Get the value from the tree at desired index if exists otherwise get 0
  * 
- * Parameter: t - pointer to the sptensor_skbt_t tensor from which the value needs to be gotten
+ * Parameter: t - pointer to the sptensor_sktb_t tensor from which the value needs to be gotten
  *            i - n d array of indices for each dimension where n is the number of dimensions
  *            v - this is the mpf_t which will receive the value from the tree ath the specified index
  *  
  * Return:  none
  */
-void sptensor_skbt_get(sptensor_skbt_t* t, sptensor_index_t *i, mpf_t v){
+void sptensor_sktb_get(sptensor_sktb_t* t, sptensor_index_t *i, mpf_t v){
 	unsigned int current_index = 0;
 	unsigned int dim_no = 0;
 	bool found = 0;
@@ -128,7 +128,7 @@ void sptensor_skbt_get(sptensor_skbt_t* t, sptensor_index_t *i, mpf_t v){
 	}
 }
 
-void sptensor_skbt_set(sptensor_skbt_t* t, sptensor_index_t *i, mpf_t v){
+void sptensor_sktb_set(sptensor_sktb_t* t, sptensor_index_t *i, mpf_t v){
 	
 }
 
@@ -137,11 +137,11 @@ void sptensor_skbt_set(sptensor_skbt_t* t, sptensor_index_t *i, mpf_t v){
  * Print the succint k-binary tree (including midpoints and values)
  * in a pretty format
  * 
- * Parameter: t - pointer to the sptensor_skbt struct that contains all required members
+ * Parameter: t - pointer to the sptensor_sktb struct that contains all required members
  *  
  * Return:  none
  */
-void sptensor_skbt_print_tree(sptensor_skbt_t* t){
+void sptensor_sktb_print_tree(sptensor_sktb_t* t){
 	printf("The tree: \n");
     int k = 0;
 	int i;
@@ -163,11 +163,11 @@ void sptensor_skbt_print_tree(sptensor_skbt_t* t){
 /* 
  * Print the succint k-binary tree bitmap to the console
  * 
- * Parameter: t - pointer to the sptensor_skbt struct that contains all required members
+ * Parameter: t - pointer to the sptensor_sktb struct that contains all required members
  *  
  * Return:  None
  */
-void sptensor_skbt_print_bitmap(sptensor_skbt_t* t){
+void sptensor_sktb_print_bitmap(sptensor_sktb_t* t){
 	printf("The bitmap is: ");
 	mpz_out_str(stdout, 2, *(t->tree_bitmap));
 	printf("\n");
@@ -176,12 +176,12 @@ void sptensor_skbt_print_bitmap(sptensor_skbt_t* t){
 /* 
  * Save the succint k-binary tree bitmap to a file in raw format
  *
- * Parameter: t - pointer to the sptensor_skbt struct that contains all required members
+ * Parameter: t - pointer to the sptensor_sktb struct that contains all required members
  *            file_name - the name of the file to write to
  *  
  * Return:  None
  */
-void sptensor_skbt_save_raw_bitmap_to_file(sptensor_skbt_t* t, char file_name[]){
+void sptensor_sktb_save_raw_bitmap_to_file(sptensor_sktb_t* t, char file_name[]){
 	FILE* file = fopen(file_name, "w");
 	mpz_out_raw(file, *(t->tree_bitmap));
 	fclose(file);
@@ -191,7 +191,7 @@ void sptensor_skbt_save_raw_bitmap_to_file(sptensor_skbt_t* t, char file_name[])
 /* 
  * Helper: Decide whether to expand a subtree or not
  * 
- * Parameter: t - pointer to the sptensor_skbt struct that contains all required members
+ * Parameter: t - pointer to the sptensor_sktb struct that contains all required members
  *            tensor_coo   - the tensor in coo format
  *            bounds   - the bounds (highs and lows for each dimension at this point)
  *            direction   - "l" or "r" which direction to expand
@@ -200,7 +200,7 @@ void sptensor_skbt_save_raw_bitmap_to_file(sptensor_skbt_t* t, char file_name[])
  * Return:  true if should expand (sub tree is not empty)
  *          false if shouldn't expand (sub tree is empty)
  */
-static bool sptensor_skbt_should_expand(sptensor_t* a, sptensor_t* b, int* bounds, char direction, int dim_no){
+static bool sptensor_sktb_should_expand(sptensor_t* a, sptensor_t* b, int* bounds, char direction, int dim_no){
     if(direction != 'l' && direction !='r'){
         printf("direction should be either 'l' or 'r'");
         return false;
@@ -232,16 +232,16 @@ static bool sptensor_skbt_should_expand(sptensor_t* a, sptensor_t* b, int* bound
 }
 
 /* 
- * After splitting midpoints, add the values of the coo to the bottom of skbt tree 
+ * After splitting midpoints, add the values of the coo to the bottom of sktb tree 
  * 
- * Parameter: t - pointer to the sptensor_skbt struct that contains all required members
- *            a - the skbt tensor to add values to 
+ * Parameter: t - pointer to the sptensor_sktb struct that contains all required members
+ *            a - the sktb tensor to add values to 
  *            b - the coo tensor to add values from
  *  
  * Return:  None
  */
-static void sptensor_skbt_add_values(sptensor_t* a, sptensor_t* b){
-	sptensor_skbt_t* t = (sptensor_skbt_t*) a;
+static void sptensor_sktb_add_values(sptensor_t* a, sptensor_t* b){
+	sptensor_sktb_t* t = (sptensor_sktb_t*) a;
 	sptensor_coo_t* tensor_coo = (sptensor_coo_t*) b;
 	sptensor_iterator_t* itr = sptensor_nz_iterator(b);
 	mpf_t v;
@@ -261,7 +261,7 @@ static void sptensor_skbt_add_values(sptensor_t* a, sptensor_t* b){
  * Add a midpoint to a desired index in the kdtree (split dimension)
  * based on bounds given
  * 
- * Parameter: t - pointer to the sptensor_skbt struct that contains all required members
+ * Parameter: t - pointer to the sptensor_sktb struct that contains all required members
               tensor_coo - the tensor in coo format
  *            dim_no   - the current dimension that the tree will split
  *            index   - the current index in the values array at which the midpoint/non-zero will be added
@@ -269,8 +269,8 @@ static void sptensor_skbt_add_values(sptensor_t* a, sptensor_t* b){
  *  
  * Return:  None
  */
-static void sptensor_skbt_add_mid(sptensor_t* a, sptensor_t* b, unsigned int dim_no, unsigned int index, int* bounds, unsigned int bit_index){
-	sptensor_skbt_t* t = (sptensor_skbt_t*) a;
+static void sptensor_sktb_add_mid(sptensor_t* a, sptensor_t* b, unsigned int dim_no, unsigned int index, int* bounds, unsigned int bit_index){
+	sptensor_sktb_t* t = (sptensor_sktb_t*) a;
 	sptensor_coo_t* tensor_coo = (sptensor_coo_t*) b;
     /*Calculate high and low and if the next child would be a leaf*/
     int high = bounds[(dim_no*2)+1];
@@ -283,7 +283,7 @@ static void sptensor_skbt_add_mid(sptensor_t* a, sptensor_t* b, unsigned int dim
 		} 
 	}
 	if(no_more_range == true){
-		sptensor_skbt_add_values(a, b);
+		sptensor_sktb_add_values(a, b);
 		return;
 	}
 
@@ -291,21 +291,21 @@ static void sptensor_skbt_add_mid(sptensor_t* a, sptensor_t* b, unsigned int dim
 	mpf_set_ui(t->tree_values[index], (bounds[(dim_no*2)] + bounds[(dim_no*2)+1]) / 2);
 
     /*Expand tree left if it should*/
-    if(sptensor_skbt_should_expand(a, b, bounds, 'l', dim_no == t->modes - 1 ? 0 : dim_no + 1)){
+    if(sptensor_sktb_should_expand(a, b, bounds, 'l', dim_no == t->modes - 1 ? 0 : dim_no + 1)){
         int* boundsl = (int*)calloc(t->modes*2, sizeof(int));
         memcpy(boundsl, bounds, t->modes*2*sizeof(int));
         boundsl[(dim_no*2)+1] = (boundsl[dim_no*2] + boundsl[(dim_no*2)+1]) / 2;
-        sptensor_skbt_add_mid ((sptensor_t*) t, (sptensor_t*)tensor_coo, dim_no == t->modes - 1 ? 0 : dim_no + 1, 2 * (index) + 1, boundsl, 2*((2*bit_index)+1));
+        sptensor_sktb_add_mid ((sptensor_t*) t, (sptensor_t*)tensor_coo, dim_no == t->modes - 1 ? 0 : dim_no + 1, 2 * (index) + 1, boundsl, 2*((2*bit_index)+1));
         free(boundsl);
 		mpz_setbit(*(t->tree_bitmap), bit_index);
     }
 
     /*Expand tree right if it should*/
-    if(sptensor_skbt_should_expand(a, b, bounds, 'r', dim_no == t->modes - 1 ? 0 : dim_no + 1)){
+    if(sptensor_sktb_should_expand(a, b, bounds, 'r', dim_no == t->modes - 1 ? 0 : dim_no + 1)){
         int* boundsr = (int*)calloc(2*t->modes, sizeof(int));
         memcpy(boundsr, bounds, t->modes*2*sizeof(int));
         boundsr[(dim_no*2)] = ((boundsr[(dim_no*2)] + boundsr[(dim_no*2)+1]) / 2) + 1;
-        sptensor_skbt_add_mid((sptensor_t*) t, (sptensor_t*)tensor_coo, dim_no == t->modes - 1 ? 0 : dim_no + 1, 2 * (index) + 1 + 1, boundsr, 2*((2*bit_index)+1));
+        sptensor_sktb_add_mid((sptensor_t*) t, (sptensor_t*)tensor_coo, dim_no == t->modes - 1 ? 0 : dim_no + 1, 2 * (index) + 1 + 1, boundsr, 2*((2*bit_index)+1));
      	free(boundsr);
 		mpz_setbit(*(t->tree_bitmap), bit_index+1);
     }
@@ -320,9 +320,9 @@ static void sptensor_skbt_add_mid(sptensor_t* a, sptensor_t* b, unsigned int dim
  *  
  * Return:  None
  */
-void sptensor_skbt_maketree(sptensor_t* a, sptensor_t* b, int num_dimensions, int* d_sizes, int num_non_zeros){
+void sptensor_sktb_maketree(sptensor_t* a, sptensor_t* b, int num_dimensions, int* d_sizes, int num_non_zeros){
 
-	sptensor_skbt_t* t = (sptensor_skbt_t*) a;
+	sptensor_sktb_t* t = (sptensor_sktb_t*) a;
 	sptensor_coo_t* tensor_coo = (sptensor_coo_t*) b; 
 
 	t->d_sizes = d_sizes;
@@ -352,18 +352,18 @@ void sptensor_skbt_maketree(sptensor_t* a, sptensor_t* b, int num_dimensions, in
         bounds[(i*2)+1] = t->d_sizes[i] - 1;
     }
 	
-    sptensor_skbt_add_mid((sptensor_t*)t, (sptensor_t*)tensor_coo, 0, 0, bounds, 0);
+    sptensor_sktb_add_mid((sptensor_t*)t, (sptensor_t*)tensor_coo, 0, 0, bounds, 0);
 	free(bounds);
 }
 
 /* Iterator functions */
-sptensor_iterator_t* sptensor_skbt_iterator(sptensor_skbt_t* t){
+sptensor_iterator_t* sptensor_sktb_iterator(sptensor_sktb_t* t){
 	return sptensor_index_iterator_alloc((sptensor_t*) t);
 }
 
 /* Non zero iterator functions */
-static int sptensor_skbt_nz_valid(struct sptensor_skbt_nz_iterator* itr){
-	struct sptensor_skbt* t = (struct sptensor_skbt*) itr->t;
+static int sptensor_sktb_nz_valid(struct sptensor_sktb_nz_iterator* itr){
+	struct sptensor_sktb* t = (struct sptensor_sktb*) itr->t;
 
 
 	if(itr->ti >=0 && mpz_tstbit(*(t->tree_bitmap), itr->ti) == 0){
@@ -377,9 +377,9 @@ static int sptensor_skbt_nz_valid(struct sptensor_skbt_nz_iterator* itr){
 	}
 }
 
-static void sptensor_skbt_nz_load_index(struct sptensor_skbt_nz_iterator* itr){
-	struct sptensor_skbt* t = (struct sptensor_skbt*) itr->t;
-	if(sptensor_skbt_nz_valid(itr)) {
+static void sptensor_sktb_nz_load_index(struct sptensor_sktb_nz_iterator* itr){
+	struct sptensor_sktb* t = (struct sptensor_sktb*) itr->t;
+	if(sptensor_sktb_nz_valid(itr)) {
 		/*find how many levels to reach parent*/
 		unsigned int n_levels = 0;
 		int index = itr->ti;
@@ -431,58 +431,58 @@ static void sptensor_skbt_nz_load_index(struct sptensor_skbt_nz_iterator* itr){
     }
 }
 
-static void sptensor_skbt_nz_free(struct sptensor_skbt_nz_iterator* itr){
+static void sptensor_sktb_nz_free(struct sptensor_sktb_nz_iterator* itr){
 	sptensor_index_free(itr->index);
 	free(itr);
 }
 
-static int sptensor_skbt_nz_next(struct sptensor_skbt_nz_iterator* itr){
-	if(sptensor_skbt_nz_valid(itr)){
+static int sptensor_sktb_nz_next(struct sptensor_sktb_nz_iterator* itr){
+	if(sptensor_sktb_nz_valid(itr)){
 		itr->ti++;
 	}
 
-	sptensor_skbt_nz_load_index(itr);
+	sptensor_sktb_nz_load_index(itr);
 
-	return sptensor_skbt_nz_valid(itr);
+	return sptensor_sktb_nz_valid(itr);
 }
 
-static int sptensor_skbt_nz_prev(struct sptensor_skbt_nz_iterator* itr){
-	if(sptensor_skbt_nz_valid(itr)){
+static int sptensor_sktb_nz_prev(struct sptensor_sktb_nz_iterator* itr){
+	if(sptensor_sktb_nz_valid(itr)){
 		itr->ti--;
 	}
 
-	sptensor_skbt_nz_load_index(itr);
+	sptensor_sktb_nz_load_index(itr);
 
-	return sptensor_skbt_nz_valid(itr);
+	return sptensor_sktb_nz_valid(itr);
 }
 
-sptensor_iterator_t*  sptensor_skbt_nz_iterator(sptensor_skbt_t* t){
-	struct sptensor_skbt_nz_iterator* itr;
+sptensor_iterator_t*  sptensor_sktb_nz_iterator(sptensor_sktb_t* t){
+	struct sptensor_sktb_nz_iterator* itr;
 
-	itr = malloc(sizeof(struct sptensor_skbt_nz_iterator));
+	itr = malloc(sizeof(struct sptensor_sktb_nz_iterator));
 	if(!itr){
 		return NULL;
 	}
 
 	itr->index = sptensor_index_alloc(t->modes);
 	if(!itr->index){
-		sptensor_skbt_nz_free(itr);
+		sptensor_sktb_nz_free(itr);
 		return NULL;
 	}
 
 	itr->ti = 0;
 
-	itr->valid = (sptensor_iterator_valid_f) sptensor_skbt_nz_valid;
-	itr->next = (sptensor_iterator_next_f) sptensor_skbt_nz_next;
-	itr->prev = (sptensor_iterator_prev_f) sptensor_skbt_nz_prev;
-	itr->free = (sptensor_free_f) sptensor_skbt_nz_free;
+	itr->valid = (sptensor_iterator_valid_f) sptensor_sktb_nz_valid;
+	itr->next = (sptensor_iterator_next_f) sptensor_sktb_nz_next;
+	itr->prev = (sptensor_iterator_prev_f) sptensor_sktb_nz_prev;
+	itr->free = (sptensor_free_f) sptensor_sktb_nz_free;
 	itr->t = (sptensor_t *) t;
 
     /* TODO: Make an effecient SKTB version of these */
     itr->get = sptensor_index_iterator_get;
     itr->set = sptensor_index_iterator_set;
 
-	sptensor_skbt_nz_load_index(itr);
+	sptensor_sktb_nz_load_index(itr);
 
 	return (sptensor_iterator_t* ) itr;
 }
