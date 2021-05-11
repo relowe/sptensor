@@ -52,6 +52,8 @@ sptensor_index_t modes[] = {3, 4, 5};
     /* display structure of csf for debugging */
     sptensor_csf_print(t2);
 
+    printf("The number of nonzeros are %d\n", sptensor_csf_nnz((sptensor_csf_t*)t2));
+
     
     /* display the non-zero tensor */
     //printf("non-zero entries\n");
@@ -104,7 +106,7 @@ void test2(){
     /* display structure of csf for debugging */
     sptensor_csf_print(t2);
 
-    
+    printf("The number of nonzeros are %d\n", sptensor_csf_nnz((sptensor_csf_t*)t2));
     /* display the non-zero tensor */
     //printf("non-zero entries\n");
     //itr = sptensor_nz_iterator(t2);

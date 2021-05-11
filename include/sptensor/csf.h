@@ -42,6 +42,7 @@ typedef struct sptensor_csf
     sptensor_vector* values;
     sptensor_vector* fids;
     sptensor_vector* fptr;
+    int nnz;
 } sptensor_csf_t;
 
 /* CSF allocation functions */
@@ -73,5 +74,5 @@ sptensor_iterator_t* sptensor_csf_nz_iterator(sptensor_csf_t *t);
 void sptensor_csf_print(sptensor_t* tns);
 sptensor_t * sptensor_csf_read(FILE *file);
 void sptensor_csf_write(FILE *file, sptensor_t *tns);
-
+int sptensor_csf_nnz(sptensor_csf_t* tns);
 #endif

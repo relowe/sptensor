@@ -57,6 +57,7 @@ sptensor_t* sptensor_csf_alloc(sptensor_index_t *modes, int nmodes)
     result->values = NULL;
     result->fids = NULL;
     result->fptr = NULL;
+    result->nnz = 0;
 
     /* allocate the modes */
     result->dim = malloc(sizeof(sptensor_index_t) * nmodes);
@@ -113,6 +114,7 @@ void sptensor_csf_free(sptensor_csf_t* t)
     if(t->values){
         sptensor_vector_free(t->values);
     }
+    t->nnz = 0;
 }
 
 
@@ -173,6 +175,8 @@ sptensor_csf_t* sptensor_csf_from_coo(sptensor_coo_t* coo){
         /* Insert the last dimension's indices in fids[last] */
         sptensor_vector_push_back(fidsVectors[(coo->modes)-1], &(itr->index[coo->modes-1]));
         /*printf("pushing back address: %d and value: %d in fidsVectors[%d]\n", &(itr->index[coo->modes-1]), *(&(itr->index[coo->modes-1])), coo->modes-1);*/
+
+        result->nnz++;
 
         sptensor_iterator_next(itr);
     }
@@ -484,4 +488,8 @@ void sptensor_csf_print(sptensor_t* tns){
     for(i = 0; i < c->values->size; i++){
         gmp_printf("%Ff\n", VVAL(mpf_t, c->values, i));
     }
+}
+
+int sptensor_csf_nnz(sptensor_csf_t* tns){ 
+    return tns->nnz;
 }
