@@ -490,6 +490,6 @@ void sptensor_csf_print(sptensor_t* tns){
     }
 }
 
-int sptensor_csf_nnz(sptensor_csf_t* tns){ 
+unsigned int sptensor_csf_nnz(sptensor_csf_t* tns){ 
     return tns->nnz;
 }
