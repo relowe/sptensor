@@ -69,6 +69,7 @@ sptensor_t* sptensor_sktb_alloc(sptensor_index_t *modes, int nmodes){
 	sptensor_sktb->tree_bitmap = (mpz_t*) malloc(sizeof(mpz_t));
 	sptensor_sktb->modes = nmodes;
 	sptensor_sktb->d_sizes = (int*) calloc(nmodes* 2, sizeof(int));
+	sptensor_sktb->nnz = 0;
 		
 	return (sptensor_t*) sptensor_sktb;
 }
@@ -87,12 +88,15 @@ void sptensor_sktb_free(sptensor_sktb_t* t){
 	free(t->tree_leaf_values);
 	free(t->tree_bitmap);
 	free(t->d_sizes);
+	free(t->dim);
 	free(t);
 	int i;
 	for(i = 0; i < t->modes*ceil(log10(10) / log10(2)); i++){
 		mpf_clear(t->tree_values[i]);
 		mpf_clear(t->tree_leaf_values[i]);
 	}
+	t->nnz = 0;
+	t->modes = 0;
 }
 
 /* 
@@ -326,7 +330,7 @@ void sptensor_sktb_maketree(sptensor_t* a, sptensor_t* b, int num_dimensions, in
 	sptensor_coo_t* tensor_coo = (sptensor_coo_t*) b; 
 
 	t->d_sizes = d_sizes;
-	t->num_non_zeros = num_non_zeros;
+	t->nnz = num_non_zeros;
 	
     /*Get longest dimension*/
     int nMax = 0;
@@ -485,4 +489,8 @@ sptensor_iterator_t*  sptensor_sktb_nz_iterator(sptensor_sktb_t* t){
 	sptensor_sktb_nz_load_index(itr);
 
 	return (sptensor_iterator_t* ) itr;
+}
+
+unsigned int sptensor_sktb_nnz(sptensor_sktb_t* tns){
+	return tns->nnz;
 }

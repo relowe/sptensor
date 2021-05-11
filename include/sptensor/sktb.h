@@ -36,8 +36,7 @@ typedef struct sptensor_sktb
     mpf_t* tree_values;
     mpf_t* tree_leaf_values;
     mpz_t* tree_bitmap;
-	unsigned int num_dimensions;
-	unsigned int num_non_zeros;
+	unsigned int nnz;
 	unsigned int* d_sizes;
 } sptensor_sktb_t;
 
@@ -54,6 +53,7 @@ void sptensor_sktb_print_tree(sptensor_sktb_t* t);
 void sptensor_sktb_print_bitmap(sptensor_sktb_t* t);
 void sptensor_sktb_save_raw_bitmap_to_file(sptensor_sktb_t* t, char file_name[]);
 void sptensor_sktb_make_tree(sptensor_t* a, sptensor_t* b, int num_dimensions, int* d_sizes, int num_non_zeros);
+unsigned int sptensor_sktb_nnz(sptensor_sktb_t* tns);
 
 /* Iterator Functions */
 sptensor_iterator_t* sptensor_sktb_iterator(sptensor_sktb_t *t);
