@@ -493,3 +493,16 @@ void sptensor_csf_print(sptensor_t* tns){
 unsigned int sptensor_csf_nnz(sptensor_csf_t* tns){ 
     return tns->nnz;
 }
+
+void sptensor_csf_clear(sptensor_csf_t* tns){
+    int i;
+    if(tns->dim){
+        for(i = 0; i < tns->modes; i++){
+            tns->dim[i] = 0;
+        } 
+    }
+    if(tns->fids) tns->fids->size = 0;
+    if(tns->fptr) tns->fptr->size = 0;
+    if(tns->values) tns->values->size = 0;
+    tns->nnz = 0;
+}

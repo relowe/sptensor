@@ -69,10 +69,24 @@ sptensor_iterator_t* sptensor_csf_nz_iterator(sptensor_csf_t *t);
 /**
  * @brief Print the fptrs, fids and the values of the csf object
  * 
- * @param tns The tensor to print
+ * @param tns The sptensor_t* to print
  */
 void sptensor_csf_print(sptensor_t* tns);
 sptensor_t * sptensor_csf_read(FILE *file);
 void sptensor_csf_write(FILE *file, sptensor_t *tns);
+
+/**
+ * @brief Get the number of nonzeros in the tensor
+ * 
+ * @param tns The sptensor_csf_t* tensor
+ * @return unsigned int Number of non zeros
+ */
 unsigned int sptensor_csf_nnz(sptensor_csf_t* tns);
+
+/**
+ * @brief Completely reset a tensor's data structure
+ * 
+ * @param tns The sptensor_csf_t* tensor
+ */
+void sptensor_csf_clear(sptensor_csf_t* tns);
 #endif
