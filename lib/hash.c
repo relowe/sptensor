@@ -28,6 +28,7 @@
 
 /* Static Helper Functions */
 static struct sptensor_hash_item* sptensor_hash_search(sptensor_hash_t *t, sptensor_index_t *idx);
+static struct sptensor_hash_item* sptensor_hash_probe(sptensor_hash_t *t, sptensor_hash_item_t *ptr);
 static void sptensor_hash_remove(sptensor_hash_t *t, sptensor_hash_item_t *ptr);
 static void sptensor_hash_rehash(sptensor_hash_t *t);
 
@@ -108,7 +109,7 @@ sptensor_t* sptensor_hash_alloc(sptensor_index_t *modes, int nmodes) {
 }
 
 
-/* free the memory associated with the */
+/* free the memory associated with the tensor */
 void sptensor_hash_free(sptensor_hash_t* t) {
     /* free the non-zero poitners */
     if(t->dim) free(t->dim);
@@ -172,14 +173,13 @@ void sptensor_hash_get(sptensor_hash_t *t, sptensor_index_t *i, mpf_t v)
 }
 
 
-/* Search the tensor for an index. Return pointer to the item if found, or a hash_item pointer where value=0 if not found.
-*/
+/* Search the tensor for an index. Return pointer to the item if found, otherwise return pointer to where it should be. */
 static struct sptensor_hash_item* sptensor_hash_search(sptensor_hash_t *t, sptensor_index_t *idx)
 {
 	
 	/*To measure probe time*/
 	clock_t start, end;
-    double cpu_time_used;
+    	double cpu_time_used;
 	
 	struct sptensor_hash_item *ptr;
 	mpz_t index;
@@ -201,29 +201,18 @@ static struct sptensor_hash_item* sptensor_hash_search(sptensor_hash_t *t, spten
 
 	start = clock();
 	
-	while (1) {
-
-		/* set pointer to that index */
-		ptr = t->hashtable + i;
+	/* set pointer to that index */
+	ptr = t->hashtable + i;
 		
-		/* we have found the index in the table */
-		if (mpz_cmp(ptr->morton,morton) == 0) {
-			break;
-		}
+	/* we have found the index in the table */
+	if (mpz_cmp(ptr->morton,morton) != 0) {
 
-		/* this is an empty position */
-		if (ptr->flag == 0) {
-			mpz_set(ptr->morton,morton);
-			mpz_set_ui(ptr->key, i);
-			sptensor_index_cpy(t->modes, ptr->idx, idx);
-			break;
-		}
-
-		/* do linear probing */
-		mpz_add_ui(t->num_collisions, t->num_collisions, 1);
-		i = (i+1) % t->nbuckets;
+		ptr = sptensor_hash_probe(t,ptr);
+		
+		mpz_set(ptr->morton,morton);
+		sptensor_index_cpy(t->modes, ptr->idx, idx);
 	}
-
+	
 	end = clock();
 	cpu_time_used = ((double) (end - start)) / CLOCKS_PER_SEC;
 	mpf_add_ui(t->probe_time, t->probe_time, cpu_time_used);
@@ -234,7 +223,28 @@ static struct sptensor_hash_item* sptensor_hash_search(sptensor_hash_t *t, spten
 	return ptr;
 }
 
+static struct sptensor_hash_item* sptensor_hash_probe(sptensor_hash_t *t, sptensor_hash_item_t *ptr)
+{
+	int i;
 
+	while (1) {
+
+		/* set pointer to that index */
+		ptr = t->hashtable + 1;
+
+		/* this is an empty position */
+		if (ptr->flag == 0) {
+			mpz_set_ui(ptr->key, i);
+			break;
+		}
+
+		/* do linear probing */
+		mpz_add_ui(t->num_collisions, t->num_collisions, 1);
+		i = (i+1) % t->nbuckets;
+	}
+
+	return ptr;
+}
 /*Retry to rehash properly */
 static void sptensor_hash_rehash(sptensor_hash_t *t) {
 	
