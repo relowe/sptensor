@@ -28,7 +28,7 @@
 
 /* Static Helper Functions */
 static struct sptensor_hash_item* sptensor_hash_search(sptensor_hash_t *t, sptensor_index_t *idx);
-static struct sptensor_hash_item* sptensor_hash_probe(sptensor_hash_t *t, sptensor_hash_item_t *ptr);
+static struct sptensor_hash_item* sptensor_hash_probe(sptensor_hash_t *t, sptensor_hash_item_t *ptr, unsigned int i);
 static void sptensor_hash_remove(sptensor_hash_t *t, sptensor_hash_item_t *ptr);
 static void sptensor_hash_rehash(sptensor_hash_t *t);
 
@@ -207,7 +207,7 @@ static struct sptensor_hash_item* sptensor_hash_search(sptensor_hash_t *t, spten
 	/* we have found the index in the table */
 	if (mpz_cmp(ptr->morton,morton) != 0) {
 
-		ptr = sptensor_hash_probe(t,ptr);
+		ptr = sptensor_hash_probe(t,ptr,i);
 		
 		mpz_set(ptr->morton,morton);
 		sptensor_index_cpy(t->modes, ptr->idx, idx);
@@ -223,14 +223,12 @@ static struct sptensor_hash_item* sptensor_hash_search(sptensor_hash_t *t, spten
 	return ptr;
 }
 
-static struct sptensor_hash_item* sptensor_hash_probe(sptensor_hash_t *t, sptensor_hash_item_t *ptr)
+static struct sptensor_hash_item* sptensor_hash_probe(sptensor_hash_t *t, sptensor_hash_item_t *ptr, unsigned int i)
 {
-	int i;
 
 	while (1) {
-
 		/* set pointer to that index */
-		ptr = t->hashtable + 1;
+		ptr = t->hashtable + i;
 
 		/* this is an empty position */
 		if (ptr->flag == 0) {
