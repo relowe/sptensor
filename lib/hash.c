@@ -2,20 +2,16 @@
     This is a collection of functions for hashing sparse tensor
     indexes.
     Copyright (C) 2018  Robert Lowe <pngwen@acm.org>
-
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation, either version 3 of the License, or
     (at your option) any later version.
-
     This program is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
     GNU General Public License for more details.
-
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
-
  */
 #include <limits.h>
 #include <stdio.h>
@@ -28,7 +24,6 @@
 
 /* Static Helper Functions */
 static struct sptensor_hash_item* sptensor_hash_search(sptensor_hash_t *t, sptensor_index_t *idx);
-static struct sptensor_hash_item* sptensor_hash_probe(sptensor_hash_t *t, sptensor_hash_item_t *ptr, unsigned int i);
 static void sptensor_hash_remove(sptensor_hash_t *t, sptensor_hash_item_t *ptr);
 static void sptensor_hash_rehash(sptensor_hash_t *t);
 
@@ -109,7 +104,7 @@ sptensor_t* sptensor_hash_alloc(sptensor_index_t *modes, int nmodes) {
 }
 
 
-/* free the memory associated with the tensor */
+/* free the memory associated with the */
 void sptensor_hash_free(sptensor_hash_t* t) {
     /* free the non-zero poitners */
     if(t->dim) free(t->dim);
@@ -173,13 +168,14 @@ void sptensor_hash_get(sptensor_hash_t *t, sptensor_index_t *i, mpf_t v)
 }
 
 
-/* Search the tensor for an index. Return pointer to the item if found, otherwise return pointer to where it should be. */
+/* Search the tensor for an index. Return pointer to the item if found, or a hash_item pointer where value=0 if not found.
+*/
 static struct sptensor_hash_item* sptensor_hash_search(sptensor_hash_t *t, sptensor_index_t *idx)
 {
 	
 	/*To measure probe time*/
 	clock_t start, end;
-    	double cpu_time_used;
+    double cpu_time_used;
 	
 	struct sptensor_hash_item *ptr;
 	mpz_t index;
@@ -201,18 +197,29 @@ static struct sptensor_hash_item* sptensor_hash_search(sptensor_hash_t *t, spten
 
 	start = clock();
 	
-	/* set pointer to that index */
-	ptr = t->hashtable + i;
-		
-	/* we have found the index in the table */
-	if (mpz_cmp(ptr->morton,morton) != 0) {
+	while (1) {
 
-		ptr = sptensor_hash_probe(t,ptr,i);
+		/* set pointer to that index */
+		ptr = t->hashtable + i;
 		
-		mpz_set(ptr->morton,morton);
-		sptensor_index_cpy(t->modes, ptr->idx, idx);
+		/* we have found the index in the table */
+		if (mpz_cmp(ptr->morton,morton) == 0) {
+			break;
+		}
+
+		/* this is an empty position */
+		if (ptr->flag == 0) {
+			mpz_set(ptr->morton,morton);
+			mpz_set_ui(ptr->key, i);
+			sptensor_index_cpy(t->modes, ptr->idx, idx);
+			break;
+		}
+
+		/* do linear probing */
+		mpz_add_ui(t->num_collisions, t->num_collisions, 1);
+		i = (i+1) % t->nbuckets;
 	}
-	
+
 	end = clock();
 	cpu_time_used = ((double) (end - start)) / CLOCKS_PER_SEC;
 	mpf_add_ui(t->probe_time, t->probe_time, cpu_time_used);
@@ -223,26 +230,7 @@ static struct sptensor_hash_item* sptensor_hash_search(sptensor_hash_t *t, spten
 	return ptr;
 }
 
-static struct sptensor_hash_item* sptensor_hash_probe(sptensor_hash_t *t, sptensor_hash_item_t *ptr, unsigned int i)
-{
 
-	while (1) {
-		/* set pointer to that index */
-		ptr = t->hashtable + i;
-
-		/* this is an empty position */
-		if (ptr->flag == 0) {
-			mpz_set_ui(ptr->key, i);
-			break;
-		}
-
-		/* do linear probing */
-		mpz_add_ui(t->num_collisions, t->num_collisions, 1);
-		i = (i+1) % t->nbuckets;
-	}
-
-	return ptr;
-}
 /*Retry to rehash properly */
 static void sptensor_hash_rehash(sptensor_hash_t *t) {
 	
